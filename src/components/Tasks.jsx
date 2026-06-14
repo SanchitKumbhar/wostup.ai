@@ -139,12 +139,13 @@ export default function Tasks({
 
       {/* Kanban Board Layout */}
       <div style={styles.boardWrapper}>
-        <div style={styles.kanbanGrid}>
+        <div className="kanban-board-scroll" style={styles.kanbanGrid}>
           {columns.map((column) => {
             const columnTasks = sortedTasks.filter(t => t.status.toLowerCase() === column.toLowerCase());
             return (
               <div
                 key={column}
+                className="kanban-col"
                 style={styles.kanbanColumn}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, column)}
@@ -304,7 +305,7 @@ export default function Tasks({
                 </select>
               </div>
 
-              <div style={styles.row}>
+              <div className="split-row" style={styles.row}>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label className="form-label">Assignee</label>
                   <select

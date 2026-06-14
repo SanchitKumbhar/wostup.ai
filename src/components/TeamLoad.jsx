@@ -97,7 +97,7 @@ export default function TeamLoad({ onAdjustCapacity }) {
       </div>
 
       {/* Visualizations Grid */}
-      <div style={styles.visualsGrid}>
+      <div className="visuals-grid" style={styles.visualsGrid}>
         
         {/* Member Load Distribution - Bar Chart */}
         <div className="premium-card" style={styles.visualCard}>
@@ -196,53 +196,55 @@ export default function TeamLoad({ onAdjustCapacity }) {
           </button>
         </div>
 
-        <table style={styles.table}>
-          <thead>
-            <tr style={styles.tableHeadRow}>
-              <th style={styles.tableTh}>TEAM MEMBER</th>
-              <th style={styles.tableTh}>TASKS</th>
-              <th style={styles.tableTh}>UTILIZATION</th>
-              <th style={styles.tableTh}>STATUS</th>
-              <th style={styles.tableTh}>ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {registryMembers.map((member) => (
-              <tr key={member.id} style={styles.tableRow}>
-                <td style={styles.tableTd}>
-                  <div style={styles.memberCell}>
-                    <img src={member.avatar} alt={member.name} style={styles.memberAvatar} />
-                    <div>
-                      <div style={styles.memberName}>{member.name}</div>
-                      <div style={styles.memberRole}>{member.role}</div>
-                    </div>
-                  </div>
-                </td>
-                <td style={styles.tableTd}>{member.tasks}</td>
-                <td style={styles.tableTd}>
-                  <div style={styles.utilizationCell}>
-                    <span style={styles.utilizationLabel}>Score {member.score}</span>
-                    <div style={styles.utilProgressBarBg}>
-                      <div style={{
-                        ...styles.utilProgressBarFill,
-                        width: `${(parseFloat(member.score) / 5) * 100}%`,
-                        backgroundColor: member.status === 'Critical' ? '#EF4444' : member.status === 'Optimal' ? '#10B981' : '#5B5FFB'
-                      }} />
-                    </div>
-                  </div>
-                </td>
-                <td style={styles.tableTd}>
-                  <span className={`badge ${getStatusBadgeStyle(member.status)}`}>
-                    {member.status}
-                  </span>
-                </td>
-                <td style={styles.tableTd}>
-                  <button style={styles.actionBtn} onClick={() => alert(`Context action for ${member.name}`)}>•••</button>
-                </td>
+        <div className="table-responsive">
+          <table style={styles.table}>
+            <thead>
+              <tr style={styles.tableHeadRow}>
+                <th style={styles.tableTh}>TEAM MEMBER</th>
+                <th style={styles.tableTh}>TASKS</th>
+                <th style={styles.tableTh}>UTILIZATION</th>
+                <th style={styles.tableTh}>STATUS</th>
+                <th style={styles.tableTh}>ACTIONS</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {registryMembers.map((member) => (
+                <tr key={member.id} style={styles.tableRow}>
+                  <td style={styles.tableTd}>
+                    <div style={styles.memberCell}>
+                      <img src={member.avatar} alt={member.name} style={styles.memberAvatar} />
+                      <div>
+                        <div style={styles.memberName}>{member.name}</div>
+                        <div style={styles.memberRole}>{member.role}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style={styles.tableTd}>{member.tasks}</td>
+                  <td style={styles.tableTd}>
+                    <div style={styles.utilizationCell}>
+                      <span style={styles.utilizationLabel}>Score {member.score}</span>
+                      <div style={styles.utilProgressBarBg}>
+                        <div style={{
+                          ...styles.utilProgressBarFill,
+                          width: `${(parseFloat(member.score) / 5) * 100}%`,
+                          backgroundColor: member.status === 'Critical' ? '#EF4444' : member.status === 'Optimal' ? '#10B981' : '#5B5FFB'
+                        }} />
+                      </div>
+                    </div>
+                  </td>
+                  <td style={styles.tableTd}>
+                    <span className={`badge ${getStatusBadgeStyle(member.status)}`}>
+                      {member.status}
+                    </span>
+                  </td>
+                  <td style={styles.tableTd}>
+                    <button style={styles.actionBtn} onClick={() => alert(`Context action for ${member.name}`)}>•••</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {/* Pagination */}
         <div style={styles.paginationRow}>

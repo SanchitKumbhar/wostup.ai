@@ -7,6 +7,7 @@ export default function TopBar({
   onWorkspaceSelect,
   onOpenNewWorkspaceModal,
   notificationCount = 3,
+  onToggleSidebar,
 }) {
   const [showWorkspaceDropdown, setShowWorkspaceDropdown] = useState(false);
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
@@ -22,7 +23,15 @@ export default function TopBar({
   ];
 
   return (
-    <header style={styles.topBar}>
+    <header className="topbar-container" style={styles.topBar}>
+      <button onClick={onToggleSidebar} className="hamburger-btn" style={styles.hamburgerBtn}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
       {/* Workspace Switcher */}
       <div style={styles.switcherContainer}>
         <button
@@ -36,7 +45,7 @@ export default function TopBar({
           <div style={{ ...styles.switcherColorIcon, backgroundColor: activeWorkspace?.color || '#5B5FFB' }}>
             {activeWorkspace?.name?.charAt(0) || 'W'}
           </div>
-          <span style={styles.switcherText}>{activeWorkspace?.name || 'Loading...'}</span>
+          <span className="topbar-switcher-text" style={styles.switcherText}>{activeWorkspace?.name || 'Loading...'}</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '4px', color: '#6C7A87' }}>
             <polyline points="6 9 12 15 18 9" />
           </svg>
@@ -82,7 +91,7 @@ export default function TopBar({
       </div>
 
       {/* Global Search */}
-      <div style={styles.searchContainer}>
+      <div className="topbar-search-container" style={styles.searchContainer}>
         <svg style={styles.searchIcon} viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input
           type="text"
@@ -94,7 +103,7 @@ export default function TopBar({
       </div>
 
       {/* Right Tools */}
-      <div style={styles.toolsContainer}>
+      <div className="topbar-tools-container" style={styles.toolsContainer}>
         {/* AI status indicator */}
         <div style={styles.aiStatus}>
           <span className="pulse-dot" />
@@ -150,7 +159,7 @@ export default function TopBar({
             style={styles.profileBtn}
           >
             <img src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'} alt="Avatar" style={styles.avatar} />
-            <div style={styles.userMeta}>
+            <div className="topbar-user-meta" style={styles.userMeta}>
               <div style={styles.userName}>{user?.name || 'Alex Rivers'}</div>
               <div style={styles.userRole}>Workspace Admin</div>
             </div>
@@ -172,6 +181,9 @@ const styles = {
     padding: '0 32px',
     zIndex: 10,
     position: 'relative',
+  },
+  hamburgerBtn: {
+    display: 'none',
   },
   switcherContainer: {
     position: 'relative',

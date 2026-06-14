@@ -182,27 +182,27 @@ export default function ProjectOverview({
 
       {/* Tab Contents */}
       {activeTab === 'overview' && (
-        <div style={styles.overviewGrid}>
+        <div className="overview-grid" style={styles.overviewGrid}>
           {/* Left Side */}
           <div style={styles.overviewLeft}>
             {/* KPI Cards Row */}
-            <div style={styles.kpiRowSmall}>
-              <div className="premium-card" style={styles.kpiCardSmall}>
+            <div className="kpi-row-small" style={styles.kpiRowSmall}>
+              <div className="premium-card kpi-card-small" style={styles.kpiCardSmall}>
                 <div style={styles.kpiSmallTitle}>BUDGET USED</div>
                 <div style={styles.kpiSmallVal}>$45,200</div>
                 <span style={styles.kpiSmallChange}>↗ +12%</span>
               </div>
-              <div className="premium-card" style={styles.kpiCardSmall}>
+              <div className="premium-card kpi-card-small" style={styles.kpiCardSmall}>
                 <div style={styles.kpiSmallTitle}>TASKS COMPLETED</div>
                 <div style={styles.kpiSmallVal}>{completedTasks}/{totalTasks}</div>
                 <span style={styles.kpiSmallChange}>↗ +8 today</span>
               </div>
-              <div className="premium-card" style={styles.kpiCardSmall}>
+              <div className="premium-card kpi-card-small" style={styles.kpiCardSmall}>
                 <div style={styles.kpiSmallTitle}>VELOCITY</div>
                 <div style={styles.kpiSmallVal}>18.5</div>
                 <span style={{ ...styles.kpiSmallChange, color: '#EF4444' }}>↘ -1.2</span>
               </div>
-              <div className="premium-card" style={styles.kpiCardSmall}>
+              <div className="premium-card kpi-card-small" style={styles.kpiCardSmall}>
                 <div style={styles.kpiSmallTitle}>MILESTONES</div>
                 <div style={styles.kpiSmallVal}>
                   {projectMilestones.filter(m => m.status === 'Completed').length}/{projectMilestones.length}
@@ -271,7 +271,7 @@ export default function ProjectOverview({
             </div>
 
             {/* Split Objectives and Risk */}
-            <div style={{ display: 'flex', gap: '20px' }}>
+            <div className="split-row" style={{ display: 'flex', gap: '20px' }}>
               {/* Key Objectives */}
               <div className="premium-card" style={{ ...styles.panelCard, flex: 1 }}>
                 <h3 style={styles.cardTitle}>Key Objectives</h3>
@@ -385,8 +385,8 @@ export default function ProjectOverview({
             </div>
           </div>
 
-          {/* Tasks Table */}
-          <div className="premium-card" style={{ overflow: 'hidden' }}>
+            {/* Tasks Table */}
+            <div className="premium-card table-responsive" style={{ overflow: 'hidden' }}>
             <table style={styles.table}>
               <thead>
                 <tr style={styles.tableHeadRow}>
@@ -508,7 +508,7 @@ export default function ProjectOverview({
 
       {/* Comments / Discussion Tab */}
       {activeTab === 'comments' && (
-        <div style={styles.discussionContainer}>
+        <div className="discussion-container" style={styles.discussionContainer}>
           {/* Left discussion thread */}
           <div style={styles.chatSection}>
             <div style={styles.chatHeader}>
@@ -633,7 +633,7 @@ export default function ProjectOverview({
                 />
               </div>
 
-              <div style={styles.row}>
+              <div className="split-row" style={styles.row}>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label className="form-label">Project Phase</label>
                   <select

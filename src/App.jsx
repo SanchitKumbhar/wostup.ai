@@ -30,6 +30,7 @@ export default function App() {
   // Navigation States
   const [currentScreen, setCurrentScreen] = useState('dashboard');
   const [selectedProject, setSelectedProject] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Projects State
   const [projects, setProjects] = useState([
@@ -233,18 +234,24 @@ export default function App() {
 
   return (
     <div className="app-container">
+      {/* Sidebar mobile overlay */}
+      <div className={`sidebar-overlay ${isSidebarOpen ? 'active' : ''}`} onClick={() => setIsSidebarOpen(false)}></div>
+
       {/* Persistent Left Sidebar */}
       <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
         currentScreen={currentScreen}
         onNavigate={(screen) => {
           setCurrentScreen(screen);
           setSelectedProject(null);
+          setIsSidebarOpen(false);
         }}
         onLogout={handleLogout}
       />
 
       {/* Main Workspace Frame */}
-      <div className="main-content">
+      <div className="main-content app-main-content">
         {/* Top Navbar */}
         <TopBar
           user={user}
@@ -253,6 +260,7 @@ export default function App() {
           onWorkspaceSelect={handleWorkspaceSelect}
           onOpenNewWorkspaceModal={() => setIsWorkspaceModalOpen(true)}
           notificationCount={aiRecommendations.length}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
 
         {/* Dynamic Route Screen rendering */}

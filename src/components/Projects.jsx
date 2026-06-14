@@ -247,7 +247,7 @@ export default function Projects({
                 />
               </div>
 
-              <div style={styles.row}>
+              <div className="split-row" style={styles.row}>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label className="form-label">Client/Department *</label>
                   <input
@@ -273,7 +273,7 @@ export default function Projects({
                 </div>
               </div>
 
-              <div style={styles.row}>
+              <div className="split-row" style={styles.row}>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label className="form-label">Target Completion *</label>
                   <input

@@ -66,7 +66,7 @@ export default function AIAssistant() {
       </div>
 
       {/* Split chat and explainability panel */}
-      <div style={styles.contentSplit}>
+      <div className="content-split" style={styles.contentSplit}>
         {/* Chat Section */}
         <div className="premium-card" style={styles.chatContainer}>
           <div style={styles.chatHeader}>

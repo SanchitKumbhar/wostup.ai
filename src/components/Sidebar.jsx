@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Sidebar({ currentScreen, onNavigate, onLogout }) {
+export default function Sidebar({ isOpen, onClose, currentScreen, onNavigate, onLogout }) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -66,7 +66,7 @@ export default function Sidebar({ currentScreen, onNavigate, onLogout }) {
   ];
 
   return (
-    <aside style={styles.sidebar}>
+    <aside className={`app-sidebar ${isOpen ? 'open' : ''}`} style={styles.sidebar}>
       {/* Brand logo */}
       <div style={styles.brand}>
         <div style={styles.logoIcon}>
@@ -82,6 +82,12 @@ export default function Sidebar({ currentScreen, onNavigate, onLogout }) {
           </svg>
         </div>
         <span style={styles.brandName}>Wostup</span>
+        <button onClick={onClose} className="sidebar-close-btn" style={styles.closeBtn}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
       </div>
 
       {/* Navigation menu */}
@@ -152,6 +158,14 @@ const styles = {
     gap: '10px',
     paddingLeft: '12px',
     marginBottom: '32px',
+  },
+  closeBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: '#6C7A87',
+    padding: '4px',
+    display: 'none',
   },
   logoIcon: {
     display: 'flex',

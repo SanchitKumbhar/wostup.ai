@@ -46,14 +46,15 @@ export default function Settings({ user, onUpdateUser }) {
       </div>
 
       {/* Main Settings Grid */}
-      <div style={styles.settingsGrid}>
+      <div className="settings-split" style={styles.settingsGrid}>
         
         {/* Left tabs selector */}
-        <div className="premium-card" style={styles.tabsPanel}>
+        <div className="premium-card settings-menu" style={styles.tabsPanel}>
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
+              className="settings-menu-btn"
               style={{
                 ...styles.tabLink,
                 ...(activeTab === tab.id ? styles.tabLinkActive : {}),
@@ -89,7 +90,7 @@ export default function Settings({ user, onUpdateUser }) {
               </div>
 
               {/* Names row */}
-              <div style={styles.inputRow}>
+              <div className="split-row" style={styles.inputRow}>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label className="form-label">First Name</label>
                   <input
@@ -138,7 +139,7 @@ export default function Settings({ user, onUpdateUser }) {
               </div>
 
               {/* Timezone and Language */}
-              <div style={styles.inputRow}>
+              <div className="split-row" style={styles.inputRow}>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label className="form-label">Timezone</label>
                   <select

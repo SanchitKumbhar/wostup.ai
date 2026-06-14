@@ -102,11 +102,11 @@ export default function TaskHealth({ onOptimizeLoad }) {
 
       {/* Columns Grid */}
       <div style={styles.boardWrapper}>
-        <div style={styles.columnsGrid}>
+        <div className="columns-grid" style={styles.columnsGrid}>
           {columns.map((col) => {
             const colTasks = localTasks.filter(t => t.status === col);
             return (
-              <div key={col} style={styles.healthColumn}>
+              <div key={col} className="health-column" style={styles.healthColumn}>
                 <div style={styles.columnHeader}>
                   <div style={styles.columnTitleRow}>
                     <span style={{

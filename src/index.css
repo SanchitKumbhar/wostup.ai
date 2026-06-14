@@ -430,3 +430,184 @@ h1, h2, h3, h4 {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* --- RESPONSIVE OVERRIDES --- */
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(26, 29, 32, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 15;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar-overlay.active {
+  display: block;
+}
+
+/* Sidebar Responsive Styles */
+@media (max-width: 768px) {
+  .app-sidebar {
+    position: fixed !important;
+    left: -240px !important;
+    top: 0;
+    bottom: 0;
+    width: 240px !important;
+    height: 100vh !important;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 0 20px rgba(0,0,0,0.15) !important;
+    z-index: 100 !important;
+  }
+  
+  .app-sidebar.open {
+    left: 0 !important;
+  }
+
+  .app-main-content {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .topbar-container {
+    padding: 0 16px !important;
+  }
+
+  /* Hide workspace text and user metadata to fit topbar */
+  .topbar-switcher-text, .topbar-user-meta {
+    display: none !important;
+  }
+
+  .topbar-search-container {
+    width: 180px !important;
+  }
+  
+  .modal-content {
+    margin: 10px !important;
+    width: calc(100% - 20px) !important;
+  }
+}
+
+/* Grid & Layout Responsive Styles */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  
+  .kpi-row {
+    flex-wrap: wrap !important;
+    gap: 16px !important;
+  }
+
+  .kpi-card {
+    flex: 1 1 200px !important;
+  }
+
+  .split-row {
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+  
+  .visuals-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  
+  .overview-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  
+  .content-split {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-body {
+    padding: 16px 16px 24px 16px !important;
+  }
+
+  .page-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .page-header .btn-gradient, .page-header .btn-secondary, .page-header select {
+    width: 100% !important;
+  }
+  
+  .page-header .page-title-group h1 {
+    font-size: 26px !important;
+  }
+
+  .kpi-row-small {
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+
+  .kpi-card-small {
+    flex: 1 1 140px !important;
+  }
+
+  /* Table overflow scroll wrapper */
+  .table-responsive {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Kanban responsiveness */
+  .columns-grid {
+    display: flex !important;
+    overflow-x: auto !important;
+    gap: 16px !important;
+    padding-bottom: 8px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .health-column {
+    min-width: 280px !important;
+    flex: 0 0 280px !important;
+  }
+  
+  .kanban-board-scroll {
+    display: flex !important;
+    overflow-x: auto !important;
+    gap: 16px !important;
+    padding-bottom: 8px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  .kanban-col {
+    min-width: 280px !important;
+    flex: 0 0 280px !important;
+  }
+
+  .settings-split {
+    flex-direction: column !important;
+  }
+
+  .settings-menu {
+    width: 100% !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    border-bottom: 1px solid var(--border-light) !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .settings-menu-btn {
+    white-space: nowrap !important;
+  }
+}
+

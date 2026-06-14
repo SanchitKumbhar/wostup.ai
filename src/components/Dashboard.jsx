@@ -69,9 +69,9 @@ export default function Dashboard({
       </div>
 
       {/* KPI Cards Row */}
-      <div style={styles.kpiRow}>
+      <div className="kpi-row" style={styles.kpiRow}>
         {/* Active Projects */}
-        <div className="premium-card" style={styles.kpiCard}>
+        <div className="premium-card kpi-card" style={styles.kpiCard}>
           <div style={styles.kpiHeader}>
             <div>
               <div style={styles.kpiTitle}>Active Projects</div>
@@ -95,7 +95,7 @@ export default function Dashboard({
         </div>
 
         {/* On Track Projects */}
-        <div className="premium-card" style={styles.kpiCard}>
+        <div className="premium-card kpi-card" style={styles.kpiCard}>
           <div style={styles.kpiHeader}>
             <div>
               <div style={styles.kpiTitle}>On Track</div>
@@ -120,7 +120,7 @@ export default function Dashboard({
         </div>
 
         {/* Projects At Risk */}
-        <div className="premium-card" style={styles.kpiCard}>
+        <div className="premium-card kpi-card" style={styles.kpiCard}>
           <div style={styles.kpiHeader}>
             <div>
               <div style={styles.kpiTitle}>At Risk</div>
@@ -147,7 +147,7 @@ export default function Dashboard({
       </div>
 
       {/* Main Dashboard Layout Grid */}
-      <div style={styles.dashboardGrid}>
+      <div className="dashboard-grid" style={styles.dashboardGrid}>
         
         {/* Left Column */}
         <div style={styles.leftColumn}>
@@ -207,7 +207,7 @@ export default function Dashboard({
           </div>
 
           {/* My Tasks Status & Countdown Split */}
-          <div style={styles.splitRow}>
+          <div className="split-row" style={styles.splitRow}>
             {/* My Tasks Status */}
             <div className="premium-card" style={{ ...styles.panelCard, flex: 1 }}>
               <h3 style={styles.panelTitle}>My Tasks Status</h3>
