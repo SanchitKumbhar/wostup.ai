@@ -102,20 +102,21 @@ export default function Projects({
       </div>
 
       {/* Filter and Search Bar */}
-      <div style={styles.filterBar}>
-        <div style={styles.searchContainer}>
+      <div className="filter-bar-responsive" style={styles.filterBar}>
+        <div className="search-container-responsive" style={styles.searchContainer}>
           <svg style={styles.searchIcon} viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input
             type="text"
             placeholder="Find a project by name or client..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            className="input-focus"
             style={styles.filterSearchInput}
           />
         </div>
         
         {/* Status Filter Chips */}
-        <div style={styles.chipsRow}>
+        <div className="chips-row-responsive" style={styles.chipsRow}>
           {['All', 'Active', 'Completed', 'On Hold'].map((status) => (
             <button
               key={status}
@@ -369,11 +370,6 @@ const styles = {
     color: '#1A1D20',
     backgroundColor: '#FAFCFF',
     outline: 'none',
-    transition: 'all 0.2s ease',
-    '&:focus': {
-      backgroundColor: '#FFFFFF',
-      borderColor: '#5B5FFB',
-    },
   },
   chipsRow: {
     display: 'flex',

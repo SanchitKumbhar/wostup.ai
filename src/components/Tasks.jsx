@@ -112,7 +112,7 @@ export default function Tasks({
       </div>
 
       {/* Filter and Board Actions Row */}
-      <div style={styles.actionRow}>
+      <div className="action-row-responsive" style={styles.actionRow}>
         <div style={styles.tabToggle}>
           <button
             onClick={() => setFilterView('Project Tasks')}
@@ -166,7 +166,7 @@ export default function Tasks({
                       draggable
                       onDragStart={(e) => handleDragStart(e, task.id)}
                       onClick={() => setActiveTaskDetail(task)}
-                      className="premium-card"
+                      className="premium-card task-card-hover"
                       style={styles.taskCard}
                     >
                       <div style={styles.cardTopRow}>
@@ -204,7 +204,7 @@ export default function Tasks({
                     </div>
                   ))}
                   
-                  <button onClick={() => setIsNewTaskModalOpen(true)} style={styles.columnAddBtn}>
+                  <button onClick={() => setIsNewTaskModalOpen(true)} className="kanban-add-btn" style={styles.columnAddBtn}>
                     + Add Task
                   </button>
                 </div>
@@ -559,11 +559,6 @@ const styles = {
     padding: '10px',
     cursor: 'pointer',
     textAlign: 'center',
-    transition: 'all 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#F8F9FD',
-      borderColor: '#9AA6B2',
-    },
   },
   slidingPanel: {
     position: 'absolute',

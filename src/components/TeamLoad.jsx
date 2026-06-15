@@ -41,7 +41,7 @@ export default function TeamLoad({ onAdjustCapacity }) {
           <h1>Team Load</h1>
           <p>Real-time resource capacity and workload distribution analytics.</p>
         </div>
-        <div style={styles.headerActions}>
+        <div className="page-header-actions" style={styles.headerActions}>
           <select style={styles.timeSelect}>
             <option>Last 30 Days</option>
             <option>Last 14 Days</option>
@@ -54,7 +54,7 @@ export default function TeamLoad({ onAdjustCapacity }) {
       </div>
 
       {/* Team Load KPIs */}
-      <div style={styles.statsRow}>
+      <div className="stats-row-responsive" style={styles.statsRow}>
         <div className="premium-card" style={styles.statCard}>
           <div style={styles.statMetaRow}>
             <div style={styles.statTitle}>TOTAL MEMBERS</div>
@@ -186,7 +186,7 @@ export default function TeamLoad({ onAdjustCapacity }) {
 
       {/* Member Load Registry */}
       <div className="premium-card" style={styles.registryPanel}>
-        <div style={styles.panelTitleRow}>
+        <div className="panel-title-row-responsive" style={styles.panelTitleRow}>
           <div>
             <h3 style={styles.cardTitle}>Member Load Registry</h3>
             <p style={styles.cardSubtitle}>Detailed resource breakdown for the current sprint</p>

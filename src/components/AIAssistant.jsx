@@ -118,6 +118,7 @@ export default function AIAssistant() {
               <button
                 key={s.label}
                 onClick={() => handleSend(s.query)}
+                className="suggestion-chip"
                 style={styles.suggestionBtn}
               >
                 💡 {s.label}
@@ -133,6 +134,7 @@ export default function AIAssistant() {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend(inputText)}
+              className="chat-input-field"
               style={styles.chatInput}
             />
             <button
@@ -285,12 +287,6 @@ const styles = {
     fontSize: '12px',
     fontWeight: '500',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#F0F2FF',
-      borderColor: '#5B5FFB',
-      color: '#5B5FFB',
-    },
   },
   inputForm: {
     borderTop: '1px solid #ECEEF4',
@@ -304,13 +300,7 @@ const styles = {
     borderRadius: '10px',
     padding: '12px 16px',
     fontSize: '13.5px',
-    outline: 'none',
     backgroundColor: '#FAFCFF',
-    transition: 'all 0.2s ease',
-    '&:focus': {
-      backgroundColor: '#FFFFFF',
-      borderColor: '#5B5FFB',
-    },
   },
   sendBtn: {
     padding: '0 24px',

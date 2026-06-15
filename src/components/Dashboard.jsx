@@ -49,7 +49,7 @@ export default function Dashboard({
           <h1>Dashboard</h1>
           <p>Welcome back, {user?.name || 'User'}! Here's what's happening in your workspace today.</p>
         </div>
-        <div style={styles.headerActions}>
+        <div className="page-header-actions" style={styles.headerActions}>
           <button style={styles.scheduleBtn} onClick={() => alert('Scheduling system simulated.')}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -84,7 +84,7 @@ export default function Dashboard({
             </div>
           </div>
           <div style={styles.kpiProgressContainer}>
-            <div style={{ ...styles.kpiProgressBar, width: `${(totalProjects / 15) * 100}%` }} />
+            <div className="kpi-progress-gradient" style={{ width: `${(totalProjects / 15) * 100}%` }} />
           </div>
           <div style={styles.kpiFooter}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}>
@@ -109,7 +109,7 @@ export default function Dashboard({
             </div>
           </div>
           <div style={styles.kpiProgressContainer}>
-            <div style={{ ...styles.kpiProgressBar, backgroundColor: '#10B981', width: `${totalProjects > 0 ? (onTrackProjects / totalProjects) * 100 : 0}%` }} />
+            <div className="kpi-progress-green" style={{ width: `${totalProjects > 0 ? (onTrackProjects / totalProjects) * 100 : 0}%` }} />
           </div>
           <div style={styles.kpiFooter}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}>
@@ -135,7 +135,7 @@ export default function Dashboard({
             </div>
           </div>
           <div style={styles.kpiProgressContainer}>
-            <div style={{ ...styles.kpiProgressBar, backgroundColor: '#EF4444', width: `${totalProjects > 0 ? (atRiskProjects / totalProjects) * 100 : 0}%` }} />
+            <div className="kpi-progress-red" style={{ width: `${totalProjects > 0 ? (atRiskProjects / totalProjects) * 100 : 0}%` }} />
           </div>
           <div style={styles.kpiFooter}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}>
@@ -152,8 +152,8 @@ export default function Dashboard({
         {/* Left Column */}
         <div style={styles.leftColumn}>
           {/* AI Recommendations Panel */}
-          <div className="glass-card" style={styles.aiPanel}>
-            <div style={styles.panelTitleRow}>
+          <div className="glass-card ai-insights-panel" style={styles.aiPanel}>
+            <div className="panel-title-row-responsive" style={styles.panelTitleRow}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B5FFB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -164,7 +164,7 @@ export default function Dashboard({
             </div>
             <div style={styles.aiList}>
               {aiRecommendations.map((rec) => (
-                <div key={rec.id} style={styles.aiRecItem}>
+                <div key={rec.id} className="ai-rec-item" style={styles.aiRecItem}>
                   <div style={styles.aiRecHeader}>
                     <span style={{
                       ...styles.aiPriorityBadge,
@@ -189,7 +189,7 @@ export default function Dashboard({
             </div>
             <div style={styles.activityFeed}>
               {recentUpdates.map((update) => (
-                <div key={update.id} style={styles.activityItem}>
+                <div key={update.id} className="activity-row" style={styles.activityItem}>
                   <img src={update.avatar} alt={update.user} style={styles.activityAvatar} />
                   <div style={styles.activityMeta}>
                     <div style={styles.activityText}>
@@ -201,7 +201,7 @@ export default function Dashboard({
                 </div>
               ))}
             </div>
-            <button style={styles.loadMoreBtn} onClick={() => alert('Simulated loading additional activities.')}>
+            <button className="load-more-btn" style={styles.loadMoreBtn} onClick={() => alert('Simulated loading additional activities.')}>
               Load More Activity
             </button>
           </div>
@@ -232,8 +232,8 @@ export default function Dashboard({
             {/* Countdown */}
             <div className="premium-card" style={{ ...styles.panelCard, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
               <div style={styles.countdownTag}>PRODUCT LAUNCH COUNTDOWN</div>
-              <div style={styles.countdownDisplay}>
-                {formatNumber(countdown.days)}d : {formatNumber(countdown.hours)}h : {formatNumber(countdown.minutes)}m : {formatNumber(countdown.seconds)}s
+              <div className="countdown-display-responsive" style={styles.countdownDisplay}>
+                {formatNumber(countdown.days)}d : {formatNumber(countdown.hours)}h : {formatNumber(countdown.minutes)}m : <span className="countdown-seconds">{formatNumber(countdown.seconds)}s</span>
               </div>
               <div style={styles.countdownFooter}>Days : Hours : Mins : Secs until Q4 Release</div>
             </div>
@@ -381,8 +381,7 @@ const styles = {
   },
   kpiProgressContainer: {
     height: '6px',
-    backgroundColor: '#FAFCFF',
-    border: '1px solid #ECEEF4',
+    backgroundColor: '#F0F2F5',
     borderRadius: '3px',
     overflow: 'hidden',
     marginBottom: '16px',
@@ -451,10 +450,6 @@ const styles = {
     borderRadius: '10px',
     border: '1px solid #ECEEF4',
     padding: '14px 16px',
-    transition: 'border-color 0.2s ease',
-    '&:hover': {
-      borderColor: '#B24DFF',
-    },
   },
   aiRecHeader: {
     display: 'flex',
@@ -539,12 +534,6 @@ const styles = {
     borderRadius: '10px',
     cursor: 'pointer',
     marginTop: '20px',
-    transition: 'all 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#F8F9FD',
-      borderColor: '#9AA6B2',
-      color: '#1A1D20',
-    },
   },
   splitRow: {
     display: 'flex',

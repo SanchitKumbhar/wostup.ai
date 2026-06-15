@@ -35,7 +35,7 @@ export default function Settings({ user, onUpdateUser }) {
           <h1>Settings</h1>
           <p>Manage your personal account and workspace preferences.</p>
         </div>
-        <div style={styles.headerActions}>
+        <div className="page-header-actions" style={styles.headerActions}>
           <button style={styles.discardBtn} onClick={() => alert('Changes discarded')}>
             Discard Changes
           </button>
@@ -46,7 +46,7 @@ export default function Settings({ user, onUpdateUser }) {
       </div>
 
       {/* Main Settings Grid */}
-      <div className="settings-split" style={styles.settingsGrid}>
+      <div className="settings-split settings-grid-responsive" style={styles.settingsGrid}>
         
         {/* Left tabs selector */}
         <div className="premium-card settings-menu" style={styles.tabsPanel}>

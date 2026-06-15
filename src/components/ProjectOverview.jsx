@@ -378,7 +378,7 @@ export default function ProjectOverview({
           <div style={styles.tasksActionsRow}>
             <div style={styles.searchContainer}>
               <svg style={styles.searchIcon} viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" placeholder="Search tasks by ID or name..." style={styles.filterSearchInput} />
+              <input type="text" placeholder="Search tasks by ID or name..." className="input-focus" style={styles.filterSearchInput} />
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button className="btn-secondary" onClick={() => onNavigate('my-tasks')}>Kanban Board</button>
@@ -401,7 +401,7 @@ export default function ProjectOverview({
               </thead>
               <tbody>
                 {projectTasks.map((task) => (
-                  <tr key={task.id} style={styles.tableRow}>
+                  <tr key={task.id} className="table-row-hover" style={styles.tableRow}>
                     <td style={styles.tableTdCode}>{task.id}</td>
                     <td style={styles.tableTdDesc}>{task.title}</td>
                     <td style={styles.tableTd}>
@@ -531,7 +531,7 @@ export default function ProjectOverview({
                     {/* Reactions */}
                     <div style={styles.reactionRow}>
                       {Object.entries(comment.reactions).map(([reaction, count]) => (
-                        <button key={reaction} style={styles.reactionBtn}>
+                        <button key={reaction} className="reaction-chip" style={styles.reactionBtn}>
                           {reaction === 'thumb' ? '👍' : '👏'} {count}
                         </button>
                       ))}
@@ -547,6 +547,7 @@ export default function ProjectOverview({
                 placeholder="Write a comment or type @ to mention someone..."
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
+                className="comment-textarea"
                 style={styles.chatTextarea}
               />
               <div style={styles.chatFooterRow}>
@@ -1054,10 +1055,6 @@ const styles = {
     color: '#1A1D20',
     backgroundColor: '#FFFFFF',
     outline: 'none',
-    transition: 'all 0.2s ease',
-    '&:focus': {
-      borderColor: '#5B5FFB',
-    },
   },
   table: {
     width: '100%',
@@ -1078,9 +1075,6 @@ const styles = {
   tableRow: {
     borderBottom: '1px solid #ECEEF4',
     backgroundColor: '#FFFFFF',
-    '&:hover': {
-      backgroundColor: '#FAFCFF',
-    },
   },
   tableTd: {
     padding: '14px 16px',
@@ -1338,11 +1332,6 @@ const styles = {
     padding: '2px 8px',
     cursor: 'pointer',
     color: '#6C7A87',
-    transition: 'all 0.2s ease',
-    '&:hover': {
-      borderColor: '#5B5FFB',
-      color: '#5B5FFB',
-    },
   },
   chatInputForm: {
     borderTop: '1px solid #ECEEF4',
@@ -1359,11 +1348,6 @@ const styles = {
     outline: 'none',
     backgroundColor: '#FAFCFF',
     fontFamily: 'inherit',
-    transition: 'all 0.2s ease',
-    '&:focus': {
-      backgroundColor: '#FFFFFF',
-      borderColor: '#5B5FFB',
-    },
   },
   chatFooterRow: {
     display: 'flex',

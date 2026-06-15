@@ -99,18 +99,18 @@ export default function Auth({ onLoginSuccess }) {
           {/* Social Logins */}
           {!isLogin && (
             <div style={styles.socialRow}>
-              <button type="button" onClick={() => onLoginSuccess({ email: 'google.user@gmail.com', name: 'Google User', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80' })} style={styles.socialBtn}>
+              <button type="button" onClick={() => onLoginSuccess({ email: 'google.user@gmail.com', name: 'Google User', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80' })} className="auth-social-btn" style={styles.socialBtn}>
                 <svg style={styles.socialIcon} viewBox="0 0 24 24" width="18" height="18"><path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.51 14.98 1 12 1 7.35 1 3.37 3.65 1.5 7.5l3.87 3C6.3 7.7 8.94 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58v2.98h3.87c2.26-2.09 3.56-5.17 3.56-8.71z"/><path fill="#FBBC05" d="M5.37 14.5A7.17 7.17 0 0 1 5 12c0-.88.16-1.73.43-2.52L1.57 6.48A11.94 11.94 0 0 0 0 12c0 2.02.5 3.92 1.39 5.61l3.98-3.11z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.87-2.98c-1.08.72-2.47 1.16-4.09 1.16-3.07 0-5.67-2.04-6.6-4.88L1.4 16.48C3.25 20.32 7.31 23 12 23z"/></svg>
                 Google
               </button>
-              <button type="button" onClick={() => onLoginSuccess({ email: 'github.user@github.com', name: 'GitHub User', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80' })} style={styles.socialBtn}>
+              <button type="button" onClick={() => onLoginSuccess({ email: 'github.user@github.com', name: 'GitHub User', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80' })} className="auth-social-btn" style={styles.socialBtn}>
                 <svg style={styles.socialIcon} viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.138 20.164 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
                 GitHub
               </button>
             </div>
           )}
 
-          {isLogin ? null : <div style={styles.divider}><span>OR CONTINUE WITH EMAIL</span></div>}
+          {isLogin ? null : <div className="auth-divider">OR CONTINUE WITH EMAIL</div>}
 
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.inputGroup}>
@@ -122,6 +122,7 @@ export default function Auth({ onLoginSuccess }) {
                   placeholder="name@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="auth-input"
                   style={styles.input}
                 />
               </div>
@@ -139,6 +140,7 @@ export default function Auth({ onLoginSuccess }) {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="auth-input"
                   style={styles.input}
                 />
                 <button
@@ -180,6 +182,7 @@ export default function Auth({ onLoginSuccess }) {
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="auth-input"
                     style={styles.input}
                   />
                 </div>
@@ -212,7 +215,7 @@ export default function Auth({ onLoginSuccess }) {
               </div>
             )}
 
-            <button type="submit" style={styles.submitBtn}>
+            <button type="submit" className="auth-submit-btn" style={styles.submitBtn}>
               {isLogin ? 'Sign In' : 'Get Started'}
               <svg style={{ marginLeft: '6px' }} viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
@@ -220,13 +223,13 @@ export default function Auth({ onLoginSuccess }) {
 
           {isLogin && (
             <>
-              <div style={styles.divider}><span>OR CONTINUE WITH</span></div>
+              <div className="auth-divider">OR CONTINUE WITH</div>
               <div style={styles.socialRow}>
-                <button type="button" onClick={() => onLoginSuccess({ email: 'google.user@gmail.com', name: 'Google User', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80' })} style={styles.socialBtn}>
+                <button type="button" onClick={() => onLoginSuccess({ email: 'google.user@gmail.com', name: 'Google User', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80' })} className="auth-social-btn" style={styles.socialBtn}>
                   <svg style={styles.socialIcon} viewBox="0 0 24 24" width="18" height="18"><path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.51 14.98 1 12 1 7.35 1 3.37 3.65 1.5 7.5l3.87 3C6.3 7.7 8.94 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58v2.98h3.87c2.26-2.09 3.56-5.17 3.56-8.71z"/><path fill="#FBBC05" d="M5.37 14.5A7.17 7.17 0 0 1 5 12c0-.88.16-1.73.43-2.52L1.57 6.48A11.94 11.94 0 0 0 0 12c0 2.02.5 3.92 1.39 5.61l3.98-3.11z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.87-2.98c-1.08.72-2.47 1.16-4.09 1.16-3.07 0-5.67-2.04-6.6-4.88L1.4 16.48C3.25 20.32 7.31 23 12 23z"/></svg>
                   Google
                 </button>
-                <button type="button" onClick={() => onLoginSuccess({ email: 'github.user@github.com', name: 'GitHub User', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80' })} style={styles.socialBtn}>
+                <button type="button" onClick={() => onLoginSuccess({ email: 'github.user@github.com', name: 'GitHub User', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80' })} className="auth-social-btn" style={styles.socialBtn}>
                   <svg style={styles.socialIcon} viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.138 20.164 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
                   GitHub
                 </button>
@@ -400,22 +403,9 @@ const styles = {
     letterSpacing: '0.08em',
     marginBottom: '24px',
     width: '100%',
-    WebkitUserSelect: 'none',
     userSelect: 'none',
-    '&::before': {
-      content: '""',
-      flex: 1,
-      borderBottom: '1px solid #ECEEF4',
-      marginRight: '10px',
-    },
-    '&::after': {
-      content: '""',
-      flex: 1,
-      borderBottom: '1px solid #ECEEF4',
-      marginLeft: '10px',
-    },
-    // Flex-based inline dividers
     justifyContent: 'center',
+    gap: '12px',
   },
   form: {
     width: '100%',

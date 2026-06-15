@@ -65,7 +65,7 @@ export default function Milestones({
       </div>
 
       {/* Overview stats cards */}
-      <div style={styles.statsRow}>
+      <div className="stats-row-responsive" style={styles.statsRow}>
         <div className="premium-card" style={styles.statCard}>
           <div style={styles.statTitle}>TOTAL MILESTONES</div>
           <div style={styles.statVal}>{milestones.length}</div>

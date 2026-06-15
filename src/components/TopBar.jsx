@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function TopBar({
   user,
@@ -14,6 +14,21 @@ export default function TopBar({
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const topBarRef = useRef(null);
+
+  // Click-outside-to-dismiss for all dropdowns
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (topBarRef.current && !topBarRef.current.contains(e.target)) {
+        setShowWorkspaceDropdown(false);
+        setShowNotificationDropdown(false);
+        setShowProfileDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId) || workspaces[0];
 
   const mockNotifications = [
@@ -23,8 +38,8 @@ export default function TopBar({
   ];
 
   return (
-    <header className="topbar-container" style={styles.topBar}>
-      <button onClick={onToggleSidebar} className="hamburger-btn" style={styles.hamburgerBtn}>
+    <header ref={topBarRef} className="topbar-container" style={styles.topBar}>
+      <button onClick={onToggleSidebar} className="hamburger-btn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="3" y1="12" x2="21" y2="12" />
           <line x1="3" y1="6" x2="21" y2="6" />
@@ -40,6 +55,7 @@ export default function TopBar({
             setShowNotificationDropdown(false);
             setShowProfileDropdown(false);
           }}
+          className="topbar-switcher-btn"
           style={styles.switcherBtn}
         >
           <div style={{ ...styles.switcherColorIcon, backgroundColor: activeWorkspace?.color || '#5B5FFB' }}>
@@ -61,6 +77,7 @@ export default function TopBar({
                   onWorkspaceSelect(ws.id);
                   setShowWorkspaceDropdown(false);
                 }}
+                className="topbar-dropdown-item"
                 style={{
                   ...styles.dropdownItem,
                   fontWeight: ws.id === activeWorkspaceId ? '600' : '400',
@@ -79,6 +96,7 @@ export default function TopBar({
                 onOpenNewWorkspaceModal();
                 setShowWorkspaceDropdown(false);
               }}
+              className="topbar-dropdown-action"
               style={styles.dropdownActionItem}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
@@ -95,9 +113,10 @@ export default function TopBar({
         <svg style={styles.searchIcon} viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input
           type="text"
-          placeholder="Search projects, tasks, or team members..."
+          placeholder="Search..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          className="topbar-search-input"
           style={styles.searchInput}
         />
       </div>
@@ -105,7 +124,7 @@ export default function TopBar({
       {/* Right Tools */}
       <div className="topbar-tools-container" style={styles.toolsContainer}>
         {/* AI status indicator */}
-        <div style={styles.aiStatus}>
+        <div className="topbar-ai-status" style={styles.aiStatus}>
           <span className="pulse-dot" />
           <span style={styles.aiStatusText}>AI: ACTIVE</span>
         </div>
@@ -118,6 +137,7 @@ export default function TopBar({
               setShowWorkspaceDropdown(false);
               setShowProfileDropdown(false);
             }}
+            className="topbar-icon-btn"
             style={styles.iconBtn}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -128,10 +148,10 @@ export default function TopBar({
           </button>
 
           {showNotificationDropdown && (
-            <div style={styles.notificationDropdown}>
+            <div className="notification-dropdown-responsive" style={styles.notificationDropdown}>
               <div style={styles.dropdownHeader}>Workspace Notifications</div>
               {mockNotifications.map((notif) => (
-                <div key={notif.id} style={styles.notificationItem}>
+                <div key={notif.id} className="topbar-notif-item" style={styles.notificationItem}>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <div style={{
                       ...styles.notifDot,
@@ -182,9 +202,6 @@ const styles = {
     zIndex: 10,
     position: 'relative',
   },
-  hamburgerBtn: {
-    display: 'none',
-  },
   switcherContainer: {
     position: 'relative',
   },
@@ -196,10 +213,6 @@ const styles = {
     cursor: 'pointer',
     padding: '6px 8px',
     borderRadius: '8px',
-    transition: 'background-color 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#F8F9FD',
-    },
   },
   switcherColorIcon: {
     width: '28px',
@@ -261,10 +274,6 @@ const styles = {
     fontSize: '14px',
     color: '#1A1D20',
     cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#F8F9FD',
-    },
   },
   dropdownDivider: {
     height: '1px',
@@ -283,10 +292,6 @@ const styles = {
     color: '#5B5FFB',
     fontWeight: '600',
     cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#F0F2FF',
-    },
   },
   searchContainer: {
     position: 'relative',
@@ -308,12 +313,6 @@ const styles = {
     fontSize: '13px',
     color: '#1A1D20',
     backgroundColor: '#F8F9FD',
-    outline: 'none',
-    transition: 'all 0.2s ease',
-    '&:focus': {
-      backgroundColor: '#FFFFFF',
-      borderColor: '#5B5FFB',
-    },
   },
   toolsContainer: {
     display: 'flex',
@@ -348,12 +347,7 @@ const styles = {
     justifyContent: 'center',
     padding: '6px',
     borderRadius: '50%',
-    transition: 'all 0.2s ease',
     position: 'relative',
-    '&:hover': {
-      backgroundColor: '#F8F9FD',
-      color: '#1A1D20',
-    },
   },
   bellBadge: {
     position: 'absolute',
@@ -385,14 +379,7 @@ const styles = {
   notificationItem: {
     padding: '12px 16px',
     borderBottom: '1px solid #FAFCFF',
-    '&:last-child': {
-      borderBottom: 'none',
-    },
     cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#F8F9FD',
-    },
   },
   notifDot: {
     width: '8px',

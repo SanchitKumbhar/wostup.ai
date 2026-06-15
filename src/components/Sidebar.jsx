@@ -98,10 +98,8 @@ export default function Sidebar({ isOpen, onClose, currentScreen, onNavigate, on
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              style={{
-                ...styles.navItem,
-                ...(isActive ? styles.navItemActive : {}),
-              }}
+              className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
+              style={styles.navItem}
             >
               <span style={{
                 ...styles.navIcon,
@@ -121,14 +119,14 @@ export default function Sidebar({ isOpen, onClose, currentScreen, onNavigate, on
       </nav>
 
       {/* Pro upgrade card */}
-      <div style={styles.upgradeCard}>
+      <div className="sidebar-upgrade-card" style={styles.upgradeCard}>
         <div style={styles.upgradeHeader}>PRO PLAN</div>
         <div style={styles.upgradeBody}>Upgrade for advanced health analytics.</div>
-        <button style={styles.upgradeBtn} onClick={() => alert('Billing module simulated.')}>Upgrade Now</button>
+        <button className="sidebar-upgrade-btn" style={styles.upgradeBtn} onClick={() => alert('Billing module simulated.')}>Upgrade Now</button>
       </div>
 
-      {/* Logout / User Info */}
-      <button onClick={onLogout} style={styles.logoutBtn}>
+      {/* Logout */}
+      <button onClick={onLogout} className="sidebar-logout-btn" style={styles.logoutBtn}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
           <polyline points="16 17 21 12 16 7" />
@@ -142,7 +140,7 @@ export default function Sidebar({ isOpen, onClose, currentScreen, onNavigate, on
 
 const styles = {
   sidebar: {
-    width: '240px',
+    width: '260px',
     backgroundColor: '#FFFFFF',
     borderRight: '1px solid #ECEEF4',
     display: 'flex',
@@ -165,7 +163,7 @@ const styles = {
     cursor: 'pointer',
     color: '#6C7A87',
     padding: '4px',
-    display: 'none',
+    marginLeft: 'auto',
   },
   logoIcon: {
     display: 'flex',
@@ -200,13 +198,6 @@ const styles = {
     fontSize: '14px',
     fontWeight: '500',
     color: '#6C7A87',
-    transition: 'all 0.2s ease',
-    position: 'relative',
-  },
-  navItemActive: {
-    backgroundColor: '#F0F2FF',
-    color: '#5B5FFB',
-    fontWeight: '600',
   },
   navIcon: {
     marginRight: '12px',
@@ -224,12 +215,12 @@ const styles = {
     justifyContent: 'center',
   },
   upgradeCard: {
-    background: '#F8F9FD',
-    border: '1px solid #ECEEF4',
     borderRadius: '14px',
     padding: '16px',
     marginBottom: '16px',
     marginTop: '20px',
+    position: 'relative',
+    zIndex: 1,
   },
   upgradeHeader: {
     fontSize: '10px',
@@ -237,12 +228,16 @@ const styles = {
     color: '#5B5FFB',
     letterSpacing: '0.08em',
     marginBottom: '4px',
+    position: 'relative',
+    zIndex: 2,
   },
   upgradeBody: {
     fontSize: '12px',
     color: '#6C7A87',
     lineHeight: '1.4',
     marginBottom: '12px',
+    position: 'relative',
+    zIndex: 2,
   },
   upgradeBtn: {
     width: '100%',
@@ -254,12 +249,8 @@ const styles = {
     fontWeight: '600',
     color: '#1A1D20',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#F0F2FF',
-      borderColor: '#5B5FFB',
-      color: '#5B5FFB',
-    },
+    position: 'relative',
+    zIndex: 2,
   },
   logoutBtn: {
     display: 'flex',
@@ -275,10 +266,5 @@ const styles = {
     fontSize: '14px',
     fontWeight: '500',
     color: '#6C7A87',
-    transition: 'all 0.2s ease',
-    '&:hover': {
-      backgroundColor: '#FFE5E5',
-      color: '#C53030',
-    },
   },
 };

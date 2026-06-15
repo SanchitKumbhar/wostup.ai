@@ -50,7 +50,7 @@ export default function TaskHealth({ onOptimizeLoad }) {
           <h1>Task Health Dashboard</h1>
           <p>Monitor risks, delays, and velocity across all workspace projects.</p>
         </div>
-        <div style={styles.headerActions}>
+        <div className="page-header-actions" style={styles.headerActions}>
           <button style={styles.actionBtn} onClick={() => alert('Filtering options...')}>Filters</button>
           <button style={styles.actionBtn} onClick={() => alert('History graphs...')}>Health History</button>
           <button className="btn-gradient" onClick={() => alert('New task creation...')}>+ New Task</button>
@@ -58,7 +58,7 @@ export default function TaskHealth({ onOptimizeLoad }) {
       </div>
 
       {/* Health KPIs Row */}
-      <div style={styles.kpiRow}>
+      <div className="stats-row-responsive" style={styles.kpiRow}>
         <div className="premium-card" style={styles.kpiCard}>
           <div style={styles.kpiHeader}>
             <span style={styles.kpiTitle}>TOTAL TASKS</span>
@@ -147,7 +147,7 @@ export default function TaskHealth({ onOptimizeLoad }) {
 
       {/* Large AI Alert Banner */}
       {showNotice && (
-        <div style={styles.aiAlertBanner}>
+        <div className="ai-alert-banner-responsive" style={styles.aiAlertBanner}>
           <div style={styles.alertLeft}>
             <span style={styles.alertIcon}>🤖</span>
             <div style={styles.alertMeta}>
@@ -157,7 +157,7 @@ export default function TaskHealth({ onOptimizeLoad }) {
               </div>
             </div>
           </div>
-          <button style={styles.alertCTA} onClick={handleOptimizeLoad}>
+          <button className="alert-cta-responsive" style={styles.alertCTA} onClick={handleOptimizeLoad}>
             Optimize Load
           </button>
         </div>
