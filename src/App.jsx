@@ -9,8 +9,6 @@ import Tasks from './components/Tasks';
 import Milestones from './components/Milestones';
 import TeamLoad from './components/TeamLoad';
 import TaskHealth from './components/TaskHealth';
-import AIAssistant from './components/AIAssistant';
-import AutonomousMonitoring from './components/AutonomousMonitoring';
 import Settings from './components/Settings';
 import WorkspaceSelector from './components/WorkspaceSelector';
 
@@ -31,6 +29,7 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState('dashboard');
   const [selectedProject, setSelectedProject] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   // Projects State
   const [projects, setProjects] = useState([
@@ -161,8 +160,12 @@ export default function App() {
   ];
 
   // Callbacks
-  const handleLoginSuccess = (sessionUser) => {
+  const handleLoginSuccess = (sessionUser, newUser = false) => {
     setUser(sessionUser);
+    if (newUser) {
+      setIsNewUser(true);
+      // Don't block — let user see dashboard, show a banner instead
+    }
   };
 
   const handleLogout = () => {
@@ -233,9 +236,41 @@ export default function App() {
   }
 
   return (
-    <div className="app-container">
+    <div className="app-container" style={{ paddingTop: isNewUser ? '60px' : '0' }}>
       {/* Sidebar mobile overlay */}
       <div className={`sidebar-overlay ${isSidebarOpen ? 'active' : ''}`} onClick={() => setIsSidebarOpen(false)}></div>
+
+      {/* New user onboarding banner — visible without blocking the dashboard */}
+      {isNewUser && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
+          background: 'linear-gradient(135deg, #5B5FFB 0%, #B24DFF 100%)',
+          color: '#FFF', padding: '12px 24px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: '16px', flexWrap: 'wrap', boxShadow: '0 2px 12px rgba(91,95,251,0.3)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '18px' }}>🎉</span>
+            <span style={{ fontSize: '14px', fontWeight: '500' }}>
+              Welcome to Wostup! You're exploring the dashboard — set up your first workspace to get started.
+            </span>
+          </div>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
+            <button
+              onClick={() => setIsWorkspaceModalOpen(true)}
+              style={{ background: '#FFFFFF', color: '#5B5FFB', border: 'none', borderRadius: '8px', padding: '8px 18px', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}
+            >
+              Create Workspace
+            </button>
+            <button
+              onClick={() => setIsNewUser(false)}
+              style={{ background: 'rgba(255,255,255,0.2)', color: '#FFF', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', padding: '8px 14px', fontSize: '13px', cursor: 'pointer', fontWeight: '500' }}
+            >
+              Maybe Later
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Persistent Left Sidebar */}
       <Sidebar
@@ -328,12 +363,6 @@ export default function App() {
                 projects={projects}
                 onOptimizeLoad={handleOptimizeLoad}
               />
-            )}
-            {currentScreen === 'ai-assistant' && (
-              <AIAssistant />
-            )}
-            {currentScreen === 'autonomous-monitoring' && (
-              <AutonomousMonitoring />
             )}
             {currentScreen === 'settings' && (
               <Settings

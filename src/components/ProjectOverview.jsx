@@ -12,6 +12,25 @@ export default function ProjectOverview({
 }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  // Invite Stakeholder form
+  const [inviteName, setInviteName] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('Viewer');
+  const [inviteMessage, setInviteMessage] = useState('');
+
+  // Add Task (from ProjectOverview Tasks tab)
+  const [poTaskTitle, setPoTaskTitle] = useState('');
+  const [poTaskAssignee, setPoTaskAssignee] = useState('Sarah Chen');
+  const [poTaskPriority, setPoTaskPriority] = useState('Medium');
+  const [poTaskDueDate, setPoTaskDueDate] = useState('');
+
+  // Local members list (for invite)
+  const [localMembers, setLocalMembers] = useState(project.members || []);
 
   // Form states
   const [inlineTaskDesc, setInlineTaskDesc] = useState('');
@@ -51,6 +70,50 @@ export default function ProjectOverview({
     setComments([...comments, newComment]);
     setCommentText('');
     if (onAddComment) onAddComment(project.id, newComment);
+  };
+
+  const handleInviteStakeholder = (e) => {
+    e.preventDefault();
+    if (!inviteName.trim() || !inviteEmail.trim()) return;
+    setLocalMembers(prev => [...prev, {
+      name: inviteName,
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
+      role: inviteRole,
+    }]);
+    setInviteName(''); setInviteEmail(''); setInviteMessage('');
+    setIsInviteModalOpen(false);
+    alert(`Invite sent to ${inviteEmail} as ${inviteRole}`);
+  };
+
+  const handleCopyShareLink = () => {
+    const link = `https://wostup.ai/projects/${project.id}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(link);
+    }
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2500);
+  };
+
+  const handleAddProjectTask = (e) => {
+    e.preventDefault();
+    if (!poTaskTitle.trim() || !poTaskDueDate) return;
+    const newT = {
+      id: `TSK-${Math.floor(100 + Math.random() * 900)}`,
+      projectId: project.id,
+      title: poTaskTitle,
+      assignee: poTaskAssignee,
+      avatar: poTaskAssignee === 'Sarah Chen'
+        ? 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80'
+        : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+      status: 'Todo',
+      dueDate: new Date(poTaskDueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      priority: poTaskPriority,
+      progress: 0,
+      commentsCount: 0,
+    };
+    onAddTask(newT);
+    setPoTaskTitle(''); setPoTaskDueDate('');
+    setIsAddTaskModalOpen(false);
   };
 
   const handleCreateMilestone = (e) => {
@@ -134,9 +197,9 @@ export default function ProjectOverview({
       </div>
 
       {/* Project Banner Header */}
-      <div style={styles.projectHeader}>
+      <div className="project-header-responsive" style={styles.projectHeader}>
         <div>
-          <div style={styles.projectMetaRow}>
+          <div className="project-meta-row-responsive" style={styles.projectMetaRow}>
             <span style={styles.projectCode}>{project.id}</span>
             <span className={`badge ${getStatusBadgeStyle(project.status)}`}>{project.status}</span>
             <span style={styles.metaLabel}>{project.dueDate}</span>
@@ -147,7 +210,7 @@ export default function ProjectOverview({
         </div>
 
         {/* Project Owner Section */}
-        <div style={styles.ownerBox}>
+        <div className="project-owner-box" style={styles.ownerBox}>
           <div style={styles.ownerTitle}>PROJECT OWNER</div>
           <div style={styles.ownerMeta}>
             <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Owner" style={styles.ownerAvatar} />
@@ -160,8 +223,8 @@ export default function ProjectOverview({
             <button className="btn-gradient" style={{ flex: 1, padding: '8px 12px', fontSize: '12px' }} onClick={() => setActiveTab('tasks')}>
               + Add Task
             </button>
-            <button className="btn-secondary" style={{ padding: '8px' }} onClick={() => alert('Invite Link Copied!')}>
-              Share
+            <button className="btn-secondary" style={{ padding: '8px 12px', fontSize: '12px' }} onClick={() => setIsShareModalOpen(true)}>
+              🔗 Share
             </button>
           </div>
         </div>
@@ -307,20 +370,20 @@ export default function ProjectOverview({
             <div className="premium-card" style={styles.panelCard}>
               <div style={styles.panelTitleRow}>
                 <h3 style={styles.cardTitle}>Project Team</h3>
-                <button style={styles.linkTextBtn} onClick={() => alert('Assignee manager simulated.')}>Manage</button>
+                <button style={styles.linkTextBtn} onClick={() => setIsInviteModalOpen(true)}>Invite</button>
               </div>
               <div style={styles.teamList}>
-                {project.members.map((member, i) => (
+                {localMembers.map((member, i) => (
                   <div key={i} style={styles.teamMemberRow}>
                     <img src={member.avatar} alt={member.name} style={styles.memberAvatarMedium} />
                     <div>
                       <div style={styles.memberName}>{member.name}</div>
-                      <div style={styles.memberRole}>{i === 0 ? 'Project Manager' : 'Developer'}</div>
+                      <div style={styles.memberRole}>{member.role || (i === 0 ? 'Project Manager' : 'Developer')}</div>
                     </div>
                   </div>
                 ))}
               </div>
-              <button className="btn-secondary" style={{ width: '100%', marginTop: '16px' }} onClick={() => alert('Stakeholder invitations simulated.')}>
+              <button className="btn-secondary" style={{ width: '100%', marginTop: '16px' }} onClick={() => setIsInviteModalOpen(true)}>
                 + Invite Stakeholder
               </button>
             </div>
@@ -375,12 +438,13 @@ export default function ProjectOverview({
           </div>
 
           {/* Filters Row */}
-          <div style={styles.tasksActionsRow}>
+          <div className="tasks-actions-row-responsive" style={styles.tasksActionsRow}>
             <div style={styles.searchContainer}>
               <svg style={styles.searchIcon} viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input type="text" placeholder="Search tasks by ID or name..." className="input-focus" style={styles.filterSearchInput} />
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
+              <button className="btn-gradient" style={{ fontSize: '13px', padding: '8px 14px' }} onClick={() => setIsAddTaskModalOpen(true)}>+ Add Task</button>
               <button className="btn-secondary" onClick={() => onNavigate('my-tasks')}>Kanban Board</button>
             </div>
           </div>
@@ -688,6 +752,135 @@ export default function ProjectOverview({
                 <button type="submit" className="btn-gradient">
                   Create Milestone
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── INVITE STAKEHOLDER MODAL ── */}
+      {isInviteModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '440px' }}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>Invite Stakeholder</h2>
+              <p style={{ fontSize: '13px', color: '#6C7A87', marginTop: '4px' }}>Grant access to this project and notify via email.</p>
+              <button style={styles.modalCloseBtn} onClick={() => setIsInviteModalOpen(false)}>×</button>
+            </div>
+            <form onSubmit={handleInviteStakeholder} style={styles.modalForm}>
+              <div className="form-group">
+                <label className="form-label">Full Name *</label>
+                <input type="text" className="form-input" placeholder="e.g. Jordan Smith" value={inviteName} onChange={(e) => setInviteName(e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Email Address *</label>
+                <input type="email" className="form-input" placeholder="jordan@company.com" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Role / Permission</label>
+                <select className="form-input form-select" value={inviteRole} onChange={(e) => setInviteRole(e.target.value)}>
+                  <option value="Viewer">Viewer — Read-only access</option>
+                  <option value="Editor">Editor — Can create and edit tasks</option>
+                  <option value="Admin">Admin — Full project access</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Personal Message (optional)</label>
+                <textarea className="form-input" style={{ minHeight: '70px', resize: 'vertical' }} placeholder="Add a note to your invite email..." value={inviteMessage} onChange={(e) => setInviteMessage(e.target.value)} />
+              </div>
+              <div style={styles.modalActions}>
+                <button type="button" onClick={() => setIsInviteModalOpen(false)} style={styles.discardBtn}>Cancel</button>
+                <button type="submit" className="btn-gradient">Send Invite</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── SHARE PROJECT MODAL ── */}
+      {isShareModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '440px' }}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>Share Project</h2>
+              <p style={{ fontSize: '13px', color: '#6C7A87', marginTop: '4px' }}>Share a link or invite someone by email.</p>
+              <button style={styles.modalCloseBtn} onClick={() => setIsShareModalOpen(false)}>×</button>
+            </div>
+            <div style={styles.modalForm}>
+              <div className="form-group">
+                <label className="form-label">Project Link</label>
+                <div className="share-link-container">
+                  <input
+                    readOnly
+                    className="share-link-input"
+                    value={`https://wostup.ai/projects/${project.id}`}
+                  />
+                  <button
+                    className={`share-copy-btn ${linkCopied ? 'copied' : ''}`}
+                    onClick={handleCopyShareLink}
+                  >
+                    {linkCopied ? (
+                      <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!</>
+                    ) : (
+                      <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Link</>
+                    )}
+                  </button>
+                </div>
+              </div>
+              <div style={{ height: '1px', background: '#ECEEF4', margin: '16px 0' }} />
+              <div className="form-group">
+                <label className="form-label">Invite by Email</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input type="email" className="form-input" placeholder="teammate@company.com" style={{ flex: 1 }} />
+                  <button type="button" className="btn-gradient" style={{ whiteSpace: 'nowrap', padding: '10px 16px', fontSize: '13px' }} onClick={() => alert('Invite sent!')}>Send</button>
+                </div>
+              </div>
+              <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button style={styles.discardBtn} onClick={() => setIsShareModalOpen(false)}>Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── ADD TASK MODAL (from Tasks tab) ── */}
+      {isAddTaskModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '460px' }}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>Add Task to Project</h2>
+              <button style={styles.modalCloseBtn} onClick={() => setIsAddTaskModalOpen(false)}>×</button>
+            </div>
+            <form onSubmit={handleAddProjectTask} style={styles.modalForm}>
+              <div className="form-group">
+                <label className="form-label">Task Title *</label>
+                <input type="text" className="form-input" placeholder="e.g. Finalize API endpoints" value={poTaskTitle} onChange={(e) => setPoTaskTitle(e.target.value)} required />
+              </div>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Assignee</label>
+                  <select className="form-input form-select" value={poTaskAssignee} onChange={(e) => setPoTaskAssignee(e.target.value)}>
+                    <option value="Sarah Chen">Sarah Chen</option>
+                    <option value="Alex Rivers">Alex Rivers</option>
+                    <option value="Jordan Smith">Jordan Smith</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Priority</label>
+                  <select className="form-input form-select" value={poTaskPriority} onChange={(e) => setPoTaskPriority(e.target.value)}>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Due Date *</label>
+                <input type="date" className="form-input" value={poTaskDueDate} onChange={(e) => setPoTaskDueDate(e.target.value)} required />
+              </div>
+              <div style={styles.modalActions}>
+                <button type="button" onClick={() => setIsAddTaskModalOpen(false)} style={styles.discardBtn}>Cancel</button>
+                <button type="submit" className="btn-gradient">Create Task</button>
               </div>
             </form>
           </div>

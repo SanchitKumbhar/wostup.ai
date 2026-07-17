@@ -9,19 +9,25 @@ export default function TeamLoad({ onAdjustCapacity }) {
     { id: 5, name: 'Elena Sokolov', role: 'Frontend Dev', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80', tasks: 7, score: '3.8/5.0', status: 'Optimal' },
   ]);
 
-  const handleAdjustCapacityClick = () => {
-    alert('Simulating auto-reassignment of tasks to balance workload...');
-    // Decrease the workload of critical members slightly to show interaction
-    setRegistryMembers(prev => prev.map(m => {
-      if (m.name === 'Sarah Chen') {
-        return { ...m, tasks: 9, score: '3.9/5.0', status: 'Optimal' };
-      }
-      if (m.name === 'James Wilson') {
-        return { ...m, tasks: 6, score: '3.4/5.0', status: 'Optimal' };
-      }
-      return m;
-    }));
-    if (onAdjustCapacity) onAdjustCapacity();
+  const handleDownloadReport = () => {
+    const headers = ['Name', 'Role', 'Tasks', 'Utilization Score', 'Status'];
+    const rows = registryMembers.map(m => [
+      `"${m.name}"`,
+      `"${m.role}"`,
+      m.tasks,
+      `"${m.score}"`,
+      `"${m.status}"`
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `team_load_report_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const getStatusBadgeStyle = (status) => {
@@ -42,13 +48,18 @@ export default function TeamLoad({ onAdjustCapacity }) {
           <p>Real-time resource capacity and workload distribution analytics.</p>
         </div>
         <div className="page-header-actions" style={styles.headerActions}>
-          <select style={styles.timeSelect}>
+          <select className="form-input form-select" style={{ fontSize: '13px', padding: '8px 36px 8px 12px', width: 'auto' }}>
             <option>Last 30 Days</option>
             <option>Last 14 Days</option>
             <option>Current Sprint</option>
           </select>
-          <button className="btn-gradient" onClick={handleAdjustCapacityClick}>
-            Adjust Capacity
+          <button className="btn-gradient download-report-btn" onClick={handleDownloadReport}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Download Report
           </button>
         </div>
       </div>

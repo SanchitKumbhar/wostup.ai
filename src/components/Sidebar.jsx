@@ -21,12 +21,6 @@ export default function Sidebar({ isOpen, onClose, currentScreen, onNavigate, on
         <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
       </svg>
     )},
-    { id: 'milestones', label: 'Milestones', icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="5 4 15 9 5 14 5 20" />
-        <line x1="5" y1="4" x2="5" y2="20" />
-      </svg>
-    )},
     { id: 'team-load', label: 'Team Load', icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -40,23 +34,7 @@ export default function Sidebar({ isOpen, onClose, currentScreen, onNavigate, on
         <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
       </svg>
     )},
-    { id: 'ai-assistant', label: 'AI Assistant', icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        <circle cx="12" cy="10" r="1.5" />
-        <circle cx="8" cy="10" r="1.5" />
-        <circle cx="16" cy="10" r="1.5" />
-      </svg>
-    )},
-    { id: 'autonomous-monitoring', label: 'AI Engine Ops', icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="6" y1="3" x2="6" y2="12" />
-        <line x1="18" y1="12" x2="18" y2="21" />
-        <circle cx="6" cy="12" r="3" />
-        <circle cx="18" cy="12" r="3" />
-        <line x1="6" y1="15" x2="18" y2="9" />
-      </svg>
-    )},
+
     { id: 'settings', label: 'Settings', icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="3" />

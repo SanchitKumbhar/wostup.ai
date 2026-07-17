@@ -130,7 +130,7 @@ export default function Tasks({
 
         <div style={styles.rightActions}>
           <span style={{ fontSize: '13px', color: '#6C7A87', fontWeight: '500' }}>Sort by:</span>
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={styles.sortSelect}>
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="form-input form-select" style={{ fontSize: '13px', padding: '6px 36px 6px 10px', width: 'auto' }}>
             <option value="Priority">Priority</option>
             <option value="Due Date">Due Date</option>
           </select>

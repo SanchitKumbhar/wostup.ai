@@ -56,7 +56,7 @@ export default function Auth({ onLoginSuccess }) {
       email,
       name: email.split('@')[0].replace('.', ' '),
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-    });
+    }, !isLogin); // Pass true for new signup
   };
 
   return (
@@ -267,12 +267,16 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     minHeight: '100vh',
-    width: '100vw',
+    width: '100%',
     backgroundColor: '#F8F9FD',
     position: 'relative',
-    overflow: 'hidden',
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    paddingTop: 'max(40px, 6vh)',
+    paddingBottom: '60px',
+    boxSizing: 'border-box',
   },
   bgGlow1: {
     position: 'absolute',
@@ -301,7 +305,8 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    padding: '0 20px',
+    padding: '0 16px',
+    boxSizing: 'border-box',
   },
   brandHeader: {
     display: 'flex',
@@ -334,15 +339,16 @@ const styles = {
   },
   formCard: {
     width: '100%',
-    background: 'rgba(255, 255, 255, 0.8)',
+    background: 'rgba(255, 255, 255, 0.9)',
     backdropFilter: 'blur(16px)',
     WebkitBackdropFilter: 'blur(16px)',
     border: '1px solid rgba(255, 255, 255, 0.5)',
     borderRadius: '20px',
     boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.04), 0 4px 12px 0 rgba(0, 0, 0, 0.01)',
-    padding: '40px',
+    padding: 'clamp(24px, 5vw, 40px)',
     display: 'flex',
     flexDirection: 'column',
+    boxSizing: 'border-box',
   },
   formTitle: {
     fontSize: '24px',
@@ -529,14 +535,15 @@ const styles = {
     fontWeight: '600',
   },
   footerLinks: {
-    position: 'absolute',
-    bottom: '24px',
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
     fontSize: '12px',
     color: '#9AA6B2',
-    zIndex: 10,
+    marginTop: '28px',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    paddingBottom: '8px',
   },
   footerLink: {
     color: '#9AA6B2',

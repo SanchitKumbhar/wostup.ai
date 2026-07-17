@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function TaskHealth({ onOptimizeLoad }) {
+export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects }) {
   const [localTasks, setLocalTasks] = useState([
     { id: 'T-10', title: 'Refactor Auth Service', project: 'P-12', priority: 'High', due: 'Oct 24', status: 'Not Started', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80' },
     { id: 'T-11', title: 'Update Documentation', project: 'P-5', priority: 'Low', due: 'Oct 28', status: 'Not Started', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80' },
@@ -15,6 +15,7 @@ export default function TaskHealth({ onOptimizeLoad }) {
   const [atRiskCount, setAtRiskCount] = useState(8);
   const [onTrackCount, setOnTrackCount] = useState(96);
   const [showNotice, setShowNotice] = useState(true);
+  const [selectedProjectFilter, setSelectedProjectFilter] = useState('all');
 
   const handleOptimizeLoad = () => {
     alert('Wostup Autonomous Engine: Rescheduled timeline overlaps. Tasks rebalanced.');
@@ -42,6 +43,11 @@ export default function TaskHealth({ onOptimizeLoad }) {
 
   const columns = ['Not Started', 'In Progress', 'At Risk', 'Completed'];
 
+  // Filter tasks by selected project
+  const filteredTasks = selectedProjectFilter === 'all'
+    ? localTasks
+    : localTasks.filter(t => t.project === selectedProjectFilter);
+
   return (
     <div className="page-body" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)' }}>
       {/* Page Header */}
@@ -53,7 +59,19 @@ export default function TaskHealth({ onOptimizeLoad }) {
         <div className="page-header-actions" style={styles.headerActions}>
           <button style={styles.actionBtn} onClick={() => alert('Filtering options...')}>Filters</button>
           <button style={styles.actionBtn} onClick={() => alert('History graphs...')}>Health History</button>
-          <button className="btn-gradient" onClick={() => alert('New task creation...')}>+ New Task</button>
+          {projects && projects.length > 0 && (
+            <select
+              className="form-input form-select"
+              style={{ fontSize: '13px', padding: '8px 36px 8px 12px', width: 'auto' }}
+              value={selectedProjectFilter}
+              onChange={(e) => setSelectedProjectFilter(e.target.value)}
+            >
+              <option value="all">All Projects</option>
+              {projects.map(proj => (
+                <option key={proj.id} value={proj.id}>{proj.name}</option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
 
@@ -104,7 +122,7 @@ export default function TaskHealth({ onOptimizeLoad }) {
       <div style={styles.boardWrapper}>
         <div className="columns-grid" style={styles.columnsGrid}>
           {columns.map((col) => {
-            const colTasks = localTasks.filter(t => t.status === col);
+            const colTasks = filteredTasks.filter(t => t.status === col);
             return (
               <div key={col} className="health-column" style={styles.healthColumn}>
                 <div style={styles.columnHeader}>

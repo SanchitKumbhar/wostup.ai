@@ -41,6 +41,43 @@ export default function Dashboard({
   const inProgressTasks = tasks.filter(t => t.status === 'In Progress').length;
   const reviewTasks = tasks.filter(t => t.status === 'Review').length;
 
+  // Empty state — shown after signup or when workspace is blank
+  if (totalProjects === 0) {
+    return (
+      <div className="page-body">
+        <div className="page-header">
+          <div className="page-title-group">
+            <h1>Dashboard</h1>
+            <p>Welcome, {user?.name || 'there'}! Let's get your workspace set up.</p>
+          </div>
+        </div>
+        <div className="dashboard-empty-state">
+          <div className="dashboard-empty-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#5B5FFB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+          </div>
+          <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#1A1D20', marginBottom: '8px' }}>
+            Your workspace is empty
+          </h2>
+          <p style={{ fontSize: '14px', color: '#6C7A87', maxWidth: '380px', lineHeight: '1.6', marginBottom: '28px' }}>
+            Create your first project to start tracking tasks, milestones, and team progress — all in one place.
+          </p>
+          <button className="btn-gradient" style={{ padding: '14px 32px', fontSize: '15px', fontWeight: '600' }} onClick={onOpenNewProjectModal}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px', verticalAlign: 'middle' }}>
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Create First Project
+          </button>
+          <p style={{ fontSize: '12px', color: '#9AA6B2', marginTop: '12px' }}>
+            Or use the sidebar to explore features while your team gets set up.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page-body">
       {/* Page Header */}

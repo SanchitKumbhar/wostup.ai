@@ -91,7 +91,7 @@ export default function Milestones({
           {milestones.map((ms, idx) => {
             const proj = projects.find(p => p.id === ms.projectId);
             return (
-              <div key={ms.id} style={styles.timelineItem}>
+              <div key={ms.id} style={{ ...styles.timelineItem, marginBottom: idx === milestones.length - 1 ? 0 : '28px' }}>
                 <div style={styles.timelineLeft}>
                   <div style={styles.timelineDot} />
                   {idx < milestones.length - 1 && <div style={styles.timelineLine} />}
@@ -264,9 +264,6 @@ const styles = {
     gap: '24px',
     marginBottom: '28px',
     position: 'relative',
-    '&:last-child': {
-      marginBottom: 0,
-    },
   },
   timelineLeft: {
     display: 'flex',
