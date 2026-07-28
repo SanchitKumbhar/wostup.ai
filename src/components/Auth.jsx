@@ -60,7 +60,7 @@ export default function Auth({ onLoginSuccess }) {
   };
 
   return (
-    <div style={styles.authWrapper}>
+    <div className="auth-wrapper" style={styles.authWrapper}>
       {/* Background patterns */}
       <div style={styles.bgGlow1}></div>
       <div style={styles.bgGlow2}></div>
@@ -94,7 +94,21 @@ export default function Auth({ onLoginSuccess }) {
               : 'Join the futuristic workspace for team collaboration.'}
           </p>
 
-          {error && <div style={styles.errorMessage}>{error}</div>}
+          {/* Quick demo credentials fill pill for smooth testing */}
+          {isLogin && (
+            <div style={styles.demoPillContainer}>
+              <button
+                type="button"
+                onClick={() => { setEmail('admin@local.test'); setPassword('password123'); }}
+                className="auth-demo-pill"
+                style={styles.demoPill}
+              >
+                ⚡ Quick Fill Demo Admin
+              </button>
+            </div>
+          )}
+
+          {error && <div className="auth-error-animate" style={styles.errorMessage}>{error}</div>}
 
           {/* Social Logins */}
           {!isLogin && (
@@ -365,14 +379,35 @@ const styles = {
     lineHeight: '1.4',
   },
   errorMessage: {
-    backgroundColor: '#FFE5E5',
+    backgroundColor: 'rgba(254, 226, 226, 0.85)',
     color: '#C53030',
     padding: '10px 14px',
     borderRadius: '8px',
     fontSize: '13px',
     fontWeight: '500',
     marginBottom: '20px',
-    border: '1px solid rgba(197, 48, 48, 0.15)',
+    border: '1px solid rgba(197, 48, 48, 0.2)',
+    backdropFilter: 'blur(8px)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  demoPillContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: '16px',
+  },
+  demoPill: {
+    background: 'rgba(91, 95, 251, 0.08)',
+    border: '1px solid rgba(91, 95, 251, 0.2)',
+    color: '#5B5FFB',
+    fontSize: '11px',
+    fontWeight: '600',
+    padding: '4px 10px',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    fontFamily: "'Inter', sans-serif",
   },
   socialRow: {
     display: 'flex',

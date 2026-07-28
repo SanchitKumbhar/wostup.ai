@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Landing from './components/Landing';
 import Auth from './components/Auth';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
@@ -30,6 +31,7 @@ export default function App() {
   const [selectedProject, setSelectedProject] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
+  const [showLanding, setShowLanding] = useState(true);
 
   // Projects State
   const [projects, setProjects] = useState([
@@ -230,8 +232,11 @@ export default function App() {
     setAiRecommendations(prev => prev.filter(rec => rec.id !== 'rec-1' && rec.id !== 'rec-2'));
   };
 
-  // If not logged in, render login flow
+  // If not logged in, render landing or auth
   if (!user) {
+    if (showLanding) {
+      return <Landing onLogin={() => setShowLanding(false)} />;
+    }
     return <Auth onLoginSuccess={handleLoginSuccess} />;
   }
 
