@@ -12,6 +12,9 @@ export default function Projects({
   // Create Project Form State
   const [projectName, setProjectName] = useState('');
   const [projectClient, setProjectClient] = useState('');
+  const [projectKey, setProjectKey] = useState('');
+  const [template, setTemplate] = useState('Scrum');
+  const [privacy, setPrivacy] = useState('Public Workspace');
   const [initialStatus, setInitialStatus] = useState('Active');
   const [priority, setPriority] = useState('Medium');
   const [targetCompletion, setTargetCompletion] = useState('');
@@ -51,11 +54,18 @@ export default function Projects({
       setError('Please fill out all required fields.');
       return;
     }
+    if (!projectKey.trim() || projectKey.length < 2 || projectKey.length > 4) {
+      setError('Project Key must be 2–4 uppercase letters (e.g. MKTG).');
+      return;
+    }
 
     const newProj = {
       id: `PRJ-${Math.floor(100 + Math.random() * 900)}`,
       name: projectName,
       client: projectClient,
+      key: projectKey.toUpperCase(),
+      template,
+      privacy,
       status: initialStatus,
       priority: priority,
       dueDate: new Date(targetCompletion).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
@@ -72,6 +82,9 @@ export default function Projects({
     // Reset
     setProjectName('');
     setProjectClient('');
+    setProjectKey('');
+    setTemplate('Scrum');
+    setPrivacy('Public Workspace');
     setInitialStatus('Active');
     setPriority('Medium');
     setTargetCompletion('');
@@ -142,9 +155,14 @@ export default function Projects({
             onClick={() => onSelectProject(project)}
           >
             <div style={styles.cardHeader}>
-              <span className={`badge ${getStatusBadgeStyle(project.status)}`}>
-                {project.status}
-              </span>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span className={`badge ${getStatusBadgeStyle(project.status)}`}>
+                  {project.status}
+                </span>
+                <span style={{ fontSize: '9px', fontWeight: '700', padding: '2px 8px', borderRadius: '12px', backgroundColor: project.methodology === 'scrum' ? '#EDE9FE' : '#E0F2FE', color: project.methodology === 'scrum' ? '#7C3AED' : '#0369A1' }}>
+                  {project.methodology === 'scrum' ? 'SCRUM' : 'KANBAN'}
+                </span>
+              </div>
               <button style={styles.moreBtn} onClick={(e) => { e.stopPropagation(); alert('Context menu.'); }}>
                 •••
               </button>
@@ -236,16 +254,31 @@ export default function Projects({
             <form onSubmit={handleCreateProject} style={styles.modalForm}>
               {error && <div style={styles.errorText}>{error}</div>}
 
-              <div className="form-group">
-                <label className="form-label">Project Name *</label>
-                <input
-                  type="text"
-                  placeholder="e.g., Enterprise Site Migration"
-                  className="form-input"
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                  required
-                />
+              <div className="split-row" style={styles.row}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Project Name *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Enterprise Site Migration"
+                    className="form-input"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ flex: '0 0 110px' }}>
+                  <label className="form-label">Project Key *</label>
+                  <input
+                    type="text"
+                    placeholder="MKTG"
+                    className="form-input"
+                    maxLength={4}
+                    value={projectKey}
+                    onChange={(e) => setProjectKey(e.target.value.toUpperCase().replace(/[^A-Z]/g, ''))}
+                    required
+                    style={{ textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: '700' }}
+                  />
+                </div>
               </div>
 
               <div className="split-row" style={styles.row}>
@@ -271,6 +304,39 @@ export default function Projects({
                     <option value="On Hold">On Hold</option>
                     <option value="Completed">Completed</option>
                   </select>
+                </div>
+              </div>
+
+              {/* Template & Privacy row */}
+              <div className="split-row" style={styles.row}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Template *</label>
+                  <select
+                    className="form-input"
+                    value={template}
+                    onChange={(e) => setTemplate(e.target.value)}
+                  >
+                    <option value="Scrum">🏃 Scrum — Sprint-based delivery</option>
+                    <option value="Kanban">📋 Kanban — Continuous flow board</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Privacy *</label>
+                  <div style={styles.privacyToggle}>
+                    {['Public Workspace', 'Private Project'].map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setPrivacy(opt)}
+                        style={{
+                          ...styles.privacyOption,
+                          ...(privacy === opt ? styles.privacyOptionActive : {})
+                        }}
+                      >
+                        {opt === 'Public Workspace' ? '🌐' : '🔒'} {opt === 'Public Workspace' ? 'Public' : 'Private'}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -594,5 +660,33 @@ const styles = {
     fontWeight: '500',
     cursor: 'pointer',
     padding: '8px',
+  },
+  privacyToggle: {
+    display: 'flex',
+    gap: '0',
+    border: '1px solid #ECEEF4',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    height: '40px',
+  },
+  privacyOption: {
+    flex: 1,
+    border: 'none',
+    background: '#FAFCFF',
+    color: '#6C7A87',
+    fontSize: '12.5px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    transition: 'all 0.18s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '5px',
+    borderRight: '1px solid #ECEEF4',
+  },
+  privacyOptionActive: {
+    background: '#F0F2FF',
+    color: '#5B5FFB',
+    fontWeight: '700',
   },
 };

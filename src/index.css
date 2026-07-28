@@ -2026,3 +2026,105 @@ h1, h2, h3, h4 {
 }
 
 
+/* ═══════════════════════════════════════════════════════════════════ */
+/* AGILE MECHANICS — SCRUM & KANBAN                                    */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Sprint Header Bar ───────────────────────────────────────────── */
+.sprint-header-bar {
+  animation: sprintBarSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes sprintBarSlideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Backlog Table Row ───────────────────────────────────────────── */
+.backlog-row {
+  transition: background-color 0.15s ease;
+}
+
+.backlog-row:hover {
+  background-color: #F8F9FD;
+}
+
+.backlog-row:hover .backlog-drag-handle {
+  color: #5B5FFB;
+}
+
+.backlog-row.drag-over {
+  border-top: 2px dashed #5B5FFB;
+  background-color: #F0F2FF;
+}
+
+/* ── Epic Pill ───────────────────────────────────────────────────── */
+.epic-pill {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid;
+  letter-spacing: 0.02em;
+  transition: opacity 0.2s ease;
+}
+
+.epic-pill:hover {
+  opacity: 0.8;
+}
+
+/* ── Kanban WIP Warning Column Header ────────────────────────────── */
+.wip-warning-header {
+  background-color: #FEF3C7 !important;
+  border: 1px solid #FDE68A;
+  border-radius: 8px;
+  animation: wipPulse 2s ease-in-out infinite;
+}
+
+@keyframes wipPulse {
+  0%, 100% { border-color: #FDE68A; }
+  50%       { border-color: #F59E0B; }
+}
+
+/* ── Ellipsis menu item hover ────────────────────────────────────── */
+.ellipsis-menu-item {
+  transition: background-color 0.15s ease;
+}
+
+.ellipsis-menu-item:hover {
+  background-color: #F8F9FD;
+}
+
+/* ── Backlog inline add row ──────────────────────────────────────── */
+.backlog-inline-row {
+  background-color: #FAFCFF;
+  transition: background-color 0.15s ease;
+}
+
+.backlog-inline-row:hover {
+  background-color: #F0F2FF;
+}
+
+/* ── Story-points badge ──────────────────────────────────────────── */
+.sp-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  background-color: #EDE9FE;
+  color: #7C3AED;
+  border-radius: 6px;
+  padding: 2px 6px;
+  white-space: nowrap;
+}
+
+/* ── Kanban column scroll ────────────────────────────────────────── */
+.kanban-col {
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/* ── Board / Backlog view transition ─────────────────────────────── */
+.board-view-enter {
+  animation: pageFadeIn 0.25s ease-out;
+}

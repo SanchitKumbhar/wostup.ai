@@ -220,10 +220,7 @@ export default function ProjectOverview({
             </div>
           </div>
           <div style={styles.ownerActions}>
-            <button className="btn-gradient" style={{ flex: 1, padding: '8px 12px', fontSize: '12px' }} onClick={() => setActiveTab('tasks')}>
-              + Add Task
-            </button>
-            <button className="btn-secondary" style={{ padding: '8px 12px', fontSize: '12px' }} onClick={() => setIsShareModalOpen(true)}>
+            <button className="btn-secondary" style={{ flex: 1, padding: '8px 12px', fontSize: '12px' }} onClick={() => setIsShareModalOpen(true)}>
               🔗 Share
             </button>
           </div>
@@ -274,26 +271,26 @@ export default function ProjectOverview({
               </div>
             </div>
 
-            {/* Custom SVG Burndown trends chart */}
+            {/* Custom SVG Burndown chart — lines descend from total points to zero */}
             <div className="premium-card" style={styles.chartPanel}>
               <div style={styles.chartHeader}>
                 <div>
-                  <h3 style={styles.cardTitle}>Burndown Trends</h3>
-                  <p style={styles.cardSubtitle}>Visualizing project velocity vs planned schedule</p>
+                  <h3 style={styles.cardTitle}>Sprint Burndown Chart</h3>
+                  <p style={styles.cardSubtitle}>Remaining story points vs planned ideal burndown</p>
                 </div>
                 <div style={styles.chartLegends}>
                   <div style={styles.legendItem}>
                     <span style={{ ...styles.legendDot, backgroundColor: '#A0AEC0' }} />
-                    Planned Progress
+                    Ideal Burndown
                   </div>
                   <div style={styles.legendItem}>
                     <span style={{ ...styles.legendDot, backgroundColor: '#5B5FFB' }} />
-                    Actual Progress
+                    Actual Remaining
                   </div>
                 </div>
               </div>
               
-              {/* Burndown SVG */}
+              {/* Burndown SVG — Y=20 is top (100 pts remaining), Y=170 is bottom (0 pts remaining) */}
               <div style={styles.chartContainer}>
                 <svg viewBox="0 0 500 200" width="100%" height="100%">
                   {/* Grid Lines */}
@@ -302,21 +299,30 @@ export default function ProjectOverview({
                   <line x1="40" y1="120" x2="480" y2="120" stroke="#ECEEF4" strokeDasharray="3" />
                   <line x1="40" y1="170" x2="480" y2="170" stroke="#ECEEF4" strokeDasharray="3" />
 
-                  {/* Planned Line */}
-                  <path d="M 40 170 L 110 135 L 180 110 L 250 85 L 320 60 L 390 35 L 480 20" fill="none" stroke="#A0AEC0" strokeWidth="2.5" />
+                  {/* Ideal Burndown Line — straight diagonal from top-left to bottom-right */}
+                  <path d="M 40 20 L 110 45 L 180 70 L 250 95 L 320 120 L 390 145 L 480 170" fill="none" stroke="#A0AEC0" strokeWidth="2.5" strokeDasharray="6 3" />
                   
-                  {/* Actual Line */}
-                  <path d="M 40 170 L 110 140 L 180 105 L 250 90 L 320 50 L 390 40 L 480 25" fill="none" stroke="#5B5FFB" strokeWidth="3" />
+                  {/* Actual Remaining Line — descends but slightly above ideal (behind schedule) */}
+                  <path d="M 40 20 L 110 52 L 180 88 L 250 118 L 320 138 L 390 158 L 480 170" fill="none" stroke="#5B5FFB" strokeWidth="3" />
+
+                  {/* Area fill under actual line */}
+                  <path d="M 40 20 L 110 52 L 180 88 L 250 118 L 320 138 L 390 158 L 480 170 L 480 170 L 40 170 Z" fill="url(#burndownGrad)" opacity="0.12" />
+                  <defs>
+                    <linearGradient id="burndownGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#5B5FFB" />
+                      <stop offset="100%" stopColor="#5B5FFB" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
                   
-                  {/* Actual Points */}
-                  <circle cx="110" cy="140" r="4" fill="#5B5FFB" />
-                  <circle cx="180" cy="105" r="4" fill="#5B5FFB" />
-                  <circle cx="250" cy="90" r="4" fill="#5B5FFB" />
-                  <circle cx="320" cy="50" r="4" fill="#5B5FFB" />
-                  <circle cx="390" cy="40" r="4" fill="#5B5FFB" />
-                  <circle cx="480" cy="25" r="4" fill="#5B5FFB" />
+                  {/* Actual Data Points */}
+                  <circle cx="110" cy="52" r="4" fill="#5B5FFB" />
+                  <circle cx="180" cy="88" r="4" fill="#5B5FFB" />
+                  <circle cx="250" cy="118" r="4" fill="#5B5FFB" />
+                  <circle cx="320" cy="138" r="4" fill="#5B5FFB" />
+                  <circle cx="390" cy="158" r="4" fill="#5B5FFB" />
+                  <circle cx="480" cy="170" r="4" fill="#5B5FFB" />
                   
-                  {/* Axes labels */}
+                  {/* X-Axis Day Labels */}
                   <text x="40" y="190" fontSize="10" fill="#9AA6B2" textAnchor="middle">Mon</text>
                   <text x="110" y="190" fontSize="10" fill="#9AA6B2" textAnchor="middle">Tue</text>
                   <text x="180" y="190" fontSize="10" fill="#9AA6B2" textAnchor="middle">Wed</text>
@@ -325,10 +331,11 @@ export default function ProjectOverview({
                   <text x="390" y="190" fontSize="10" fill="#9AA6B2" textAnchor="middle">Sat</text>
                   <text x="480" y="190" fontSize="10" fill="#9AA6B2" textAnchor="middle">Sun</text>
 
-                  <text x="30" y="174" fontSize="10" fill="#9AA6B2" textAnchor="end">0</text>
-                  <text x="30" y="124" fontSize="10" fill="#9AA6B2" textAnchor="end">50</text>
-                  <text x="30" y="74" fontSize="10" fill="#9AA6B2" textAnchor="end">75</text>
+                  {/* Y-Axis Labels — descending from 100 at top to 0 at bottom */}
                   <text x="30" y="24" fontSize="10" fill="#9AA6B2" textAnchor="end">100</text>
+                  <text x="30" y="74" fontSize="10" fill="#9AA6B2" textAnchor="end">75</text>
+                  <text x="30" y="124" fontSize="10" fill="#9AA6B2" textAnchor="end">50</text>
+                  <text x="30" y="174" fontSize="10" fill="#9AA6B2" textAnchor="end">0</text>
                 </svg>
               </div>
             </div>
@@ -883,6 +890,27 @@ export default function ProjectOverview({
                 <button type="submit" className="btn-gradient">Create Task</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── SHARE MODAL ── */}
+      {isShareModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '400px' }}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>Share Project</h2>
+              <button style={styles.modalCloseBtn} onClick={() => setIsShareModalOpen(false)}>×</button>
+            </div>
+            <div style={styles.modalForm}>
+              <p style={{ fontSize: '13px', color: '#6C7A87', marginBottom: '16px' }}>Copy the link below to share {project.name} with your team.</p>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+                <input type="text" className="form-input" value={`https://wostup.ai/projects/${project.id}`} readOnly style={{ flex: 1 }} />
+                <button className="btn-gradient" onClick={handleCopyShareLink}>
+                  {linkCopied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

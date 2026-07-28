@@ -19,9 +19,6 @@ const BRAND_COLOR_A = '#5B5FFB';
 const BRAND_COLOR_B = '#B24DFF';
 const BRAND_COLOR_C = '#00C292';
 
-// Note: drei's Text component uses a built-in default font (Inter-like)
-// No remote font loading needed — avoids suspension from failed network requests
-
 // ─── HELPER: Generate cube layout in 3D space ──────────────────────────────────
 function generateCubePositions(count) {
   const positions = [];
@@ -40,11 +37,22 @@ function generateCubePositions(count) {
   return positions;
 }
 
+// ─── SUB-COMPONENT: CameraRig for Parallax ──────────────────────────────────────
+function CameraRig() {
+  useFrame(({ camera, pointer }) => {
+    const targetX = pointer.x * 0.4;
+    const targetY = pointer.y * 0.4;
+    camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.05);
+    camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.05);
+    camera.lookAt(0, 0, 0);
+  });
+  return null;
+}
+
 // ─── SUB-COMPONENT: ProblemCube ─────────────────────────────────────────────────
-function ProblemCube({ text, target, delay, cubeRef }) {
+function ProblemCube({ text, target, cubeRef }) {
   const meshRef = useRef();
 
-  // Expose ref to parent
   useEffect(() => {
     if (cubeRef) cubeRef.current = meshRef.current;
   }, [cubeRef]);
@@ -52,7 +60,7 @@ function ProblemCube({ text, target, delay, cubeRef }) {
   return (
     <mesh
       ref={meshRef}
-      position={[target.x, target.y + 12, target.z]}
+      position={[target.x, target.y + 14, target.z]}
       rotation={[target.rotX, 0, target.rotZ]}
       scale={0}
     >
@@ -66,9 +74,7 @@ function ProblemCube({ text, target, delay, cubeRef }) {
         roughness={0.4}
         metalness={0.2}
       />
-      {/* Red glowing edge wireframe — drei Edges auto-derives from parent geometry */}
       <Edges scale={1} threshold={15} color="#ff4444" />
-      {/* Problem text on front face */}
       <Text
         position={[0.08, 0, 0.09]}
         fontSize={0.16}
@@ -81,7 +87,6 @@ function ProblemCube({ text, target, delay, cubeRef }) {
       >
         {text}
       </Text>
-      {/* Warning icon */}
       <Text
         position={[-0.58, 0, 0.09]}
         fontSize={0.18}
@@ -104,7 +109,6 @@ function SolutionButton3D({ buttonRef }) {
     if (buttonRef) buttonRef.current = groupRef.current;
   }, [buttonRef]);
 
-  // Pulse the glow
   useFrame(({ clock }) => {
     if (glowRef.current) {
       const s = 1 + Math.sin(clock.elapsedTime * 2.5) * 0.12;
@@ -117,7 +121,6 @@ function SolutionButton3D({ buttonRef }) {
 
   return (
     <group ref={groupRef} position={[0, 0, 0.5]} scale={0} visible={false}>
-      {/* Outer glow sphere */}
       <mesh ref={glowRef} scale={1.8}>
         <sphereGeometry args={[1, 32, 32]} />
         <meshBasicMaterial
@@ -128,7 +131,6 @@ function SolutionButton3D({ buttonRef }) {
         />
       </mesh>
 
-      {/* Spinning ring */}
       <mesh ref={ringRef}>
         <torusGeometry args={[1.1, 0.03, 16, 64]} />
         <meshStandardMaterial
@@ -139,7 +141,6 @@ function SolutionButton3D({ buttonRef }) {
         />
       </mesh>
 
-      {/* Main button disc */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.7, 0.7, 0.12, 48]} />
         <meshStandardMaterial
@@ -152,13 +153,11 @@ function SolutionButton3D({ buttonRef }) {
         />
       </mesh>
 
-      {/* Diamond icon on button */}
       <mesh position={[0, 0, 0.08]} rotation={[0, 0, Math.PI / 4]}>
         <ringGeometry args={[0.12, 0.22, 4]} />
         <meshBasicMaterial color="#ffffff" side={THREE.DoubleSide} />
       </mesh>
 
-      {/* "Solution" text */}
       <Text
         position={[0, -1.0, 0]}
         fontSize={0.28}
@@ -183,7 +182,6 @@ function AnimatedCursor({ cursorRef }) {
 
   return (
     <group ref={groupRef} position={[5, -4, 3]} scale={0} visible={false}>
-      {/* Cursor arrow (cone) */}
       <mesh rotation={[0, 0, Math.PI / 6]}>
         <coneGeometry args={[0.15, 0.4, 3]} />
         <meshStandardMaterial
@@ -194,7 +192,6 @@ function AnimatedCursor({ cursorRef }) {
           metalness={0.5}
         />
       </mesh>
-      {/* Click ring */}
       <mesh position={[0.05, -0.15, 0]}>
         <ringGeometry args={[0.06, 0.1, 16]} />
         <meshBasicMaterial
@@ -278,7 +275,6 @@ function ExplosionParticles({ particlesRef }) {
     }
   }, [particlesRef, velocities]);
 
-  // Create buffer attributes imperatively to avoid R3F v9 issues
   useEffect(() => {
     if (pointsRef.current) {
       const geo = pointsRef.current.geometry;
@@ -327,7 +323,6 @@ function BrandReveal3D({ brandRef }) {
 
   return (
     <group ref={groupRef} scale={0} visible={false}>
-      {/* Halo glow */}
       <mesh ref={haloRef} position={[0, 0, -0.5]}>
         <circleGeometry args={[3.5, 64]} />
         <meshBasicMaterial
@@ -338,7 +333,6 @@ function BrandReveal3D({ brandRef }) {
         />
       </mesh>
 
-      {/* Orbiting ring */}
       <mesh ref={orbitRingRef}>
         <torusGeometry args={[2.8, 0.02, 16, 100]} />
         <meshStandardMaterial
@@ -349,7 +343,6 @@ function BrandReveal3D({ brandRef }) {
         />
       </mesh>
 
-      {/* Logo diamond */}
       <group position={[0, 1.6, 0]}>
         <mesh rotation={[0, 0, Math.PI / 4]}>
           <ringGeometry args={[0.25, 0.4, 4]} />
@@ -372,7 +365,6 @@ function BrandReveal3D({ brandRef }) {
         </mesh>
       </group>
 
-      {/* WOSTUP text */}
       <Text
         position={[0, 0, 0]}
         fontSize={1.4}
@@ -385,7 +377,6 @@ function BrandReveal3D({ brandRef }) {
         WOSTUP
       </Text>
 
-      {/* "AI" badge */}
       <Text
         position={[2.6, 0.35, 0]}
         fontSize={0.35}
@@ -398,7 +389,6 @@ function BrandReveal3D({ brandRef }) {
         AI
       </Text>
 
-      {/* V2.0 badge background */}
       <group position={[-0.55, -0.95, 0]}>
         <mesh>
           <planeGeometry args={[0.8, 0.3]} />
@@ -420,7 +410,6 @@ function BrandReveal3D({ brandRef }) {
         </Text>
       </group>
 
-      {/* Workspace Engine label */}
       <Text
         position={[0.55, -0.95, 0]}
         fontSize={0.14}
@@ -432,7 +421,6 @@ function BrandReveal3D({ brandRef }) {
         Workspace Engine
       </Text>
 
-      {/* Tagline */}
       <Text
         position={[0, -1.5, 0]}
         fontSize={0.2}
@@ -449,7 +437,7 @@ function BrandReveal3D({ brandRef }) {
   );
 }
 
-// ─── SUB-COMPONENT: AmbientParticles (background dust) ──────────────────────────
+// ─── SUB-COMPONENT: AmbientParticles ──────────────────────────────────────────
 function AmbientParticles() {
   const pointsRef = useRef();
   const count = 80;
@@ -514,12 +502,10 @@ function SceneOrchestrator({ onComplete, skipTriggered }) {
 
   const cubePositions = useMemo(() => generateCubePositions(PROBLEMS.length), []);
 
-  // Initialize cube refs array
   if (cubeRefs.current.length !== PROBLEMS.length) {
     cubeRefs.current = Array(PROBLEMS.length).fill(null).map(() => ({ current: null }));
   }
 
-  // Particle explosion animation frame
   const explosionActiveRef = useRef(false);
   const explosionProgressRef = useRef(0);
 
@@ -547,7 +533,6 @@ function SceneOrchestrator({ onComplete, skipTriggered }) {
     }
   });
 
-  // Build the master GSAP timeline
   useEffect(() => {
     const initTimeout = setTimeout(() => {
       const tl = gsap.timeline({
@@ -560,7 +545,7 @@ function SceneOrchestrator({ onComplete, skipTriggered }) {
       });
       timelineRef.current = tl;
 
-      // ── PHASE 1: Problem Cubes Drop In (0s → 1.5s) ────────────────────
+      // PHASE 1: Problem Cubes Drop In
       cubeRefs.current.forEach((ref, i) => {
         const mesh = ref.current;
         if (!mesh) return;
@@ -579,7 +564,7 @@ function SceneOrchestrator({ onComplete, skipTriggered }) {
         }, 0.15 + target.delay);
       });
 
-      // ── PHASE 2: Solution Button Appears (1.8s) ───────────────────────
+      // PHASE 2: Solution Button Appears
       const btnGroup = buttonRef.current;
       if (btnGroup) {
         tl.call(() => { btnGroup.visible = true; }, [], 1.8);
@@ -590,7 +575,7 @@ function SceneOrchestrator({ onComplete, skipTriggered }) {
         }, 1.8);
       }
 
-      // ── PHASE 3: Cursor Animates Toward Button (2.6s) ─────────────────
+      // PHASE 3: Cursor Animates Toward Button
       const cursorGroup = cursorRef.current;
       if (cursorGroup) {
         tl.call(() => { cursorGroup.visible = true; }, [], 2.6);
@@ -606,7 +591,7 @@ function SceneOrchestrator({ onComplete, skipTriggered }) {
         }, 2.7);
       }
 
-      // ── PHASE 4: Click + Shockwave (3.6s) ─────────────────────────────
+      // PHASE 4: Click + Shockwave
       if (cursorGroup) {
         tl.to(cursorGroup.scale, {
           x: 0.7, y: 0.7, z: 0.7,
@@ -620,7 +605,6 @@ function SceneOrchestrator({ onComplete, skipTriggered }) {
         }, 3.68);
       }
 
-      // Shockwave ring
       const swMesh = shockwaveRef.current;
       if (swMesh) {
         tl.call(() => { swMesh.visible = true; }, [], 3.6);
@@ -636,7 +620,6 @@ function SceneOrchestrator({ onComplete, skipTriggered }) {
         }, 3.7);
       }
 
-      // Shake all cubes briefly
       cubeRefs.current.forEach((ref, i) => {
         const mesh = ref.current;
         if (!mesh) return;
@@ -651,8 +634,7 @@ function SceneOrchestrator({ onComplete, skipTriggered }) {
         }, 3.6);
       });
 
-      // ── PHASE 5: Explosion (3.9s) ─────────────────────────────────────
-      // Button flash and disappear
+      // PHASE 5: Vortex Convergence into Core
       if (btnGroup) {
         tl.to(btnGroup.scale, {
           x: 2.5, y: 2.5, z: 2.5,
@@ -674,38 +656,23 @@ function SceneOrchestrator({ onComplete, skipTriggered }) {
         tl.call(() => { cursorGroup.visible = false; }, [], 4.05);
       }
 
-      // Cubes explode outward
       cubeRefs.current.forEach((ref, i) => {
         const mesh = ref.current;
         if (!mesh) return;
-        const angle = (i / PROBLEMS.length) * Math.PI * 2;
-        const dist = 8 + (i % 5) * 3;
-        const tx = Math.cos(angle) * dist;
-        const ty = Math.sin(angle) * dist;
-        const tz = (Math.random() - 0.5) * 6;
 
         tl.to(mesh.position, {
-          x: tx, y: ty, z: tz,
-          duration: 0.6,
-          ease: 'power3.out',
-        }, 3.9 + (i % 6) * 0.02);
-
-        tl.to(mesh.rotation, {
-          x: (Math.random() - 0.5) * 8,
-          y: (Math.random() - 0.5) * 8,
-          z: (Math.random() - 0.5) * 8,
-          duration: 0.6,
-          ease: 'power2.out',
-        }, 3.9 + (i % 6) * 0.02);
+          x: 0, y: 0, z: -1,
+          duration: 0.5,
+          ease: 'power3.in',
+        }, 3.8 + (i * 0.01));
 
         tl.to(mesh.scale, {
           x: 0, y: 0, z: 0,
-          duration: 0.3,
+          duration: 0.2,
           ease: 'power2.in',
-        }, 4.1 + (i % 6) * 0.02);
+        }, 4.2);
       });
 
-      // Fire particles
       tl.call(() => {
         if (particlesRef.current?.points) {
           particlesRef.current.points.visible = true;
@@ -714,23 +681,18 @@ function SceneOrchestrator({ onComplete, skipTriggered }) {
         }
       }, [], 3.9);
 
-      // ── PHASE 6: Brand Reveal (4.8s) ──────────────────────────────────
+      // PHASE 6: Brand Reveal
       const brandGroup = brandRef.current;
       if (brandGroup) {
-        tl.call(() => { brandGroup.visible = true; }, [], 4.8);
-        tl.from(brandGroup.position, {
-          z: -3,
-          duration: 1.0,
-          ease: 'power2.out',
-        }, 4.8);
-        tl.to(brandGroup.scale, {
-          x: 1, y: 1, z: 1,
-          duration: 1.0,
-          ease: 'elastic.out(1, 0.6)',
-        }, 4.8);
+        tl.call(() => { brandGroup.visible = true; }, [], 4.4);
+        tl.fromTo(brandGroup.scale,
+          { x: 0, y: 0, z: 0 },
+          { x: 1, y: 1, z: 1, duration: 1.2, ease: 'elastic.out(1, 0.5)' },
+          4.4
+        );
       }
 
-      // ── PHASE 7: Hold for 2s then complete ────────────────────────────
+      // PHASE 7: Hold for 2s then complete
       tl.to({}, { duration: 2.0 }, 5.8);
 
     }, 150);
@@ -743,7 +705,6 @@ function SceneOrchestrator({ onComplete, skipTriggered }) {
     };
   }, [cubePositions, onComplete]);
 
-  // Handle skip
   useEffect(() => {
     if (skipTriggered && timelineRef.current) {
       timelineRef.current.progress(1);
@@ -752,42 +713,29 @@ function SceneOrchestrator({ onComplete, skipTriggered }) {
 
   return (
     <>
-      {/* Lighting */}
+      <CameraRig />
       <ambientLight intensity={0.3} />
       <directionalLight position={[5, 8, 5]} intensity={0.6} color="#ffffff" />
       <pointLight position={[0, 0, 4]} intensity={1.2} color={BRAND_COLOR_A} distance={15} />
       <pointLight position={[-3, -2, 3]} intensity={0.5} color={BRAND_COLOR_B} distance={12} />
 
-      {/* Background particles */}
       <AmbientParticles />
 
-      {/* Problem Cubes */}
       {PROBLEMS.map((text, i) => (
         <ProblemCube
           key={i}
           text={text}
           target={cubePositions[i]}
-          delay={cubePositions[i].delay}
           cubeRef={cubeRefs.current[i]}
         />
       ))}
 
-      {/* Solution Button */}
       <SolutionButton3D buttonRef={buttonRef} />
-
-      {/* Animated Cursor */}
       <AnimatedCursor cursorRef={cursorRef} />
-
-      {/* Shockwave Ring */}
       <ShockwaveRing shockwaveRef={shockwaveRef} />
-
-      {/* Explosion Particles */}
       <ExplosionParticles particlesRef={particlesRef} />
-
-      {/* Brand Reveal */}
       <BrandReveal3D brandRef={brandRef} />
 
-      {/* Post-Processing */}
       <EffectComposer>
         <Bloom
           intensity={1.2}
@@ -855,7 +803,6 @@ export default function LandingIntro({ onComplete }) {
         </Suspense>
       </Canvas>
 
-      {/* Skip Intro Button (CSS overlay) */}
       <button
         className="landing-skip-btn"
         onClick={handleSkip}

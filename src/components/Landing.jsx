@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-// import LandingIntro from './LandingIntro';
+import LandingIntro from './LandingIntro';
 
 // ─── Logo SVG ────────────────────────────────────────────────────────────────
 function WostupLogo({ size = 28 }) {
@@ -136,7 +136,7 @@ function TestimonialCard({ quote, name, role, company, avatar, delay = 0 }) {
 
 // ─── Main Landing Component ───────────────────────────────────────────────────
 export default function Landing({ onLogin }) {
-  const [showPreloader, setShowPreloader] = useState(false);
+  const [showPreloader, setShowPreloader] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [heroVisible, setHeroVisible] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -237,9 +237,9 @@ export default function Landing({ onLogin }) {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="lp-root">
-      {/* {showPreloader && (
+      {showPreloader && (
         <LandingIntro onComplete={() => setShowPreloader(false)} />
-      )} */}
+      )}
 
 
       {/* ── NAVBAR ─────────────────────────────────────────────────────── */}
