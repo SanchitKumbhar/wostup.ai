@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { Routes, Route, useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useUser, useClerk } from '@clerk/clerk-react';
+
 import Landing from './components/Landing';
-import Auth from './components/Auth';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import Dashboard from './components/Dashboard';
@@ -12,10 +14,23 @@ import TeamLoad from './components/TeamLoad';
 import TaskHealth from './components/TaskHealth';
 import Settings from './components/Settings';
 import WorkspaceSelector from './components/WorkspaceSelector';
+import AIAssistant from './components/AiAssistant';
+import ProtectedRoute from './components/ProtectedRoute';
+import SignInPage from './components/SignInPage';
+import SignUpPage from './components/SignUpPage';
 
 export default function App() {
-  // Authentication State
-  const [user, setUser] = useState(null);
+  const { user: clerkUser, isLoaded } = useUser();
+  const { signOut } = useClerk();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Normalize user object for existing components
+  const user = clerkUser ? {
+    name: clerkUser.fullName || clerkUser.firstName || 'User',
+    avatar: clerkUser.imageUrl,
+    email: clerkUser.primaryEmailAddress?.emailAddress
+  } : null;
 
   // Workspace States
   const [workspaces, setWorkspaces] = useState([
@@ -27,11 +42,11 @@ export default function App() {
   const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
 
   // Navigation States
-  const [currentScreen, setCurrentScreen] = useState('dashboard');
   const [selectedProject, setSelectedProject] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isNewUser, setIsNewUser] = useState(false);
-  const [showLanding, setShowLanding] = useState(true);
+  
+  // Removed isNewUser and showLanding since Clerk handles auth flow
+  // You can still add onboarding logic based on user metadata if needed.
 
   // Projects State (methodology: 'scrum' | 'kanban')
   const [projects, setProjects] = useState([
@@ -190,21 +205,6 @@ export default function App() {
   ];
 
   // Callbacks
-  const handleLoginSuccess = (sessionUser, newUser = false) => {
-    setUser(sessionUser);
-    if (newUser) {
-      setIsNewUser(true);
-    }
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-  };
-
-  const handleUpdateUser = (updatedInfo) => {
-    setUser(prev => ({ ...prev, ...updatedInfo }));
-  };
-
   const handleWorkspaceSelect = (wsId) => {
     setActiveWorkspaceId(wsId);
   };
@@ -216,15 +216,12 @@ export default function App() {
   };
 
   const handleAddProject = (newProj) => {
-    // Normalise template → methodology
     const methodology = (newProj.template || 'Scrum').toLowerCase();
     setProjects(prev => [{ ...newProj, methodology }, ...prev]);
   };
 
   const handleAddTask = (newTask) => {
     setTasks(prev => [...prev, newTask]);
-
-    // Update project progress dynamically
     setProjects(prevProjects => prevProjects.map(proj => {
       if (proj.id === newTask.projectId) {
         const projTasks = [...tasks.filter(t => t.projectId === proj.id), newTask];
@@ -236,22 +233,19 @@ export default function App() {
     }));
   };
 
-  // Update an existing task (used for backlog → board moves, epic changes, etc.)
   const handleUpdateTask = (taskId, updates) => {
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates } : t));
   };
 
-  // Move a backlog task to the active sprint board
   const handleMoveToBoard = (taskId) => {
     handleUpdateTask(taskId, { isBacklog: false, status: 'Todo' });
   };
 
-  // Complete Sprint: archive completed tasks, send rest to backlog
   const handleCompleteSprint = (projectId) => {
     setTasks(prev => prev.map(t => {
       if (t.projectId !== projectId || t.isBacklog) return t;
-      if (t.status === 'Completed') return t; // stays archived on board
-      return { ...t, isBacklog: true, status: 'Todo' }; // push back to backlog
+      if (t.status === 'Completed') return t;
+      return { ...t, isBacklog: true, status: 'Todo' };
     }));
   };
 
@@ -272,175 +266,177 @@ export default function App() {
 
   const handleSelectProject = (project) => {
     setSelectedProject(project);
-    setCurrentScreen('project-overview');
+    navigate('/project-overview');
   };
 
   const handleOptimizeLoad = () => {
     setAiRecommendations(prev => prev.filter(rec => rec.id !== 'rec-1' && rec.id !== 'rec-2'));
   };
 
-  // If not logged in, render landing or auth
-  if (!user) {
-    if (showLanding) {
-      return <Landing onLogin={() => setShowLanding(false)} />;
-    }
-    return <Auth onLoginSuccess={handleLoginSuccess} />;
-  }
+  const handleNavigate = (screen) => {
+    navigate(`/${screen}`);
+  };
+
+  // Derive current screen for sidebar active states based on path
+  const currentScreen = location.pathname.substring(1) || 'dashboard';
 
   return (
-    <div className="app-container" style={{ paddingTop: isNewUser ? '60px' : '0' }}>
-      {/* Sidebar mobile overlay */}
-      <div className={`sidebar-overlay ${isSidebarOpen ? 'active' : ''}`} onClick={() => setIsSidebarOpen(false)}></div>
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={<Landing onLogin={(path) => navigate(path)} />} />
+      <Route path="/sign-in" element={<SignInPage />} />
+      <Route path="/sign-up" element={<SignUpPage />} />
 
-      {/* New user onboarding banner */}
-      {isNewUser && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
-          background: 'linear-gradient(135deg, #5B5FFB 0%, #B24DFF 100%)',
-          color: '#FFF', padding: '12px 24px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: '16px', flexWrap: 'wrap', boxShadow: '0 2px 12px rgba(91,95,251,0.3)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '18px' }}>🎉</span>
-            <span style={{ fontSize: '14px', fontWeight: '500' }}>
-              Welcome to Wostup! You're exploring the dashboard — set up your first workspace to get started.
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
-            <button
-              onClick={() => setIsWorkspaceModalOpen(true)}
-              style={{ background: '#FFFFFF', color: '#5B5FFB', border: 'none', borderRadius: '8px', padding: '8px 18px', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}
-            >
-              Create Workspace
-            </button>
-            <button
-              onClick={() => setIsNewUser(false)}
-              style={{ background: 'rgba(255,255,255,0.2)', color: '#FFF', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', padding: '8px 14px', fontSize: '13px', cursor: 'pointer', fontWeight: '500' }}
-            >
-              Maybe Later
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Protected Layout & Routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={
+          <div className="app-container">
+            <div className={`sidebar-overlay ${isSidebarOpen ? 'active' : ''}`} onClick={() => setIsSidebarOpen(false)}></div>
+            
+            <Sidebar
+              isOpen={isSidebarOpen}
+              onClose={() => setIsSidebarOpen(false)}
+              currentScreen={currentScreen}
+              onNavigate={(screen) => {
+                navigate(`/${screen}`);
+                setSelectedProject(null);
+                setIsSidebarOpen(false);
+              }}
+              onLogout={() => signOut(() => navigate('/'))}
+            />
 
-      {/* Persistent Left Sidebar */}
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        currentScreen={currentScreen}
-        onNavigate={(screen) => {
-          setCurrentScreen(screen);
-          setSelectedProject(null);
-          setIsSidebarOpen(false);
-        }}
-        onLogout={handleLogout}
-      />
-
-      {/* Main Workspace Frame */}
-      <div className="main-content app-main-content">
-        {/* Top Navbar */}
-        <TopBar
-          user={user}
-          workspaces={workspaces}
-          activeWorkspaceId={activeWorkspaceId}
-          onWorkspaceSelect={handleWorkspaceSelect}
-          onOpenNewWorkspaceModal={() => setIsWorkspaceModalOpen(true)}
-          notificationCount={aiRecommendations.length}
-          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-        />
-
-        {/* Dynamic Route Screen rendering */}
-        {selectedProject && currentScreen === 'project-overview' ? (
-          <ProjectOverview
-            project={selectedProject}
-            tasks={tasks}
-            milestones={milestones}
-            epics={epics}
-            onBack={() => {
-              setSelectedProject(null);
-              setCurrentScreen('projects');
-            }}
-            onAddTask={handleAddTask}
-            onAddMilestone={handleAddMilestone}
-            onAddComment={handleAddComment}
-            onNavigate={setCurrentScreen}
-          />
-        ) : (
-          <>
-            {currentScreen === 'dashboard' && (
-              <Dashboard
+            <div className="main-content app-main-content">
+              <TopBar
                 user={user}
-                projects={projects}
-                tasks={tasks}
-                onNavigate={setCurrentScreen}
-                onOpenNewProjectModal={() => setCurrentScreen('projects')}
-                aiRecommendations={aiRecommendations}
-                recentUpdates={recentUpdates}
-                teamMembers={teamMembers}
+                workspaces={workspaces}
+                activeWorkspaceId={activeWorkspaceId}
+                onWorkspaceSelect={handleWorkspaceSelect}
+                onOpenNewWorkspaceModal={() => setIsWorkspaceModalOpen(true)}
+                notificationCount={aiRecommendations.length}
+                onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
               />
-            )}
-            {currentScreen === 'projects' && (
-              <Projects
-                projects={projects}
+              
+              <Outlet />
+            </div>
+
+            <WorkspaceSelector
+              isOpen={isWorkspaceModalOpen}
+              onClose={() => setIsWorkspaceModalOpen(false)}
+              onGenerate={handleGenerateWorkspace}
+            />
+          </div>
+        }>
+          <Route path="/dashboard" element={
+            <Dashboard
+              user={user}
+              projects={projects}
+              tasks={tasks}
+              onNavigate={handleNavigate}
+              onOpenNewProjectModal={() => navigate('/projects')}
+              aiRecommendations={aiRecommendations}
+              recentUpdates={recentUpdates}
+              teamMembers={teamMembers}
+            />
+          } />
+          
+          <Route path="/project-overview" element={
+            selectedProject ? (
+              <ProjectOverview
+                project={selectedProject}
                 tasks={tasks}
-                onSelectProject={handleSelectProject}
-                onNavigate={setCurrentScreen}
-                onAddProject={handleAddProject}
-              />
-            )}
-            {(currentScreen === 'tasks' || currentScreen === 'my-tasks') && (
-              <Tasks
-                tasks={tasks}
-                projects={projects}
-                epics={epics}
-                onAddTask={handleAddTask}
-                onUpdateTaskStatus={handleUpdateTaskStatus}
-                onUpdateTask={handleUpdateTask}
-                onMoveToBoard={handleMoveToBoard}
-                onCompleteSprint={handleCompleteSprint}
-                isMyTasksView={currentScreen === 'my-tasks'}
-                onUpdateProject={(projectId, updates) => {
-                  setProjects(prev => prev.map(p => p.id === projectId ? { ...p, ...updates } : p));
-                }}
-              />
-            )}
-            {currentScreen === 'milestones' && (
-              <Milestones
                 milestones={milestones}
-                projects={projects}
+                epics={epics}
+                onBack={() => {
+                  setSelectedProject(null);
+                  navigate('/projects');
+                }}
+                onAddTask={handleAddTask}
                 onAddMilestone={handleAddMilestone}
+                onAddComment={handleAddComment}
+                onNavigate={handleNavigate}
               />
-            )}
-            {currentScreen === 'team-load' && (
-              <TeamLoad
-                teamMembers={teamMembers}
-                onAdjustCapacity={handleOptimizeLoad}
-              />
-            )}
-            {currentScreen === 'task-health' && (
-              <TaskHealth
-                tasks={tasks}
-                projects={projects}
-                onOptimizeLoad={handleOptimizeLoad}
-              />
-            )}
-            {currentScreen === 'settings' && (
-              <Settings
-                user={user}
-                onUpdateUser={handleUpdateUser}
-              />
-            )}
-          </>
-        )}
-      </div>
+            ) : (
+              <div style={{ padding: '40px', textAlign: 'center', color: '#6C7A87' }}>No project selected.</div>
+            )
+          } />
 
-      {/* Onboarding workspace launch modal */}
-      <WorkspaceSelector
-        isOpen={isWorkspaceModalOpen}
-        onClose={() => setIsWorkspaceModalOpen(false)}
-        onGenerate={handleGenerateWorkspace}
-      />
-    </div>
+          <Route path="/projects" element={
+            <Projects
+              projects={projects}
+              tasks={tasks}
+              onSelectProject={handleSelectProject}
+              onNavigate={handleNavigate}
+              onAddProject={handleAddProject}
+            />
+          } />
+
+          <Route path="/tasks" element={
+            <Tasks
+              tasks={tasks}
+              projects={projects}
+              epics={epics}
+              onAddTask={handleAddTask}
+              onUpdateTaskStatus={handleUpdateTaskStatus}
+              onUpdateTask={handleUpdateTask}
+              onMoveToBoard={handleMoveToBoard}
+              onCompleteSprint={handleCompleteSprint}
+              isMyTasksView={false}
+              onUpdateProject={(projectId, updates) => {
+                setProjects(prev => prev.map(p => p.id === projectId ? { ...p, ...updates } : p));
+              }}
+            />
+          } />
+
+          <Route path="/my-tasks" element={
+            <Tasks
+              tasks={tasks}
+              projects={projects}
+              epics={epics}
+              onAddTask={handleAddTask}
+              onUpdateTaskStatus={handleUpdateTaskStatus}
+              onUpdateTask={handleUpdateTask}
+              onMoveToBoard={handleMoveToBoard}
+              onCompleteSprint={handleCompleteSprint}
+              isMyTasksView={true}
+              onUpdateProject={(projectId, updates) => {
+                setProjects(prev => prev.map(p => p.id === projectId ? { ...p, ...updates } : p));
+              }}
+            />
+          } />
+
+          <Route path="/milestones" element={
+            <Milestones
+              milestones={milestones}
+              projects={projects}
+              onAddMilestone={handleAddMilestone}
+            />
+          } />
+
+          <Route path="/team-load" element={
+            <TeamLoad
+              teamMembers={teamMembers}
+              onAdjustCapacity={handleOptimizeLoad}
+            />
+          } />
+
+          <Route path="/task-health" element={
+            <TaskHealth
+              tasks={tasks}
+              projects={projects}
+              onOptimizeLoad={handleOptimizeLoad}
+            />
+          } />
+
+          <Route path="/settings" element={
+            <Settings
+              user={user}
+              onUpdateUser={() => {}} // Remove manual user updates as Clerk handles this
+            />
+          } />
+
+          <Route path="/ai-assistant" element={<AIAssistant />} />
+        </Route>
+      </Route>
+    </Routes>
   );
 }

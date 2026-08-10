@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { UserButton } from '@clerk/clerk-react';
 
 export default function TopBar({
   user,
@@ -168,22 +169,19 @@ export default function TopBar({
           )}
         </div>
 
-        {/* Profile menu */}
+        {/* Profile menu via Clerk */}
         <div style={styles.profileContainer}>
-          <button
-            onClick={() => {
-              setShowProfileDropdown(!showProfileDropdown);
-              setShowWorkspaceDropdown(false);
-              setShowNotificationDropdown(false);
+          <UserButton
+            appearance={{
+              elements: {
+                userButtonAvatarBox: {
+                  width: '32px',
+                  height: '32px',
+                  border: '1.5px solid #5B5FFB',
+                }
+              }
             }}
-            style={styles.profileBtn}
-          >
-            <img src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'} alt="Avatar" style={styles.avatar} />
-            <div className="topbar-user-meta" style={styles.userMeta}>
-              <div style={styles.userName}>{user?.name || 'Alex Rivers'}</div>
-              <div style={styles.userRole}>Workspace Admin</div>
-            </div>
-          </button>
+          />
         </div>
       </div>
     </header>

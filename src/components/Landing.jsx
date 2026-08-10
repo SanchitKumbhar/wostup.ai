@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { SignedIn, SignedOut } from '@clerk/clerk-react';
 import LandingIntro from './LandingIntro';
 
 // ─── Logo SVG ────────────────────────────────────────────────────────────────
@@ -262,12 +263,22 @@ export default function Landing({ onLogin }) {
 
           {/* CTA */}
           <div className="lp-nav-actions">
-            <button className="lp-nav-login-btn" onClick={onLogin}>
-              Login
-              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" style={{ marginLeft: 5 }}>
-                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-              </svg>
-            </button>
+            <SignedIn>
+              <button className="lp-nav-login-btn" onClick={() => onLogin('/dashboard')}>
+                Go to Dashboard
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none" style={{ marginLeft: 5 }}>
+                  <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </button>
+            </SignedIn>
+            <SignedOut>
+              <button className="lp-nav-login-btn" onClick={() => onLogin('/sign-in')} style={{ background: 'transparent', color: '#1A1D20', border: '1px solid #ECEEF4' }}>
+                Sign In
+              </button>
+              <button className="lp-nav-login-btn" onClick={() => onLogin('/sign-up')} style={{ marginLeft: '8px' }}>
+                Sign Up
+              </button>
+            </SignedOut>
           </div>
 
           {/* Mobile hamburger */}
@@ -285,7 +296,13 @@ export default function Landing({ onLogin }) {
             <button onClick={() => scrollTo('how-it-works')} className="lp-mobile-link">How It Works</button>
             <button onClick={() => scrollTo('testimonials')} className="lp-mobile-link">Testimonials</button>
             <button onClick={() => scrollTo('pricing')} className="lp-mobile-link">Pricing</button>
-            <button className="lp-mobile-login" onClick={onLogin}>Login →</button>
+            <SignedIn>
+              <button className="lp-mobile-login" onClick={() => onLogin('/dashboard')}>Go to Dashboard →</button>
+            </SignedIn>
+            <SignedOut>
+              <button className="lp-mobile-login" onClick={() => onLogin('/sign-in')}>Sign In →</button>
+              <button className="lp-mobile-login" onClick={() => onLogin('/sign-up')} style={{ marginTop: '8px' }}>Sign Up →</button>
+            </SignedOut>
           </div>
         )}
       </nav>
@@ -329,12 +346,22 @@ export default function Landing({ onLogin }) {
               className="lp-hero-actions"
               style={{ transitionDelay: '0.2s', opacity: heroVisible ? 1 : 0, transform: heroVisible ? 'translateY(0)' : 'translateY(16px)', transition: 'opacity 0.7s ease 0.2s, transform 0.7s cubic-bezier(0.16,1,0.3,1) 0.2s' }}
             >
-              <button className="lp-btn-primary" onClick={onLogin}>
-                Get Started Free
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none">
-                  <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-                </svg>
-              </button>
+              <SignedIn>
+                <button className="lp-btn-primary" onClick={() => onLogin('/dashboard')}>
+                  Go to Dashboard
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none" style={{ marginLeft: 6 }}>
+                    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </button>
+              </SignedIn>
+              <SignedOut>
+                <button className="lp-btn-primary" onClick={() => onLogin('/sign-up')}>
+                  Get Started Free
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none" style={{ marginLeft: 6 }}>
+                    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </button>
+              </SignedOut>
               <button className="lp-btn-secondary" onClick={() => scrollTo('how-it-works')}>
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none">
                   <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/>
@@ -526,7 +553,7 @@ export default function Landing({ onLogin }) {
                   </li>
                 ))}
               </ul>
-              <button className="lp-pricing-btn lp-pricing-btn--outline" onClick={onLogin}>Get Started Free</button>
+              <button className="lp-pricing-btn lp-pricing-btn--outline" onClick={() => onLogin('/sign-up')}>Get Started Free</button>
             </div>
             {/* Pro — highlighted */}
             <div className="lp-pricing-card lp-pricing-card--featured">
@@ -542,7 +569,7 @@ export default function Landing({ onLogin }) {
                   </li>
                 ))}
               </ul>
-              <button className="lp-pricing-btn lp-pricing-btn--primary" onClick={onLogin}>Start Pro Trial</button>
+              <button className="lp-pricing-btn lp-pricing-btn--primary" onClick={() => onLogin('/sign-up')}>Start Pro Trial</button>
             </div>
             {/* Enterprise */}
             <div className="lp-pricing-card">
@@ -557,7 +584,7 @@ export default function Landing({ onLogin }) {
                   </li>
                 ))}
               </ul>
-              <button className="lp-pricing-btn lp-pricing-btn--outline" onClick={onLogin}>Contact Sales</button>
+              <button className="lp-pricing-btn lp-pricing-btn--outline" onClick={() => onLogin('/sign-up')}>Contact Sales</button>
             </div>
           </div>
         </div>
@@ -571,12 +598,22 @@ export default function Landing({ onLogin }) {
           <h2 className="lp-cta-title">Ready to ship faster?</h2>
           <p className="lp-cta-sub">Join 12,000+ teams already using Wostup to deliver projects on time.</p>
           <div className="lp-cta-actions">
-            <button className="lp-cta-btn lp-cta-btn--white" onClick={onLogin}>
-              Get Started Free
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none">
-                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-              </svg>
-            </button>
+            <SignedIn>
+              <button className="lp-cta-btn lp-cta-btn--white" onClick={() => onLogin('/dashboard')}>
+                Go to Dashboard
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none" style={{ marginLeft: 6 }}>
+                  <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </button>
+            </SignedIn>
+            <SignedOut>
+              <button className="lp-cta-btn lp-cta-btn--white" onClick={() => onLogin('/sign-up')}>
+                Get Started Free
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none" style={{ marginLeft: 6 }}>
+                  <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </button>
+            </SignedOut>
             <button className="lp-cta-btn lp-cta-btn--ghost" onClick={() => scrollTo('features')}>
               Explore Features
             </button>
