@@ -28,7 +28,6 @@ export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects 
     }));
     setAtRiskCount(0);
     setOnTrackCount(104);
-    setShowNotice(false);
     if (onOptimizeLoad) onOptimizeLoad();
   };
 
@@ -162,24 +161,6 @@ export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects 
           })}
         </div>
       </div>
-
-      {/* Large AI Alert Banner */}
-      {showNotice && (
-        <div className="ai-alert-banner-responsive" style={styles.aiAlertBanner}>
-          <div style={styles.alertLeft}>
-            <span style={styles.alertIcon}>🤖</span>
-            <div style={styles.alertMeta}>
-              <div style={styles.alertTitle}>Risk Insight Detected</div>
-              <div style={styles.alertBody}>
-                Projects "Internal API" and "Security Audit" have overlapping milestones for 3 team members next week. Resource conflict likely.
-              </div>
-            </div>
-          </div>
-          <button className="alert-cta-responsive" style={styles.alertCTA} onClick={handleOptimizeLoad}>
-            Optimize Load
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -211,30 +192,30 @@ const styles = {
   },
   kpiCard: {
     flex: 1,
-    padding: '20px',
+    padding: '12px 16px',
   },
   kpiHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '12px',
+    marginBottom: '8px',
   },
   kpiTitle: {
-    fontSize: '10px',
+    fontSize: '9px',
     fontWeight: '700',
     color: '#9AA6B2',
     letterSpacing: '0.08em',
   },
   iconSpan: {
-    fontSize: '14px',
+    fontSize: '12px',
   },
   kpiVal: {
-    fontSize: '28px',
+    fontSize: '20px',
     fontWeight: '700',
-    marginBottom: '6px',
+    marginBottom: '4px',
   },
   kpiChange: {
-    fontSize: '12px',
+    fontSize: '11px',
     color: '#6C7A87',
   },
   boardWrapper: {

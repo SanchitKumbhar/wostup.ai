@@ -15,6 +15,7 @@ import TaskHealth from './components/TaskHealth';
 import Settings from './components/Settings';
 import WorkspaceSelector from './components/WorkspaceSelector';
 import AIAssistant from './components/AiAssistant';
+import GithubIntegration from './components/Github/GithubIntegration';
 import ProtectedRoute from './components/ProtectedRoute';
 import SignInPage from './components/SignInPage';
 import SignUpPage from './components/SignUpPage';
@@ -434,6 +435,7 @@ export default function App() {
             />
           } />
 
+          <Route path="/github" element={<GithubIntegration />} />
           <Route path="/ai-assistant" element={<AIAssistant />} />
         </Route>
       </Route>
