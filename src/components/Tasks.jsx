@@ -352,64 +352,47 @@ export default function Tasks({
   return (
     <div className="page-body" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)' }}>
 
-      {/* ── Page Header ─────────────────────────────────────────── */}
-      <div className="page-header" style={{ marginBottom: '12px' }}>
-        <div className="page-title-group">
-          <h1>Project Board</h1>
-          <p style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>{activeProject?.name || 'All Projects'}</span>
-            <span style={{
-              fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px', marginLeft: '8px',
-              backgroundColor: methodology === 'scrum' ? '#EDE9FE' : '#E0F2FE',
-              color: methodology === 'scrum' ? '#7C3AED' : '#0369A1',
-            }}>
-              {methodology === 'scrum' ? 'SCRUM' : 'KANBAN'}
-            </span>
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* Project switcher */}
+      {/* ── Unified Nav Header ─────────────────────────────────────────── */}
+      <div className="unified-nav-header" style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '16px', 
+        marginBottom: '16px', 
+        padding: '12px 16px', 
+        backgroundColor: '#FFFFFF', 
+        border: '1px solid #ECEEF4', 
+        borderRadius: '12px',
+        overflowX: 'auto',
+        whiteSpace: 'nowrap'
+      }}>
+        
+        {/* 1. Project Selector & Badge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
           <select
             value={activeProjectId}
             onChange={e => { setActiveProjectId(e.target.value); setFilterEpic(null); setFilterSprint(null); setFilterActiveSprintOnly(false); }}
             className="form-input form-select"
-            style={{ fontSize: '13px', padding: '8px 32px 8px 12px', width: 'auto' }}
+            style={{ fontSize: '14px', fontWeight: '700', padding: '4px 28px 4px 8px', width: 'auto', border: 'none', backgroundColor: 'transparent', color: '#1A1D20', cursor: 'pointer' }}
           >
             {projects.map(p => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </select>
-          {methodology === 'scrum' && (
-            <button
-              className="btn-gradient"
-              style={{ background: 'var(--color-danger)', fontSize: '13px', padding: '8px 16px' }}
-              onClick={() => setCompleteSprintModal(true)}
-            >
-              Complete Sprint
-            </button>
-          )}
-          <button
-            onClick={() => setIsCreateEpicOpen(true)}
-            style={styles.headerSecondaryBtn}
-          >
-            New Epic
-          </button>
-          <button
-            onClick={() => setIsCreateSprintOpen(true)}
-            style={styles.headerSecondaryBtn}
-          >
-            New Sprint
-          </button>
-          <button className="btn-gradient" onClick={() => setIsNewTaskModalOpen(true)}>
-            + New Task
-          </button>
-        </div>
-      </div>
 
-      {/* ── Action / Filter Row ──────────────────────────────────── */}
-      <div className="action-row-responsive" style={styles.actionRow}>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* Board / Backlog toggle */}
+          <span style={{
+            fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '20px',
+            backgroundColor: methodology === 'scrum' ? '#EDE9FE' : '#E0F2FE',
+            color: methodology === 'scrum' ? '#7C3AED' : '#0369A1',
+            letterSpacing: '0.05em'
+          }}>
+            {methodology === 'scrum' ? 'SCRUM' : 'KANBAN'}
+          </span>
+        </div>
+
+        <div style={{ width: '1px', height: '24px', backgroundColor: '#ECEEF4', flexShrink: 0 }} />
+
+        {/* 2. View Toggles */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
           <div style={styles.tabToggle}>
             {['board', 'backlog'].map(v => (
               <button
@@ -422,7 +405,6 @@ export default function Tasks({
             ))}
           </div>
 
-          {/* My Tasks / All Tasks */}
           <div style={styles.tabToggle}>
             {['My Tasks', 'All Tasks'].map(v => (
               <button
@@ -436,85 +418,80 @@ export default function Tasks({
           </div>
         </div>
 
-        <div style={styles.rightActions}>
-          {/* Sprint filter */}
+        <div style={{ width: '1px', height: '24px', backgroundColor: '#ECEEF4', flexShrink: 0 }} />
+
+        {/* 3. Filters (takes up available middle space) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 'min-content' }}>
           {projectSprints.length > 0 && activeBoardView === 'board' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '12px', color: '#6C7A87', fontWeight: '600' }}>Sprint:</span>
-              <select
-                value={filterActiveSprintOnly ? '__active__' : (filterSprint || '')}
-                onChange={e => {
-                  const val = e.target.value;
-                  if (val === '__active__') {
-                    setFilterActiveSprintOnly(true);
-                    setFilterSprint(null);
-                  } else {
-                    setFilterActiveSprintOnly(false);
-                    setFilterSprint(val || null);
-                  }
-                }}
-                className="form-input form-select"
-                style={{ fontSize: '12px', padding: '5px 30px 5px 10px', width: 'auto', minWidth: '140px' }}
-              >
-                <option value="">All Sprints</option>
-                <option value="__active__">Active Sprint Only</option>
-                {projectSprints.map(sp => {
-                  const statusColors = getSprintStatusColor(sp.status);
-                  return (
-                    <option key={sp.id} value={sp.id}>
-                      {sp.name} ({sp.status})
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
+            <select
+              value={filterActiveSprintOnly ? '__active__' : (filterSprint || '')}
+              onChange={e => {
+                const val = e.target.value;
+                if (val === '__active__') {
+                  setFilterActiveSprintOnly(true);
+                  setFilterSprint(null);
+                } else {
+                  setFilterActiveSprintOnly(false);
+                  setFilterSprint(val || null);
+                }
+              }}
+              className="form-input form-select"
+              style={{ fontSize: '12px', padding: '5px 28px 5px 10px', width: 'auto' }}
+            >
+              <option value="">All Sprints</option>
+              <option value="__active__">Active Sprint Only</option>
+              {projectSprints.map(sp => (
+                <option key={sp.id} value={sp.id}>
+                  {sp.name} ({sp.status})
+                </option>
+              ))}
+            </select>
           )}
 
-          {/* Epic filter */}
           {projectEpics.length > 0 && activeBoardView === 'board' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '12px', color: '#6C7A87', fontWeight: '600' }}>Epic:</span>
-              <div style={styles.epicFilterRow}>
-                <button
-                  onClick={() => setFilterEpic(null)}
-                  style={{ ...styles.epicFilterPill, ...(filterEpic === null ? styles.epicFilterPillActive : {}) }}
-                >
-                  All
-                </button>
-                {projectEpics.map(ep => (
-                  <button
-                    key={ep.id}
-                    onClick={() => setFilterEpic(filterEpic === ep.id ? null : ep.id)}
-                    style={{
-                      ...styles.epicFilterPill,
-                      ...(filterEpic === ep.id ? { backgroundColor: ep.color, color: '#FFF', borderColor: ep.color } : {}),
-                    }}
-                  >
-                    <span style={{
-                      display: 'inline-block',
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
-                      backgroundColor: filterEpic === ep.id ? '#FFF' : ep.color,
-                      marginRight: '4px',
-                      flexShrink: 0,
-                    }} />
-                    {ep.name}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <select
+              value={filterEpic || ''}
+              onChange={e => setFilterEpic(e.target.value || null)}
+              className="form-input form-select"
+              style={{ fontSize: '12px', padding: '5px 28px 5px 10px', width: 'auto' }}
+            >
+              <option value="">All Epics</option>
+              {projectEpics.map(ep => (
+                <option key={ep.id} value={ep.id}>
+                  Epic: {ep.name}
+                </option>
+              ))}
+            </select>
           )}
 
           {activeBoardView === 'board' && (
-            <>
-              <span style={{ fontSize: '13px', color: '#6C7A87', fontWeight: '500' }}>Sort by:</span>
-              <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="form-input form-select" style={{ fontSize: '13px', padding: '6px 32px 6px 10px', width: 'auto' }}>
-                <option value="Priority">Priority</option>
-                <option value="Due Date">Due Date</option>
-              </select>
-            </>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="form-input form-select" style={{ fontSize: '12px', padding: '5px 28px 5px 10px', width: 'auto' }}>
+              <option value="Priority">Sort: Priority</option>
+              <option value="Due Date">Sort: Due Date</option>
+            </select>
           )}
+        </div>
+
+        {/* 4. Action Buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          {methodology === 'scrum' && (
+            <button
+              className="btn-gradient"
+              style={{ backgroundColor: 'var(--color-danger)', fontSize: '12px', padding: '6px 12px' }}
+              onClick={() => setCompleteSprintModal(true)}
+            >
+              Complete Sprint
+            </button>
+          )}
+          <button onClick={() => setIsCreateEpicOpen(true)} style={{ ...styles.headerSecondaryBtn, fontSize: '12px', padding: '6px 12px' }}>
+            New Epic
+          </button>
+          <button onClick={() => setIsCreateSprintOpen(true)} style={{ ...styles.headerSecondaryBtn, fontSize: '12px', padding: '6px 12px' }}>
+            New Sprint
+          </button>
+          <button className="btn-gradient" onClick={() => setIsNewTaskModalOpen(true)} style={{ fontSize: '12px', padding: '6px 14px' }}>
+            + New Task
+          </button>
         </div>
       </div>
 
@@ -524,34 +501,6 @@ export default function Tasks({
       {activeBoardView === 'board' && (
         <div style={styles.boardWrapper}>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            {/* Scrum Sprint Header — dynamic */}
-            {methodology === 'scrum' && activeSprint && (
-              <div className="sprint-header-bar" style={styles.sprintHeaderBar}>
-                <div style={styles.sprintLeft}>
-                  <span style={styles.sprintLabel}>CURRENT SPRINT</span>
-                  <span style={styles.sprintName}>{activeSprint.name}</span>
-                  <span style={styles.sprintDates}>{formatSprintDates(activeSprint)}</span>
-                </div>
-                <div style={styles.sprintRight}>
-                  <span style={styles.sprintGoalLabel}>Goal:</span>
-                  <span style={styles.sprintGoal}>{activeSprint.goal}</span>
-                </div>
-                <div style={styles.sprintStats}>
-                  <div style={styles.sprintStat}>
-                    <div style={styles.sprintStatVal}>{boardTasks.filter(t => t.status === 'Completed').length}</div>
-                    <div style={styles.sprintStatLabel}>DONE</div>
-                  </div>
-                  <div style={styles.sprintStat}>
-                    <div style={styles.sprintStatVal}>{boardTasks.length}</div>
-                    <div style={styles.sprintStatLabel}>TOTAL</div>
-                  </div>
-                  <div style={styles.sprintStat}>
-                    <div style={styles.sprintStatVal}>{boardTasks.reduce((s, t) => s + (t.storyPoints || 0), 0)}</div>
-                    <div style={styles.sprintStatLabel}>SP</div>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Kanban columns */}
             <div className="kanban-board-scroll" style={styles.kanbanGrid}>
@@ -574,13 +523,10 @@ export default function Tasks({
                       ...(isOverWip ? styles.columnHeaderWip : {}),
                     }}>
                       <div style={styles.columnTitleRow}>
-                        <span style={{
-                          ...styles.columnIndicatorDot,
-                          backgroundColor: isOverWip ? '#D97706' : '#5B5FFB',
-                        }} />
+                        <span style={styles.columnIndicatorDot} />
                         <span style={{
                           ...styles.columnTitle,
-                          color: isOverWip ? '#92400E' : '#9AA6B2',
+                          color: isOverWip ? '#92400E' : '#334155',
                         }}>
                           {column.toUpperCase()}
                         </span>
@@ -588,9 +534,8 @@ export default function Tasks({
                         {methodology === 'kanban' && column !== 'Completed' ? (
                           <span style={{
                             ...styles.columnCount,
-                            backgroundColor: isOverWip ? '#FEF3C7' : '#ECEEF4',
-                            color: isOverWip ? '#92400E' : '#6C7A87',
-                            fontWeight: isOverWip ? '700' : '600',
+                            backgroundColor: isOverWip ? '#FEF3C7' : '#E2E8F0',
+                            color: isOverWip ? '#92400E' : '#475569',
                           }}>
                             {columnTasks.length}/{wipLimit}
                           </span>
@@ -598,7 +543,7 @@ export default function Tasks({
                           <span style={styles.columnCount}>{columnTasks.length}</span>
                         )}
                         {isOverWip && (
-                          <span style={styles.wipWarningBadge} title="WIP limit exceeded">!</span>
+                          <span style={styles.wipWarningBadge} title="WIP limit exceeded">Limit Exceeded</span>
                         )}
                       </div>
                       <button style={styles.columnMenuBtn}>•••</button>
@@ -625,17 +570,17 @@ export default function Tasks({
                               </div>
                             )}
 
-                            <div style={styles.cardTopRow}>
-                              <span className={`badge ${getPriorityStyle(task.priority)}`} style={{ fontSize: '9px', padding: '2px 6px' }}>
-                                {task.priority.toLowerCase()}
-                              </span>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                {task.storyPoints && (
-                                  <span style={styles.storyPointsBadge}>{task.storyPoints} SP</span>
-                                )}
-                                <span style={styles.taskId}>{task.id}</span>
+                              <div style={styles.cardTopRow}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  {task.storyPoints && (
+                                    <span style={styles.storyPointsBadge}>{task.storyPoints} SP</span>
+                                  )}
+                                  <span style={styles.taskId}>{task.id}</span>
+                                </div>
+                                <span className={`badge ${getPriorityStyle(task.priority)}`} style={{ fontSize: '10px', padding: '2px 6px' }}>
+                                  {task.priority.toLowerCase()}
+                                </span>
                               </div>
-                            </div>
 
                             <h4 style={styles.cardTitle}>{task.title}</h4>
                             <p style={styles.cardDesc}>
@@ -644,7 +589,7 @@ export default function Tasks({
 
                             {task.priority === 'High' && column !== 'Completed' && (
                               <div style={styles.aiWarning}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C53030" strokeWidth="2.5" style={{ marginRight: '4px' }}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '6px' }}>
                                   <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
                                 </svg>
                                 AI: Target delivery risk
@@ -887,10 +832,10 @@ export default function Tasks({
                 {/* Inline creation row */}
                 <tr style={styles.inlineCreateRow}>
                   <td style={styles.backlogTd}>
-                    <span style={{ ...styles.dragHandle, opacity: 0.3 }}>::</span>
+                    <span style={{ ...styles.dragHandle, opacity: 0.3 }}>+</span>
                   </td>
                   <td style={styles.backlogTd}>
-                    <span style={{ ...styles.backlogTaskId, color: '#C4CDD6' }}>NEW</span>
+                    <span style={{ ...styles.backlogTaskId, color: '#94A3B8' }}>NEW</span>
                   </td>
                   <td style={styles.backlogTd} colSpan={1}>
                     <form onSubmit={handleInlineCreate} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -1090,13 +1035,7 @@ export default function Tasks({
                           ...(newEpicColor === color ? styles.colorSwatchActive : {}),
                         }}
                         title={color}
-                      >
-                        {newEpicColor === color && (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                      </button>
+                      />
                     ))}
                   </div>
                   <div style={styles.hexInputRow}>
@@ -1289,7 +1228,7 @@ export default function Tasks({
                 <button onClick={() => setCompleteSprintModal(false)} style={styles.discardBtn}>Cancel</button>
                 <button
                   onClick={handleConfirmCompleteSprint}
-                  style={{ background: 'var(--color-danger)', color: '#FFF', border: 'none', borderRadius: '10px', padding: '10px 24px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}
+                  style={{ backgroundColor: 'var(--color-danger)', color: '#FFF', border: 'none', borderRadius: '10px', padding: '10px 24px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}
                 >
                   Complete Sprint
                 </button>
@@ -1325,7 +1264,7 @@ const styles = {
     padding: '4px',
   },
   toggleBtn: {
-    background: 'none',
+    backgroundColor: 'transparent',
     border: 'none',
     padding: '7px 14px',
     borderRadius: '7px',
@@ -1372,7 +1311,7 @@ const styles = {
   },
   // ── Header secondary button ───────────────────────────────────────
   headerSecondaryBtn: {
-    background: '#FFFFFF',
+    backgroundColor: '#FFFFFF',
     border: '1px solid #ECEEF4',
     borderRadius: '8px',
     padding: '8px 14px',
@@ -1388,7 +1327,7 @@ const styles = {
   },
   // ── Sprint Header ──────────────────────────────────────────────────
   sprintHeaderBar: {
-    background: 'var(--color-accent-bg, #EFF6FF)',
+    backgroundColor: 'var(--color-accent-bg, #EFF6FF)',
     border: '1px solid #E0E4FF',
     borderRadius: '12px',
     padding: '12px 20px',
@@ -1528,7 +1467,7 @@ const styles = {
     cursor: 'help',
   },
   columnMenuBtn: {
-    background: 'none',
+    backgroundColor: 'transparent',
     border: 'none',
     color: '#9AA6B2',
     cursor: 'pointer',
@@ -1689,7 +1628,7 @@ const styles = {
     lineHeight: '1.4',
   },
   panelCloseBtn: {
-    background: 'none',
+    backgroundColor: 'transparent',
     border: 'none',
     fontSize: '22px',
     color: '#9AA6B2',
@@ -1812,7 +1751,7 @@ const styles = {
     borderCollapse: 'collapse',
   },
   backlogThead: {
-    backgroundColor: '#F8F9FD',
+    backgroundColor: '#F8FAFC',
     borderBottom: '2px solid #ECEEF4',
   },
   backlogTh: {
@@ -1867,7 +1806,7 @@ const styles = {
     padding: '2px 8px',
   },
   ellipsisBtn: {
-    background: 'none',
+    backgroundColor: 'transparent',
     border: 'none',
     fontSize: '18px',
     color: '#9AA6B2',
@@ -1894,7 +1833,7 @@ const styles = {
     display: 'block',
     width: '100%',
     textAlign: 'left',
-    background: 'none',
+    backgroundColor: 'transparent',
     border: 'none',
     padding: '11px 16px',
     fontSize: '13px',
@@ -1989,7 +1928,7 @@ const styles = {
     position: 'absolute',
     top: '20px',
     right: '20px',
-    background: 'none',
+    backgroundColor: 'transparent',
     border: 'none',
     fontSize: '24px',
     color: '#9AA6B2',
@@ -2009,7 +1948,7 @@ const styles = {
     marginTop: '20px',
   },
   discardBtn: {
-    background: 'none',
+    backgroundColor: 'transparent',
     border: 'none',
     color: '#6C7A87',
     fontSize: '13px',
@@ -2083,7 +2022,7 @@ const styles = {
     gap: '8px',
   },
   presetBtn: {
-    background: '#F0F2FF',
+    backgroundColor: '#F0F2FF',
     border: '1px solid #E0E4FF',
     borderRadius: '8px',
     padding: '6px 14px',
