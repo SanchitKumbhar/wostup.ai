@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function WorkspaceSelector({ isOpen, onClose, onGenerate }) {
+export default function WorkspaceSelector({ isOpen, onClose, onGenerate, isCompulsory }) {
   const [workspaceName, setWorkspaceName] = useState('');
   const [selectedColor, setSelectedColor] = useState('#5B5FFB'); // Blue/Purple default
   const [invites, setInvites] = useState('');
@@ -31,7 +31,10 @@ export default function WorkspaceSelector({ isOpen, onClose, onGenerate }) {
     setSelectedColor('#5B5FFB');
     setInvites('');
     setError('');
-    onClose();
+    
+    if (!isCompulsory) {
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
@@ -41,12 +44,14 @@ export default function WorkspaceSelector({ isOpen, onClose, onGenerate }) {
       <div className="modal-content" style={styles.modalWidth}>
         {/* Banner with gradient */}
         <div style={styles.banner}>
-          <button onClick={onClose} style={styles.closeBtn}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
+          {!isCompulsory && (
+            <button onClick={onClose} style={styles.closeBtn}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          )}
           <div style={styles.iconCircle}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#5B5FFB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
@@ -124,9 +129,11 @@ export default function WorkspaceSelector({ isOpen, onClose, onGenerate }) {
             <button type="submit" className="btn-gradient" style={styles.ctaBtn}>
               Generate Workspace
             </button>
-            <button type="button" onClick={onClose} style={styles.cancelBtn}>
-              Maybe Later
-            </button>
+            {!isCompulsory && (
+              <button type="button" onClick={onClose} style={styles.cancelBtn}>
+                Maybe Later
+              </button>
+            )}
           </div>
         </form>
       </div>

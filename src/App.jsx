@@ -34,13 +34,13 @@ export default function App() {
   } : null;
 
   // Workspace States
-  const [workspaces, setWorkspaces] = useState([
-    { id: 'ws-1', name: 'Engineering Workspace', color: '#5B5FFB', membersCount: 12 },
-    { id: 'ws-2', name: 'Strategic Engineering', color: '#B24DFF', membersCount: 45 },
-    { id: 'ws-3', name: 'Future Labs HQ', color: '#00C292', membersCount: 5 },
-  ]);
-  const [activeWorkspaceId, setActiveWorkspaceId] = useState('ws-1');
+  const [workspaces, setWorkspaces] = useState([]);
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState(null);
   const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
+
+  // Compulsory workspace check
+  const isWorkspaceRequired = user && workspaces.length === 0;
+  const showWorkspaceModal = isWorkspaceModalOpen || isWorkspaceRequired;
 
   // Navigation States
   const [selectedProject, setSelectedProject] = useState(null);
@@ -302,8 +302,8 @@ export default function App() {
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Landing onLogin={(path) => navigate(path)} />} />
-      <Route path="/sign-in" element={<SignInPage />} />
-      <Route path="/sign-up" element={<SignUpPage />} />
+      <Route path="/sign-in/*" element={<SignInPage />} />
+      <Route path="/sign-up/*" element={<SignUpPage />} />
 
       {/* Protected Layout & Routes */}
       <Route element={<ProtectedRoute />}>
@@ -338,9 +338,10 @@ export default function App() {
             </div>
 
             <WorkspaceSelector
-              isOpen={isWorkspaceModalOpen}
+              isOpen={showWorkspaceModal}
               onClose={() => setIsWorkspaceModalOpen(false)}
               onGenerate={handleGenerateWorkspace}
+              isCompulsory={isWorkspaceRequired}
             />
           </div>
         }>

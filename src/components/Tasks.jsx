@@ -560,7 +560,7 @@ export default function Tasks({
                             draggable
                             onDragStart={e => handleDragStart(e, task.id)}
                             onClick={() => setActiveTaskDetail(task)}
-                            className="premium-card task-card-hover"
+                            className="task-card-hover"
                             style={styles.taskCard}
                           >
                             {/* Epic pill */}
@@ -1413,15 +1413,15 @@ const styles = {
     overflowY: 'hidden',
   },
   kanbanColumn: {
-    backgroundColor: '#FAFCFF',
-    border: '1px solid #ECEEF4',
+    backgroundColor: 'rgba(248, 249, 253, 0.6)',
     borderRadius: '16px',
-    padding: '14px',
+    padding: '12px',
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
-    minWidth: '220px',
+    minWidth: '260px',
     overflow: 'hidden',
+    transition: 'background-color 0.3s ease',
   },
   columnHeader: {
     display: 'flex',
@@ -1430,11 +1430,9 @@ const styles = {
     marginBottom: '14px',
     padding: '8px 10px',
     borderRadius: '8px',
-    transition: 'background 0.2s ease',
   },
   columnHeaderWip: {
     backgroundColor: '#FEF3C7',
-    border: '1px solid #FDE68A',
   },
   columnTitleRow: {
     display: 'flex',
@@ -1482,28 +1480,29 @@ const styles = {
     paddingBottom: '12px',
   },
   taskCard: {
-    padding: '14px',
+    padding: '16px',
     cursor: 'pointer',
     backgroundColor: '#FFFFFF',
+    borderRadius: '14px',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)',
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   epicPill: {
     display: 'inline-block',
     fontSize: '10px',
     fontWeight: '700',
-    padding: '2px 8px',
+    padding: '4px 10px',
     borderRadius: '20px',
-    border: '1px solid',
-    marginBottom: '8px',
-    letterSpacing: '0.02em',
+    marginBottom: '10px',
+    letterSpacing: '0.03em',
   },
   storyPointsBadge: {
     fontSize: '10px',
     fontWeight: '700',
     color: '#6C7A87',
-    backgroundColor: '#F0F4F8',
-    border: '1px solid #ECEEF4',
+    backgroundColor: '#F4F6F9',
     borderRadius: '6px',
-    padding: '1px 5px',
+    padding: '2px 6px',
   },
   cardTopRow: {
     display: 'flex',
@@ -1544,15 +1543,14 @@ const styles = {
   sprintChip: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '4px',
+    gap: '6px',
     fontSize: '10px',
     fontWeight: '600',
     color: '#6C7A87',
-    backgroundColor: '#F0F4F8',
-    border: '1px solid #ECEEF4',
-    borderRadius: '6px',
-    padding: '2px 8px',
-    marginBottom: '10px',
+    backgroundColor: '#F4F6F9',
+    borderRadius: '8px',
+    padding: '4px 10px',
+    marginBottom: '12px',
   },
   sprintChipIcon: {
     fontSize: '10px',
