@@ -153,28 +153,37 @@ export default function App() {
 
   // Epics State
   const [epics, setEpics] = useState([
-    { id: 'EP-1', name: 'Mobile Redesign',     color: '#7C3AED', projectId: 'PRJ-101' },
-    { id: 'EP-2', name: 'API Modernization',   color: '#0891B2', projectId: 'PRJ-101' },
-    { id: 'EP-3', name: 'Auth Overhaul',       color: '#059669', projectId: 'PRJ-101' },
-    { id: 'EP-4', name: 'Checkout UX',         color: '#D97706', projectId: 'PRJ-102' },
-    { id: 'EP-5', name: 'Search & Discovery',  color: '#DB2777', projectId: 'PRJ-102' },
+    { id: 'EP-1', name: 'Mobile Redesign',     color: '#7C3AED', projectId: 'PRJ-101', summary: 'Redesign mobile experience', description: '', status: 'In Progress', startDate: '2026-09-01', dueDate: '2026-11-15' },
+    { id: 'EP-2', name: 'API Modernization',   color: '#0891B2', projectId: 'PRJ-101', summary: 'Modernize all REST APIs', description: '', status: 'In Progress', startDate: '2026-09-15', dueDate: '2026-12-01' },
+    { id: 'EP-3', name: 'Auth Overhaul',       color: '#059669', projectId: 'PRJ-101', summary: 'Revamp authentication system', description: '', status: 'To Do', startDate: '2026-10-01', dueDate: '2026-12-20' },
+    { id: 'EP-4', name: 'Checkout UX',         color: '#D97706', projectId: 'PRJ-102', summary: 'Improve checkout flow', description: '', status: 'In Progress', startDate: '2026-10-01', dueDate: '2026-12-05' },
+    { id: 'EP-5', name: 'Search & Discovery',  color: '#DB2777', projectId: 'PRJ-102', summary: 'Enhanced search features', description: '', status: 'To Do', startDate: '2026-10-15', dueDate: '2026-12-12' },
+  ]);
+
+  // Sprints State
+  const [sprints, setSprints] = useState([
+    { id: 'SPR-1', name: 'Sprint 13', goal: 'Complete infrastructure setup and CI/CD pipeline', status: 'Completed', startDate: '2026-09-17', endDate: '2026-09-30', projectId: 'PRJ-101' },
+    { id: 'SPR-2', name: 'Sprint 14', goal: 'Complete API layer and dashboard integration', status: 'Active', startDate: '2026-10-01', endDate: '2026-10-14', projectId: 'PRJ-101' },
+    { id: 'SPR-3', name: 'Sprint 15', goal: 'Performance optimization and testing', status: 'Future', startDate: '2026-10-15', endDate: '2026-10-28', projectId: 'PRJ-101' },
+    { id: 'SPR-4', name: 'Sprint 1', goal: 'Build product listing and cart components', status: 'Active', startDate: '2026-10-01', endDate: '2026-10-14', projectId: 'PRJ-102' },
+    { id: 'SPR-5', name: 'Sprint 2', goal: 'Checkout and payment integration', status: 'Future', startDate: '2026-10-15', endDate: '2026-10-28', projectId: 'PRJ-102' },
   ]);
 
   // Tasks State (extended with storyPoints, epic, isBacklog)
   const [tasks, setTasks] = useState([
-    { id: 'TSK-001', projectId: 'PRJ-101', title: 'Finalize database schema migration scripts', assignee: 'Sarah Chen', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', status: 'In Progress', dueDate: 'Jun 20', priority: 'High', progress: 65, commentsCount: 4, storyPoints: 8, epic: 'EP-2', isBacklog: false },
-    { id: 'TSK-002', projectId: 'PRJ-101', title: 'Security audit for API endpoints', assignee: 'Marcus Rodriguez', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', status: 'Review', dueDate: 'Jun 22', priority: 'Medium', progress: 90, commentsCount: 12, storyPoints: 5, epic: 'EP-3', isBacklog: false },
-    { id: 'TSK-003', projectId: 'PRJ-101', title: 'Frontend integration for Dashboard v2', assignee: 'Elena Sokolov', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80', status: 'Todo', dueDate: 'Jun 25', priority: 'High', progress: 0, commentsCount: 2, storyPoints: 13, epic: 'EP-1', isBacklog: false },
-    { id: 'TSK-004', projectId: 'PRJ-101', title: 'Refactor legacy notification service', assignee: 'James Wilson', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80', status: 'Completed', dueDate: 'Jun 15', priority: 'Low', progress: 100, commentsCount: 1, storyPoints: 3, epic: null, isBacklog: false },
-    { id: 'TSK-005', projectId: 'PRJ-101', title: 'Prepare Stakeholder Progress Report', assignee: 'Sarah Chen', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', status: 'Todo', dueDate: 'Jun 28', priority: 'Medium', progress: 10, commentsCount: 0, storyPoints: 2, epic: 'EP-2', isBacklog: false },
-    { id: 'TSK-006', projectId: 'PRJ-101', title: 'Design new onboarding flow screens', assignee: 'Elena Sokolov', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80', status: 'Todo', dueDate: 'Jul 05', priority: 'Medium', progress: 0, commentsCount: 0, storyPoints: 5, epic: 'EP-1', isBacklog: true },
-    { id: 'TSK-007', projectId: 'PRJ-101', title: 'Write API documentation for v3 endpoints', assignee: 'Marcus Rodriguez', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', status: 'Todo', dueDate: 'Jul 10', priority: 'Low', progress: 0, commentsCount: 0, storyPoints: 3, epic: 'EP-2', isBacklog: true },
-    { id: 'TSK-008', projectId: 'PRJ-101', title: 'Implement rate limiting on public APIs', assignee: 'Sarah Chen', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', status: 'Todo', dueDate: 'Jul 12', priority: 'High', progress: 0, commentsCount: 0, storyPoints: 8, epic: 'EP-3', isBacklog: true },
-    { id: 'TSK-105', projectId: 'PRJ-102', title: 'Implement socket.io for Notifications', assignee: 'Sarah Chen', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', status: 'In Progress', dueDate: 'Nov 22', priority: 'Medium', progress: 40, commentsCount: 0, storyPoints: 5, epic: 'EP-4', isBacklog: false },
-    { id: 'TSK-106', projectId: 'PRJ-102', title: 'Redesign product listing cards', assignee: 'Elena Sokolov', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80', status: 'In Progress', dueDate: 'Nov 25', priority: 'High', progress: 30, commentsCount: 3, storyPoints: 8, epic: 'EP-4', isBacklog: false },
-    { id: 'TSK-107', projectId: 'PRJ-102', title: 'Integrate Algolia for search suggestions', assignee: 'Marcus Rodriguez', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', status: 'Review', dueDate: 'Nov 28', priority: 'Medium', progress: 85, commentsCount: 7, storyPoints: 13, epic: 'EP-5', isBacklog: false },
-    { id: 'TSK-108', projectId: 'PRJ-102', title: 'A/B test checkout button placement', assignee: 'Sarah Chen', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', status: 'Review', dueDate: 'Nov 30', priority: 'Low', progress: 70, commentsCount: 2, storyPoints: 3, epic: 'EP-4', isBacklog: false },
-    { id: 'TSK-109', projectId: 'PRJ-102', title: 'Set up Storybook for component library', assignee: 'Elena Sokolov', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80', status: 'In Progress', dueDate: 'Dec 01', priority: 'Medium', progress: 20, commentsCount: 1, storyPoints: 5, epic: 'EP-5', isBacklog: false },
+    { id: 'TSK-001', projectId: 'PRJ-101', title: 'Finalize database schema migration scripts', assignee: 'Sarah Chen', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', status: 'In Progress', dueDate: 'Jun 20', priority: 'High', progress: 65, commentsCount: 4, storyPoints: 8, epic: 'EP-2', sprintId: 'SPR-2', isBacklog: false },
+    { id: 'TSK-002', projectId: 'PRJ-101', title: 'Security audit for API endpoints', assignee: 'Marcus Rodriguez', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', status: 'Review', dueDate: 'Jun 22', priority: 'Medium', progress: 90, commentsCount: 12, storyPoints: 5, epic: 'EP-3', sprintId: 'SPR-2', isBacklog: false },
+    { id: 'TSK-003', projectId: 'PRJ-101', title: 'Frontend integration for Dashboard v2', assignee: 'Elena Sokolov', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80', status: 'Todo', dueDate: 'Jun 25', priority: 'High', progress: 0, commentsCount: 2, storyPoints: 13, epic: 'EP-1', sprintId: 'SPR-2', isBacklog: false },
+    { id: 'TSK-004', projectId: 'PRJ-101', title: 'Refactor legacy notification service', assignee: 'James Wilson', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80', status: 'Completed', dueDate: 'Jun 15', priority: 'Low', progress: 100, commentsCount: 1, storyPoints: 3, epic: null, sprintId: 'SPR-2', isBacklog: false },
+    { id: 'TSK-005', projectId: 'PRJ-101', title: 'Prepare Stakeholder Progress Report', assignee: 'Sarah Chen', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', status: 'Todo', dueDate: 'Jun 28', priority: 'Medium', progress: 10, commentsCount: 0, storyPoints: 2, epic: 'EP-2', sprintId: 'SPR-2', isBacklog: false },
+    { id: 'TSK-006', projectId: 'PRJ-101', title: 'Design new onboarding flow screens', assignee: 'Elena Sokolov', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80', status: 'Backlog', dueDate: 'Jul 05', priority: 'Medium', progress: 0, commentsCount: 0, storyPoints: 5, epic: 'EP-1', sprintId: null, isBacklog: true },
+    { id: 'TSK-007', projectId: 'PRJ-101', title: 'Write API documentation for v3 endpoints', assignee: 'Marcus Rodriguez', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', status: 'Backlog', dueDate: 'Jul 10', priority: 'Low', progress: 0, commentsCount: 0, storyPoints: 3, epic: 'EP-2', sprintId: null, isBacklog: true },
+    { id: 'TSK-008', projectId: 'PRJ-101', title: 'Implement rate limiting on public APIs', assignee: 'Sarah Chen', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', status: 'Backlog', dueDate: 'Jul 12', priority: 'High', progress: 0, commentsCount: 0, storyPoints: 8, epic: 'EP-3', sprintId: null, isBacklog: true },
+    { id: 'TSK-105', projectId: 'PRJ-102', title: 'Implement socket.io for Notifications', assignee: 'Sarah Chen', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', status: 'In Progress', dueDate: 'Nov 22', priority: 'Medium', progress: 40, commentsCount: 0, storyPoints: 5, epic: 'EP-4', sprintId: 'SPR-4', isBacklog: false },
+    { id: 'TSK-106', projectId: 'PRJ-102', title: 'Redesign product listing cards', assignee: 'Elena Sokolov', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80', status: 'In Progress', dueDate: 'Nov 25', priority: 'High', progress: 30, commentsCount: 3, storyPoints: 8, epic: 'EP-4', sprintId: 'SPR-4', isBacklog: false },
+    { id: 'TSK-107', projectId: 'PRJ-102', title: 'Integrate Algolia for search suggestions', assignee: 'Marcus Rodriguez', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', status: 'Review', dueDate: 'Nov 28', priority: 'Medium', progress: 85, commentsCount: 7, storyPoints: 13, epic: 'EP-5', sprintId: 'SPR-4', isBacklog: false },
+    { id: 'TSK-108', projectId: 'PRJ-102', title: 'A/B test checkout button placement', assignee: 'Sarah Chen', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', status: 'Review', dueDate: 'Nov 30', priority: 'Low', progress: 70, commentsCount: 2, storyPoints: 3, epic: 'EP-4', sprintId: 'SPR-4', isBacklog: false },
+    { id: 'TSK-109', projectId: 'PRJ-102', title: 'Set up Storybook for component library', assignee: 'Elena Sokolov', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80', status: 'In Progress', dueDate: 'Dec 01', priority: 'Medium', progress: 20, commentsCount: 1, storyPoints: 5, epic: 'EP-5', sprintId: 'SPR-4', isBacklog: false },
   ]);
 
   // Milestones State
@@ -252,6 +261,14 @@ export default function App() {
 
   const handleAddMilestone = (newMilestone) => {
     setMilestones(prev => [...prev, newMilestone]);
+  };
+
+  const handleAddEpic = (newEpic) => {
+    setEpics(prev => [...prev, newEpic]);
+  };
+
+  const handleAddSprint = (newSprint) => {
+    setSprints(prev => [...prev, newSprint]);
   };
 
   const handleAddComment = (projectId, comment) => {
@@ -376,11 +393,14 @@ export default function App() {
               tasks={tasks}
               projects={projects}
               epics={epics}
+              sprints={sprints}
               onAddTask={handleAddTask}
               onUpdateTaskStatus={handleUpdateTaskStatus}
               onUpdateTask={handleUpdateTask}
               onMoveToBoard={handleMoveToBoard}
               onCompleteSprint={handleCompleteSprint}
+              onAddEpic={handleAddEpic}
+              onAddSprint={handleAddSprint}
               isMyTasksView={false}
               onUpdateProject={(projectId, updates) => {
                 setProjects(prev => prev.map(p => p.id === projectId ? { ...p, ...updates } : p));
@@ -393,11 +413,14 @@ export default function App() {
               tasks={tasks}
               projects={projects}
               epics={epics}
+              sprints={sprints}
               onAddTask={handleAddTask}
               onUpdateTaskStatus={handleUpdateTaskStatus}
               onUpdateTask={handleUpdateTask}
               onMoveToBoard={handleMoveToBoard}
               onCompleteSprint={handleCompleteSprint}
+              onAddEpic={handleAddEpic}
+              onAddSprint={handleAddSprint}
               isMyTasksView={true}
               onUpdateProject={(projectId, updates) => {
                 setProjects(prev => prev.map(p => p.id === projectId ? { ...p, ...updates } : p));

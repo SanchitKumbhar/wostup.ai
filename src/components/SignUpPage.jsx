@@ -45,7 +45,7 @@ export default function SignUpPage() {
               color: '#1A1D20',
             },
             formButtonPrimary: {
-              background: 'linear-gradient(135deg, #5B5FFB 0%, #B24DFF 100%)',
+              background: 'var(--color-accent)',
               textTransform: 'none',
               boxShadow: '0 4px 16px rgba(91, 95, 251, 0.2)',
               fontSize: '15px',

@@ -11,22 +11,29 @@ const WIP_LIMITS = {
 // ─── Story-point options (Fibonacci) ────────────────────────────────
 const STORY_POINTS = [1, 2, 3, 5, 8, 13, 21];
 
-// ─── Sprint mock data ────────────────────────────────────────────────
-const SPRINT = {
-  name: 'Sprint 14',
-  dates: 'Oct 1 – Oct 14',
-  goal: 'Complete API layer and dashboard integration',
-};
+// ─── Color preset palette for Epics ─────────────────────────────────
+const EPIC_COLOR_PALETTE = [
+  '#8B5CF6', '#7C3AED', '#6366F1', '#3B82F6',
+  '#0EA5E9', '#06B6D4', '#0891B2', '#10B981',
+  '#059669', '#D97706', '#F59E0B', '#EF4444',
+  '#EC4899', '#DB2777', '#D946EF', '#8B5CF6',
+];
+
+// ─── Status options for tasks ───────────────────────────────────────
+const TASK_STATUS_OPTIONS = ['Backlog', 'Todo', 'In Progress', 'Blocked', 'Waiting Review', 'Done'];
 
 export default function Tasks({
   tasks,
   projects,
   epics = [],
+  sprints = [],
   onAddTask,
   onUpdateTaskStatus,
   onUpdateTask,
   onMoveToBoard,
   onCompleteSprint,
+  onAddEpic,
+  onAddSprint,
   isMyTasksView,
   onUpdateProject,
 }) {
@@ -35,6 +42,8 @@ export default function Tasks({
   const [filterView, setFilterView] = useState(null); // 'My Tasks' | 'All Tasks' | null
   const [sortBy, setSortBy] = useState('Priority');
   const [filterEpic, setFilterEpic] = useState(null); // epic id or null
+  const [filterSprint, setFilterSprint] = useState(null); // sprint id or null
+  const [filterActiveSprintOnly, setFilterActiveSprintOnly] = useState(false);
   const [activeProjectId, setActiveProjectId] = useState(projects[0]?.id || '');
 
   // ── Sync with sidebar nav ─────────────────────────────────────────
@@ -49,6 +58,8 @@ export default function Tasks({
   // ── Panel / modal state ───────────────────────────────────────────
   const [activeTaskDetail, setActiveTaskDetail] = useState(null);
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
+  const [isCreateEpicOpen, setIsCreateEpicOpen] = useState(false);
+  const [isCreateSprintOpen, setIsCreateSprintOpen] = useState(false);
   const [completeSprintModal, setCompleteSprintModal] = useState(false);
   const [openEllipsisId, setOpenEllipsisId] = useState(null); // backlog row menu
 
@@ -70,14 +81,43 @@ export default function Tasks({
   const [newTaskDueDate, setNewTaskDueDate] = useState('');
   const [newTaskPoints, setNewTaskPoints] = useState(3);
   const [newTaskEpic, setNewTaskEpic] = useState('');
+  const [newTaskSprint, setNewTaskSprint] = useState('');
+  const [newTaskStatus, setNewTaskStatus] = useState('Backlog');
+
+  // ── Create Epic form ──────────────────────────────────────────────
+  const [newEpicName, setNewEpicName] = useState('');
+  const [newEpicSummary, setNewEpicSummary] = useState('');
+  const [newEpicDesc, setNewEpicDesc] = useState('');
+  const [newEpicColor, setNewEpicColor] = useState('#8B5CF6');
+  const [newEpicStatus, setNewEpicStatus] = useState('To Do');
+  const [newEpicStartDate, setNewEpicStartDate] = useState('');
+  const [newEpicDueDate, setNewEpicDueDate] = useState('');
+  const [newEpicColorInput, setNewEpicColorInput] = useState('#8B5CF6');
+
+  // ── Create Sprint form ────────────────────────────────────────────
+  const [newSprintName, setNewSprintName] = useState('');
+  const [newSprintGoal, setNewSprintGoal] = useState('');
+  const [newSprintStatus, setNewSprintStatus] = useState('Future');
+  const [newSprintStartDate, setNewSprintStartDate] = useState('');
+  const [newSprintEndDate, setNewSprintEndDate] = useState('');
 
   // ─── Derived ─────────────────────────────────────────────────────
   const activeProject = projects.find(p => p.id === activeProjectId) || projects[0];
   const methodology = activeProject?.methodology || 'scrum';
   const projectEpics = epics.filter(e => e.projectId === activeProjectId);
+  const projectSprints = sprints.filter(s => s.projectId === activeProjectId);
+  const activeSprint = projectSprints.find(s => s.status === 'Active');
 
   const activeBoardView = boardView || 'board';
   const activeFilterView = filterView || (isMyTasksView ? 'My Tasks' : 'All Tasks');
+
+  // Auto-suggest sprint name when opening create sprint modal
+  useEffect(() => {
+    if (isCreateSprintOpen) {
+      const projectSprintCount = projectSprints.length;
+      setNewSprintName(`Sprint ${projectSprintCount + 1}`);
+    }
+  }, [isCreateSprintOpen, projectSprints.length]);
 
   // Board tasks = non-backlog tasks for active project
   const boardTasks = tasks.filter(t => t.projectId === activeProjectId && !t.isBacklog);
@@ -87,13 +127,20 @@ export default function Tasks({
     ? backlogOrder.map(id => rawBacklogTasks.find(t => t.id === id)).filter(Boolean)
     : rawBacklogTasks;
 
-  // Filter board tasks by view and epic
+  // Filter board tasks by view, epic, and sprint
   const filteredBoardTasks = boardTasks.filter(task => {
     const matchesView = activeFilterView === 'My Tasks'
       ? (task.assignee === 'Sarah Chen' || task.assignee === 'Alex Rivers')
       : true;
     const matchesEpic = filterEpic ? task.epic === filterEpic : true;
-    return matchesView && matchesEpic;
+    // Sprint filter logic
+    let matchesSprint = true;
+    if (filterActiveSprintOnly && activeSprint) {
+      matchesSprint = task.sprintId === activeSprint.id;
+    } else if (filterSprint) {
+      matchesSprint = task.sprintId === filterSprint;
+    }
+    return matchesView && matchesEpic && matchesSprint;
   });
 
   const sortedBoardTasks = [...filteredBoardTasks].sort((a, b) => {
@@ -115,6 +162,7 @@ export default function Tasks({
   };
 
   const getEpicById = (id) => epics.find(e => e.id === id);
+  const getSprintById = (id) => sprints.find(s => s.id === id);
 
   const getAvatarForAssignee = (name) => {
     const map = {
@@ -125,6 +173,23 @@ export default function Tasks({
       'Elena Sokolov': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
     };
     return map[name] || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80';
+  };
+
+  const formatSprintDates = (sprint) => {
+    if (!sprint) return '';
+    const start = new Date(sprint.startDate);
+    const end = new Date(sprint.endDate);
+    const opts = { month: 'short', day: 'numeric' };
+    return `${start.toLocaleDateString('en-US', opts)} – ${end.toLocaleDateString('en-US', opts)}`;
+  };
+
+  const getSprintStatusColor = (status) => {
+    switch (status) {
+      case 'Active': return { bg: '#ECFDF5', text: '#059669' };
+      case 'Future': return { bg: '#EFF6FF', text: '#2563EB' };
+      case 'Completed': return { bg: '#F3F4F6', text: '#6B7280' };
+      default: return { bg: '#F3F4F6', text: '#6B7280' };
+    }
   };
 
   // ─── Drag & Drop (Kanban columns) ────────────────────────────────
@@ -171,13 +236,14 @@ export default function Tasks({
       title: inlineTitle,
       assignee: 'Sarah Chen',
       avatar: getAvatarForAssignee('Sarah Chen'),
-      status: 'Todo',
+      status: 'Backlog',
       dueDate: 'TBD',
       priority: 'Medium',
       progress: 0,
       commentsCount: 0,
       storyPoints: inlinePoints,
       epic: null,
+      sprintId: null,
       isBacklog: true,
     };
     onAddTask(newT);
@@ -189,6 +255,7 @@ export default function Tasks({
   const handleCreateTaskSubmit = (e) => {
     e.preventDefault();
     if (!newTaskTitle.trim() || !newTaskDueDate) return;
+    const isBacklog = newTaskStatus === 'Backlog' || !newTaskSprint;
     const newT = {
       id: `TSK-${Math.floor(100 + Math.random() * 900)}`,
       projectId: newTaskProjectId,
@@ -196,25 +263,87 @@ export default function Tasks({
       description: newTaskDesc,
       assignee: newTaskAssignee,
       avatar: getAvatarForAssignee(newTaskAssignee),
-      status: 'Todo',
+      status: newTaskStatus === 'Done' ? 'Completed' : (newTaskStatus === 'Waiting Review' ? 'Review' : newTaskStatus),
       dueDate: new Date(newTaskDueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       priority: newTaskPriority,
-      progress: 0,
+      progress: newTaskStatus === 'Done' ? 100 : 0,
       commentsCount: 0,
       storyPoints: newTaskPoints,
       epic: newTaskEpic || null,
-      isBacklog: false,
+      sprintId: newTaskSprint || null,
+      isBacklog: isBacklog,
     };
     onAddTask(newT);
     setIsNewTaskModalOpen(false);
     setNewTaskTitle(''); setNewTaskDesc(''); setNewTaskPriority('Medium');
     setNewTaskDueDate(''); setNewTaskPoints(3); setNewTaskEpic('');
+    setNewTaskSprint(''); setNewTaskStatus('Backlog');
+  };
+
+  // ─── Create Epic submit ──────────────────────────────────────────
+  const handleCreateEpicSubmit = (e) => {
+    e.preventDefault();
+    if (!newEpicName.trim()) return;
+    const newEpic = {
+      id: `EP-${Math.floor(100 + Math.random() * 900)}`,
+      name: newEpicName,
+      summary: newEpicSummary,
+      description: newEpicDesc,
+      color: newEpicColor,
+      status: newEpicStatus,
+      startDate: newEpicStartDate,
+      dueDate: newEpicDueDate,
+      projectId: activeProjectId,
+    };
+    onAddEpic(newEpic);
+    setIsCreateEpicOpen(false);
+    setNewEpicName(''); setNewEpicSummary(''); setNewEpicDesc('');
+    setNewEpicColor('#8B5CF6'); setNewEpicColorInput('#8B5CF6');
+    setNewEpicStatus('To Do'); setNewEpicStartDate(''); setNewEpicDueDate('');
+  };
+
+  // ─── Create Sprint submit ────────────────────────────────────────
+  const handleCreateSprintSubmit = (e) => {
+    e.preventDefault();
+    if (!newSprintName.trim() || !newSprintStartDate || !newSprintEndDate) return;
+    const newSpr = {
+      id: `SPR-${Math.floor(100 + Math.random() * 900)}`,
+      name: newSprintName,
+      goal: newSprintGoal,
+      status: newSprintStatus,
+      startDate: newSprintStartDate,
+      endDate: newSprintEndDate,
+      projectId: activeProjectId,
+    };
+    onAddSprint(newSpr);
+    setIsCreateSprintOpen(false);
+    setNewSprintName(''); setNewSprintGoal(''); setNewSprintStatus('Future');
+    setNewSprintStartDate(''); setNewSprintEndDate('');
+  };
+
+  // ─── Sprint date presets ──────────────────────────────────────────
+  const applySprintPreset = (weeks) => {
+    const start = newSprintStartDate ? new Date(newSprintStartDate) : new Date();
+    if (!newSprintStartDate) {
+      setNewSprintStartDate(start.toISOString().split('T')[0]);
+    }
+    const end = new Date(start);
+    end.setDate(end.getDate() + (weeks * 7) - 1);
+    setNewSprintEndDate(end.toISOString().split('T')[0]);
   };
 
   // ─── Complete Sprint confirm ──────────────────────────────────────
   const handleConfirmCompleteSprint = () => {
     onCompleteSprint(activeProjectId);
     setCompleteSprintModal(false);
+  };
+
+  // ─── Epic color hex input handler ─────────────────────────────────
+  const handleEpicColorInputChange = (val) => {
+    setNewEpicColorInput(val);
+    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+      setNewEpicColor(val);
+    }
   };
 
   const columns = ['Todo', 'In Progress', 'Review', 'Completed'];
@@ -238,11 +367,11 @@ export default function Tasks({
             </span>
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           {/* Project switcher */}
           <select
             value={activeProjectId}
-            onChange={e => { setActiveProjectId(e.target.value); setFilterEpic(null); }}
+            onChange={e => { setActiveProjectId(e.target.value); setFilterEpic(null); setFilterSprint(null); setFilterActiveSprintOnly(false); }}
             className="form-input form-select"
             style={{ fontSize: '13px', padding: '8px 32px 8px 12px', width: 'auto' }}
           >
@@ -253,12 +382,24 @@ export default function Tasks({
           {methodology === 'scrum' && (
             <button
               className="btn-gradient"
-              style={{ background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', fontSize: '13px', padding: '8px 16px' }}
+              style={{ background: 'var(--color-danger)', fontSize: '13px', padding: '8px 16px' }}
               onClick={() => setCompleteSprintModal(true)}
             >
               ✓ Complete Sprint
             </button>
           )}
+          <button
+            onClick={() => setIsCreateEpicOpen(true)}
+            style={styles.headerSecondaryBtn}
+          >
+            🎯 New Epic
+          </button>
+          <button
+            onClick={() => setIsCreateSprintOpen(true)}
+            style={styles.headerSecondaryBtn}
+          >
+            🏃 New Sprint
+          </button>
           <button className="btn-gradient" onClick={() => setIsNewTaskModalOpen(true)}>
             + New Task
           </button>
@@ -267,7 +408,7 @@ export default function Tasks({
 
       {/* ── Action / Filter Row ──────────────────────────────────── */}
       <div className="action-row-responsive" style={styles.actionRow}>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
           {/* Board / Backlog toggle */}
           <div style={styles.tabToggle}>
             {['board', 'backlog'].map(v => (
@@ -296,6 +437,39 @@ export default function Tasks({
         </div>
 
         <div style={styles.rightActions}>
+          {/* Sprint filter */}
+          {projectSprints.length > 0 && activeBoardView === 'board' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '12px', color: '#6C7A87', fontWeight: '600' }}>Sprint:</span>
+              <select
+                value={filterActiveSprintOnly ? '__active__' : (filterSprint || '')}
+                onChange={e => {
+                  const val = e.target.value;
+                  if (val === '__active__') {
+                    setFilterActiveSprintOnly(true);
+                    setFilterSprint(null);
+                  } else {
+                    setFilterActiveSprintOnly(false);
+                    setFilterSprint(val || null);
+                  }
+                }}
+                className="form-input form-select"
+                style={{ fontSize: '12px', padding: '5px 30px 5px 10px', width: 'auto', minWidth: '140px' }}
+              >
+                <option value="">All Sprints</option>
+                <option value="__active__">⚡ Active Sprint Only</option>
+                {projectSprints.map(sp => {
+                  const statusColors = getSprintStatusColor(sp.status);
+                  return (
+                    <option key={sp.id} value={sp.id}>
+                      {sp.name} ({sp.status})
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          )}
+
           {/* Epic filter */}
           {projectEpics.length > 0 && activeBoardView === 'board' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -316,6 +490,15 @@ export default function Tasks({
                       ...(filterEpic === ep.id ? { backgroundColor: ep.color, color: '#FFF', borderColor: ep.color } : {}),
                     }}
                   >
+                    <span style={{
+                      display: 'inline-block',
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      backgroundColor: filterEpic === ep.id ? '#FFF' : ep.color,
+                      marginRight: '4px',
+                      flexShrink: 0,
+                    }} />
                     {ep.name}
                   </button>
                 ))}
@@ -341,17 +524,17 @@ export default function Tasks({
       {activeBoardView === 'board' && (
         <div style={styles.boardWrapper}>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            {/* Scrum Sprint Header */}
-            {methodology === 'scrum' && (
+            {/* Scrum Sprint Header — dynamic */}
+            {methodology === 'scrum' && activeSprint && (
               <div className="sprint-header-bar" style={styles.sprintHeaderBar}>
                 <div style={styles.sprintLeft}>
                   <span style={styles.sprintLabel}>CURRENT SPRINT</span>
-                  <span style={styles.sprintName}>{SPRINT.name}</span>
-                  <span style={styles.sprintDates}>📅 {SPRINT.dates}</span>
+                  <span style={styles.sprintName}>{activeSprint.name}</span>
+                  <span style={styles.sprintDates}>📅 {formatSprintDates(activeSprint)}</span>
                 </div>
                 <div style={styles.sprintRight}>
                   <span style={styles.sprintGoalLabel}>Goal:</span>
-                  <span style={styles.sprintGoal}>{SPRINT.goal}</span>
+                  <span style={styles.sprintGoal}>{activeSprint.goal}</span>
                 </div>
                 <div style={styles.sprintStats}>
                   <div style={styles.sprintStat}>
@@ -425,6 +608,7 @@ export default function Tasks({
                     <div style={styles.cardContainer}>
                       {columnTasks.map(task => {
                         const epic = getEpicById(task.epic);
+                        const taskSprint = getSprintById(task.sprintId);
                         return (
                           <div
                             key={task.id}
@@ -464,6 +648,21 @@ export default function Tasks({
                                   <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
                                 </svg>
                                 AI: Target delivery risk
+                              </div>
+                            )}
+
+                            {/* Sprint indicator chip */}
+                            {taskSprint && (
+                              <div style={styles.sprintChip}>
+                                <span style={styles.sprintChipIcon}>🏃</span>
+                                <span>{taskSprint.name}</span>
+                                <span style={{
+                                  ...styles.sprintChipStatus,
+                                  backgroundColor: getSprintStatusColor(taskSprint.status).bg,
+                                  color: getSprintStatusColor(taskSprint.status).text,
+                                }}>
+                                  {taskSprint.status}
+                                </span>
                               </div>
                             )}
 
@@ -540,6 +739,26 @@ export default function Tasks({
                     </span>
                   </div>
                 </div>
+                {/* Sprint info in detail panel */}
+                {activeTaskDetail.sprintId && (() => {
+                  const sp = getSprintById(activeTaskDetail.sprintId);
+                  return sp ? (
+                    <div style={styles.metaItem}>
+                      <div style={styles.metaLabel}>SPRINT</div>
+                      <div style={styles.metaVal}>
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '4px',
+                          fontSize: '11px', fontWeight: '600',
+                          padding: '2px 8px', borderRadius: '6px',
+                          backgroundColor: getSprintStatusColor(sp.status).bg,
+                          color: getSprintStatusColor(sp.status).text,
+                        }}>
+                          🏃 {sp.name}
+                        </span>
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
               </div>
 
               <div style={styles.divider} />
@@ -728,11 +947,35 @@ export default function Tasks({
 
               <div className="split-row" style={styles.row}>
                 <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Sprint</label>
+                  <select className="form-input" value={newTaskSprint} onChange={e => setNewTaskSprint(e.target.value)}>
+                    <option value="">Unassigned / Backlog</option>
+                    {sprints.filter(sp => sp.projectId === newTaskProjectId).map(sp => (
+                      <option key={sp.id} value={sp.id}>
+                        {sp.name} ({sp.status})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
                   <label className="form-label">Epic</label>
                   <select className="form-input" value={newTaskEpic} onChange={e => setNewTaskEpic(e.target.value)}>
                     <option value="">— No Epic —</option>
                     {epics.filter(ep => ep.projectId === newTaskProjectId).map(ep => (
-                      <option key={ep.id} value={ep.id}>{ep.name}</option>
+                      <option key={ep.id} value={ep.id} style={{ color: ep.color, fontWeight: '600' }}>
+                        ● {ep.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="split-row" style={styles.row}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Status</label>
+                  <select className="form-input" value={newTaskStatus} onChange={e => setNewTaskStatus(e.target.value)}>
+                    {TASK_STATUS_OPTIONS.map(st => (
+                      <option key={st} value={st}>{st}</option>
                     ))}
                   </select>
                 </div>
@@ -784,12 +1027,244 @@ export default function Tasks({
         </div>
       )}
 
+      {/* ── Create Epic Modal ─────────────────────────────────────── */}
+      {isCreateEpicOpen && (
+        <div className="modal-overlay" onClick={() => setIsCreateEpicOpen(false)}>
+          <div className="modal-content" style={{ ...styles.modalContent, maxWidth: '520px' }} onClick={e => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>
+                <span style={{ marginRight: '8px' }}>🎯</span>
+                Create New Epic
+              </h2>
+              <button style={styles.modalCloseBtn} onClick={() => setIsCreateEpicOpen(false)}>×</button>
+            </div>
+
+            <form onSubmit={handleCreateEpicSubmit} style={styles.modalForm}>
+              <div className="form-group">
+                <label className="form-label">Epic Name *</label>
+                <input
+                  type="text"
+                  placeholder="e.g., User Authentication Overhaul"
+                  className="form-input"
+                  value={newEpicName}
+                  onChange={e => setNewEpicName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Summary</label>
+                <input
+                  type="text"
+                  placeholder="Brief high-level overview"
+                  className="form-input"
+                  value={newEpicSummary}
+                  onChange={e => setNewEpicSummary(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Description</label>
+                <textarea
+                  placeholder="Detailed scope and goals of this epic..."
+                  className="form-input"
+                  style={{ minHeight: '80px', resize: 'vertical' }}
+                  value={newEpicDesc}
+                  onChange={e => setNewEpicDesc(e.target.value)}
+                />
+              </div>
+
+              {/* Color Picker */}
+              <div className="form-group">
+                <label className="form-label">Color</label>
+                <div style={styles.colorPickerWrapper}>
+                  <div style={styles.colorSwatchGrid}>
+                    {EPIC_COLOR_PALETTE.map((color, i) => (
+                      <button
+                        key={`${color}-${i}`}
+                        type="button"
+                        onClick={() => { setNewEpicColor(color); setNewEpicColorInput(color); }}
+                        style={{
+                          ...styles.colorSwatch,
+                          backgroundColor: color,
+                          ...(newEpicColor === color ? styles.colorSwatchActive : {}),
+                        }}
+                        title={color}
+                      >
+                        {newEpicColor === color && (
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={styles.hexInputRow}>
+                    <div style={{
+                      width: '28px', height: '28px', borderRadius: '6px',
+                      backgroundColor: newEpicColor, border: '2px solid #ECEEF4', flexShrink: 0,
+                    }} />
+                    <input
+                      type="text"
+                      value={newEpicColorInput}
+                      onChange={e => handleEpicColorInputChange(e.target.value)}
+                      placeholder="#8B5CF6"
+                      style={styles.hexInput}
+                      maxLength={7}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="split-row" style={styles.row}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Status</label>
+                  <select className="form-input" value={newEpicStatus} onChange={e => setNewEpicStatus(e.target.value)}>
+                    <option value="To Do">To Do</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Done">Done</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="split-row" style={styles.row}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Start Date</label>
+                  <input type="date" className="form-input" value={newEpicStartDate} onChange={e => setNewEpicStartDate(e.target.value)} />
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Due Date</label>
+                  <input type="date" className="form-input" value={newEpicDueDate} onChange={e => setNewEpicDueDate(e.target.value)} />
+                </div>
+              </div>
+
+              <div style={styles.modalActions}>
+                <button type="button" onClick={() => setIsCreateEpicOpen(false)} style={styles.discardBtn}>Cancel</button>
+                <button
+                  type="submit"
+                  style={{
+                    ...styles.gradientPillBtn,
+                    background: `linear-gradient(135deg, ${newEpicColor}, ${newEpicColor}CC)`,
+                  }}
+                >
+                  Create Epic
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Create Sprint Modal ──────────────────────────────────── */}
+      {isCreateSprintOpen && (
+        <div className="modal-overlay" onClick={() => setIsCreateSprintOpen(false)}>
+          <div className="modal-content" style={{ ...styles.modalContent, maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>
+                <span style={{ marginRight: '8px' }}>🏃</span>
+                Create New Sprint
+              </h2>
+              <button style={styles.modalCloseBtn} onClick={() => setIsCreateSprintOpen(false)}>×</button>
+            </div>
+
+            <form onSubmit={handleCreateSprintSubmit} style={styles.modalForm}>
+              <div className="form-group">
+                <label className="form-label">Sprint Name *</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Sprint 1"
+                  className="form-input"
+                  value={newSprintName}
+                  onChange={e => setNewSprintName(e.target.value)}
+                  required
+                />
+                <div style={{ fontSize: '11px', color: '#9AA6B2', marginTop: '4px' }}>
+                  Auto-suggested: Sprint {projectSprints.length + 1}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Sprint Goal</label>
+                <textarea
+                  placeholder="What should the team accomplish in this sprint?"
+                  className="form-input"
+                  style={{ minHeight: '70px', resize: 'vertical' }}
+                  value={newSprintGoal}
+                  onChange={e => setNewSprintGoal(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Status</label>
+                <select className="form-input" value={newSprintStatus} onChange={e => setNewSprintStatus(e.target.value)}>
+                  <option value="Future">Future</option>
+                  <option value="Active">Active</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+
+              <div className="split-row" style={styles.row}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Start Date *</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={newSprintStartDate}
+                    onChange={e => setNewSprintStartDate(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">End Date *</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={newSprintEndDate}
+                    onChange={e => setNewSprintEndDate(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Quick duration presets */}
+              <div className="form-group">
+                <label className="form-label">Quick Duration</label>
+                <div style={styles.presetRow}>
+                  {[
+                    { label: '1 Week', weeks: 1 },
+                    { label: '2 Weeks', weeks: 2 },
+                    { label: '3 Weeks', weeks: 3 },
+                  ].map(preset => (
+                    <button
+                      key={preset.weeks}
+                      type="button"
+                      onClick={() => applySprintPreset(preset.weeks)}
+                      style={styles.presetBtn}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ fontSize: '11px', color: '#9AA6B2', marginTop: '4px' }}>
+                  Sets end date relative to start date (or today if no start date set)
+                </div>
+              </div>
+
+              <div style={styles.modalActions}>
+                <button type="button" onClick={() => setIsCreateSprintOpen(false)} style={styles.discardBtn}>Cancel</button>
+                <button type="submit" className="btn-gradient">Create Sprint</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* ── Complete Sprint Modal ────────────────────────────────── */}
       {completeSprintModal && (
         <div className="modal-overlay" onClick={() => setCompleteSprintModal(false)}>
           <div className="modal-content" style={{ maxWidth: '480px' }} onClick={e => e.stopPropagation()}>
             <div style={styles.modalHeader}>
-              <h2 style={{ ...styles.modalTitle, color: '#DC2626' }}>⚡ Complete {SPRINT.name}?</h2>
+              <h2 style={{ ...styles.modalTitle, color: '#DC2626' }}>⚡ Complete {activeSprint?.name || 'Sprint'}?</h2>
               <button style={styles.modalCloseBtn} onClick={() => setCompleteSprintModal(false)}>×</button>
             </div>
             <div style={{ padding: '24px 28px' }}>
@@ -814,7 +1289,7 @@ export default function Tasks({
                 <button onClick={() => setCompleteSprintModal(false)} style={styles.discardBtn}>Cancel</button>
                 <button
                   onClick={handleConfirmCompleteSprint}
-                  style={{ background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', color: '#FFF', border: 'none', borderRadius: '10px', padding: '10px 24px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}
+                  style={{ background: 'var(--color-danger)', color: '#FFF', border: 'none', borderRadius: '10px', padding: '10px 24px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}
                 >
                   Complete Sprint
                 </button>
@@ -878,6 +1353,8 @@ const styles = {
     flexWrap: 'wrap',
   },
   epicFilterPill: {
+    display: 'inline-flex',
+    alignItems: 'center',
     border: '1px solid #ECEEF4',
     borderRadius: '20px',
     padding: '4px 10px',
@@ -893,28 +1370,25 @@ const styles = {
     color: '#FFF',
     borderColor: '#5B5FFB',
   },
-  methodologyToggleBtn: {
-    background: 'none',
-    border: 'none',
-    fontSize: '10px',
-    fontWeight: '700',
-    padding: '4px 10px',
-    borderRadius: '16px',
-    color: '#9AA6B2',
+  // ── Header secondary button ───────────────────────────────────────
+  headerSecondaryBtn: {
+    background: '#FFFFFF',
+    border: '1px solid #ECEEF4',
+    borderRadius: '8px',
+    padding: '8px 14px',
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#1A1D20',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-  },
-  methodologyToggleActiveScrum: {
-    backgroundColor: '#EDE9FE',
-    color: '#7C3AED',
-  },
-  methodologyToggleActiveKanban: {
-    backgroundColor: '#E0F2FE',
-    color: '#0369A1',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    whiteSpace: 'nowrap',
   },
   // ── Sprint Header ──────────────────────────────────────────────────
   sprintHeaderBar: {
-    background: 'linear-gradient(135deg, #5B5FFB11 0%, #B24DFF11 100%)',
+    background: 'var(--color-accent-bg, #EFF6FF)',
     border: '1px solid #E0E4FF',
     borderRadius: '12px',
     padding: '12px 20px',
@@ -1126,6 +1600,32 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     marginBottom: '10px',
+  },
+  // ── Sprint chip on task card ──────────────────────────────────────
+  sprintChip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    fontSize: '10px',
+    fontWeight: '600',
+    color: '#6C7A87',
+    backgroundColor: '#F0F4F8',
+    border: '1px solid #ECEEF4',
+    borderRadius: '6px',
+    padding: '2px 8px',
+    marginBottom: '10px',
+  },
+  sprintChipIcon: {
+    fontSize: '10px',
+  },
+  sprintChipStatus: {
+    fontSize: '9px',
+    fontWeight: '700',
+    padding: '1px 5px',
+    borderRadius: '4px',
+    marginLeft: '2px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.03em',
   },
   cardFooter: {
     display: 'flex',
@@ -1482,6 +1982,8 @@ const styles = {
     fontSize: '18px',
     fontWeight: '700',
     color: '#1A1D20',
+    display: 'flex',
+    alignItems: 'center',
   },
   modalCloseBtn: {
     position: 'absolute',
@@ -1514,5 +2016,81 @@ const styles = {
     fontWeight: '500',
     cursor: 'pointer',
     padding: '8px',
+  },
+  // ── Color Picker ──────────────────────────────────────────────────
+  colorPickerWrapper: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+  },
+  colorSwatchGrid: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '8px',
+  },
+  colorSwatch: {
+    width: '28px',
+    height: '28px',
+    borderRadius: '8px',
+    border: '2px solid transparent',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.15s ease',
+    padding: 0,
+  },
+  colorSwatchActive: {
+    border: '2px solid #1A1D20',
+    boxShadow: '0 0 0 2px #FFF, 0 0 0 4px #1A1D20',
+  },
+  hexInputRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  hexInput: {
+    border: '1px solid #ECEEF4',
+    borderRadius: '8px',
+    padding: '6px 10px',
+    fontSize: '13px',
+    color: '#1A1D20',
+    fontFamily: 'monospace',
+    width: '100px',
+    outline: 'none',
+    backgroundColor: '#FAFCFF',
+  },
+  // ── Gradient pill button for epic ─────────────────────────────────
+  gradientPillBtn: {
+    color: '#FFFFFF',
+    border: 'none',
+    fontFamily: 'var(--font-sans)',
+    fontWeight: '600',
+    fontSize: '14px',
+    padding: '10px 24px',
+    borderRadius: '24px',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
+  },
+  // ── Sprint date presets ───────────────────────────────────────────
+  presetRow: {
+    display: 'flex',
+    gap: '8px',
+  },
+  presetBtn: {
+    background: '#F0F2FF',
+    border: '1px solid #E0E4FF',
+    borderRadius: '8px',
+    padding: '6px 14px',
+    fontSize: '12px',
+    fontWeight: '600',
+    color: '#5B5FFB',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
   },
 };

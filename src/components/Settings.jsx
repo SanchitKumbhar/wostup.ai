@@ -258,7 +258,7 @@ export default function Settings({ user, onUpdateUser }) {
               <p style={styles.sectionSubtitle}>Displayed in navigation and email notifications.</p>
 
               <div style={styles.avatarRow}>
-                <div style={{ ...styles.avatarLarge, borderRadius: '12px', background: 'linear-gradient(135deg, #5B5FFB, #B24DFF)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '24px', fontWeight: '700', width: '64px', height: '64px' }}>W</div>
+                <div style={{ ...styles.avatarLarge, borderRadius: '12px', background: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '24px', fontWeight: '700', width: '64px', height: '64px' }}>W</div>
                 <div>
                   <button type="button" style={styles.avatarBtn} onClick={() => alert('Upload workspace logo...')}>
                     Upload Logo

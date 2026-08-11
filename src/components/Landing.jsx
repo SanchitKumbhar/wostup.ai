@@ -169,37 +169,37 @@ export default function Landing({ onLogin }) {
       icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="#fff" strokeWidth="2" fill="none"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>,
       title: 'Smart Task Tracking',
       desc: 'Kanban boards, priorities, and status pipelines — all synced in real time across your team.',
-      color: 'linear-gradient(135deg, #5B5FFB, #8B8FFF)',
+      color: 'var(--color-accent)',
     },
     {
       icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="#fff" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M2 12h2M20 12h2M12 2v2M12 20v2"/></svg>,
       title: 'AI-Powered Insights',
       desc: 'Surface deadline risks, resource bottlenecks, and sprint blockers before they derail delivery.',
-      color: 'linear-gradient(135deg, #B24DFF, #D580FF)',
+      color: 'var(--color-accent)',
     },
     {
       icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="#fff" strokeWidth="2" fill="none"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>,
       title: 'Milestone Timelines',
       desc: 'Visual phase-by-phase planning with progress tracking and owner accountability built in.',
-      color: 'linear-gradient(135deg, #00C292, #34D399)',
+      color: 'var(--color-success)',
     },
     {
       icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="#fff" strokeWidth="2" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>,
       title: 'Team Load Balancer',
       desc: 'See who is overloaded, who has capacity, and intelligently redistribute work across your team.',
-      color: 'linear-gradient(135deg, #F59E0B, #FCD34D)',
+      color: 'var(--color-warning)',
     },
     {
       icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="#fff" strokeWidth="2" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
       title: 'Project Health Monitor',
       desc: 'Real-time health scores, risk ratings, and automated alerts for every active project.',
-      color: 'linear-gradient(135deg, #EF4444, #F87171)',
+      color: 'var(--color-danger)',
     },
     {
       icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="#fff" strokeWidth="2" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>,
       title: 'Real-time Collaboration',
       desc: 'Comments, @mentions, file attachments, and activity feeds keep everyone aligned instantly.',
-      color: 'linear-gradient(135deg, #06B6D4, #67E8F9)',
+      color: 'var(--color-accent)',
     },
   ];
 

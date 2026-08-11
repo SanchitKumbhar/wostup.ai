@@ -139,7 +139,7 @@ const styles = {
     maxWidth: '460px',
   },
   banner: {
-    background: 'linear-gradient(135deg, #5B5FFB 0%, #B24DFF 100%)',
+    background: 'var(--color-accent)',
     height: '110px',
     position: 'relative',
     display: 'flex',

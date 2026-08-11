@@ -1,46 +1,71 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  --font-display: 'Outfit', sans-serif;
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-display: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   
-  /* Color Palette */
-  --primary: #5B5FFB;
-  --primary-glow: rgba(91, 95, 251, 0.15);
-  --primary-gradient: linear-gradient(135deg, #5B5FFB 0%, #B24DFF 100%);
-  --primary-gradient-hover: linear-gradient(135deg, #4c50eb 0%, #a23aeb 100%);
-  --bg-workspace: #F8F9FD;
-  --bg-sidebar: #FFFFFF;
-  --text-main: #1A1D20;
-  --text-muted: #6C7A87;
-  --text-light: #9AA6B2;
+  /* Core Backgrounds */
+  --color-bg: #F9FAFB;
+  --color-surface: #FFFFFF;
   
-  /* Status Colors */
-  --status-todo-bg: #F0F2F5;
-  --status-todo-text: #5A6A7A;
-  --status-inprogress-bg: #E6ECFF;
-  --status-inprogress-text: #2B6CB0;
-  --status-review-bg: #FAF0E6;
-  --status-review-text: #B7791F;
-  --status-completed-bg: #E6FFFA;
-  --status-completed-text: #234E52;
-  --status-atrisk-bg: #FFE5E5;
-  --status-atrisk-text: #C53030;
+  /* Text */
+  --color-text-primary: #111827;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
   
-  /* Border & Shadows */
-  --border-light: #ECEEF4;
-  --border-focus: #B24DFF;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 8px 24px rgba(31, 38, 135, 0.04);
-  --shadow-lg: 0 12px 36px rgba(31, 38, 135, 0.08);
-  --shadow-focus: 0 0 0 3px rgba(91, 95, 251, 0.18);
+  /* Borders & Shadows */
+  --color-border: #E5E7EB;
+  --color-border-hover: #D1D5DB;
   
+  /* Accents */
+  --color-accent: #2563EB;
+  --color-accent-hover: #1D4ED8;
+  
+  /* Semantic Status / Priority Colors */
+  --color-success: #059669;
+  --color-success-bg: #ECFDF5;
+  --color-warning: #D97706;
+  --color-warning-bg: #FFFBEB;
+  --color-danger: #DC2626;
+  --color-danger-bg: #FEF2F2;
+  --color-neutral: #6B7280;
+  --color-neutral-bg: #F3F4F6;
+  
+  /* Retain shadow variables but simplify them */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-focus: 0 0 0 2px #fff, 0 0 0 4px var(--color-accent);
+
   /* Cards */
-  --card-radius: 16px;
-  --card-radius-lg: 20px;
-  --card-bg: rgba(255, 255, 255, 0.85);
-  --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.6);
+  --card-radius: 12px;
+  --card-radius-lg: 16px;
+  --card-bg: var(--color-surface);
+  --glass-bg: var(--color-surface);
+  --glass-border: var(--color-border);
+  
+  /* Legacy Mappings to New Tokens */
+  --bg-workspace: var(--color-bg);
+  --bg-sidebar: var(--color-surface);
+  --text-main: var(--color-text-primary);
+  --text-muted: var(--color-text-secondary);
+  --text-light: var(--color-text-muted);
+  --primary: var(--color-accent);
+  --primary-glow: transparent;
+  --primary-gradient: var(--color-accent);
+  --primary-gradient-hover: var(--color-accent-hover);
+  --border-light: var(--color-border);
+  --border-focus: var(--color-accent);
+  --status-todo-bg: var(--color-neutral-bg);
+  --status-todo-text: var(--color-neutral);
+  --status-inprogress-bg: var(--color-warning-bg);
+  --status-inprogress-text: var(--color-warning);
+  --status-review-bg: var(--color-warning-bg);
+  --status-review-text: var(--color-warning);
+  --status-completed-bg: var(--color-success-bg);
+  --status-completed-text: var(--color-success);
+  --status-atrisk-bg: var(--color-danger-bg);
+  --status-atrisk-text: var(--color-danger);
 }
 
 * {
@@ -105,11 +130,7 @@ select.form-input {
   display: flex;
   height: 100vh;
   width: 100%;
-  background:
-    radial-gradient(ellipse at 0% 0%, rgba(91, 95, 251, 0.05) 0%, transparent 50%),
-    radial-gradient(ellipse at 100% 100%, rgba(178, 77, 255, 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.02) 0%, transparent 60%),
-    var(--bg-workspace);
+  background: var(--color-bg);
   position: relative;
 }
 
@@ -155,11 +176,9 @@ textarea:focus-visible {
 /* ===== GLASSMORPHISM CARD ===== */
 .glass-card {
   background: var(--card-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--color-border);
   border-radius: var(--card-radius);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1679,7 +1698,7 @@ h1, h2, h3, h4 {
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.5);
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   font-weight: 500;
   padding: 8px 16px;

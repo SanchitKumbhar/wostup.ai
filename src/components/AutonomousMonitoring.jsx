@@ -736,7 +736,7 @@ export default function AutonomousMonitoring() {
                   <span style={{ color: 'var(--text-main)' }}>{selectedNode.ram}%</span>
                 </div>
                 <div style={{ height: '6px', background: '#ECEEF4', borderRadius: '3px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${selectedNode.ram}%`, background: 'linear-gradient(135deg, #10B981 0%, #34D399 100%)', transition: 'width 0.4s ease' }} />
+                  <div style={{ height: '100%', width: `${selectedNode.ram}%`, background: 'var(--color-success)', transition: 'width 0.4s ease' }} />
                 </div>
               </div>
             </div>
