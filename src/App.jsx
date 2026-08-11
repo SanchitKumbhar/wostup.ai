@@ -34,8 +34,13 @@ export default function App() {
   } : null;
 
   // Workspace States
-  const [workspaces, setWorkspaces] = useState([]);
-  const [activeWorkspaceId, setActiveWorkspaceId] = useState(null);
+  const [workspaces, setWorkspaces] = useState(() => {
+    const saved = localStorage.getItem('wostup_workspaces');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState(() => {
+    return localStorage.getItem('wostup_activeWorkspaceId') || null;
+  });
   const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
 
   // Compulsory workspace check
@@ -217,12 +222,18 @@ export default function App() {
   // Callbacks
   const handleWorkspaceSelect = (wsId) => {
     setActiveWorkspaceId(wsId);
+    localStorage.setItem('wostup_activeWorkspaceId', wsId);
   };
 
   const handleGenerateWorkspace = (newWorkspace) => {
     const wsId = `ws-${Date.now()}`;
-    setWorkspaces(prev => [...prev, { id: wsId, ...newWorkspace }]);
+    setWorkspaces(prev => {
+      const updated = [...prev, { id: wsId, ...newWorkspace }];
+      localStorage.setItem('wostup_workspaces', JSON.stringify(updated));
+      return updated;
+    });
     setActiveWorkspaceId(wsId);
+    localStorage.setItem('wostup_activeWorkspaceId', wsId);
   };
 
   const handleAddProject = (newProj) => {

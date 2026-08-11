@@ -2147,3 +2147,36 @@ h1, h2, h3, h4 {
 .board-view-enter {
   animation: pageFadeIn 0.25s ease-out;
 }
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* GLOBAL SCROLLBAR STYLING                                            */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(154, 166, 178, 0.3) transparent;
+}
+
+/* For WebKit browsers (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px; /* For horizontal scrollbars */
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(154, 166, 178, 0.3); /* Unobtrusive thin gray */
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(154, 166, 178, 0.5); /* Slightly darker on hover */
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
