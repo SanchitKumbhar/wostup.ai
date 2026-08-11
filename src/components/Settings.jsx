@@ -35,9 +35,9 @@ export default function Settings({ user, onUpdateUser }) {
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [twoFAEnabled, setTwoFAEnabled] = useState(false);
   const [sessions, setSessions] = useState([
-    { id: 1, device: '💻', name: 'MacBook Pro — Chrome 126', location: 'London, UK', time: 'Active now', current: true },
-    { id: 2, device: '📱', name: 'iPhone 15 — Safari', location: 'London, UK', time: '3 hours ago', current: false },
-    { id: 3, device: '🖥️', name: 'Windows PC — Edge', location: 'Manchester, UK', time: '2 days ago', current: false },
+    { id: 1, device: '', name: 'MacBook Pro — Chrome 126', location: 'London, UK', time: 'Active now', current: true },
+    { id: 2, device: '', name: 'iPhone 15 — Safari', location: 'London, UK', time: '3 hours ago', current: false },
+    { id: 3, device: '', name: 'Windows PC — Edge', location: 'Manchester, UK', time: '2 days ago', current: false },
   ]);
 
   // Integrations state
@@ -81,21 +81,21 @@ export default function Settings({ user, onUpdateUser }) {
   };
 
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: '👤' },
-    { id: 'workspace', label: 'Workspace', icon: '🏢' },
-    { id: 'notifications', label: 'Notifications', icon: '🔔' },
-    { id: 'billing', label: 'Billing', icon: '💳' },
-    { id: 'integrations', label: 'Integrations', icon: '🔌' },
-    { id: 'security', label: 'Security', icon: '🔒' },
+    { id: 'profile', label: 'Profile', icon: '' },
+    { id: 'workspace', label: 'Workspace', icon: '' },
+    { id: 'notifications', label: 'Notifications', icon: '' },
+    { id: 'billing', label: 'Billing', icon: '' },
+    { id: 'integrations', label: 'Integrations', icon: '' },
+    { id: 'security', label: 'Security', icon: '' },
   ];
 
   const integrationList = [
-    { key: 'github', icon: '🐙', name: 'GitHub', desc: 'Sync repositories and link commits to tasks.' },
-    { key: 'slack', icon: '💬', name: 'Slack', desc: 'Send workspace notifications to Slack channels.' },
-    { key: 'jira', icon: '🎯', name: 'Jira', desc: 'Import and sync issues with Jira projects.' },
-    { key: 'googledrive', icon: '📁', name: 'Google Drive', desc: 'Attach Drive files directly to tasks.' },
-    { key: 'notion', icon: '📝', name: 'Notion', desc: 'Embed Notion pages in project descriptions.' },
-    { key: 'figma', icon: '🎨', name: 'Figma', desc: 'Preview Figma frames inside task detail view.' },
+    { key: 'github', icon: '', name: 'GitHub', desc: 'Sync repositories and link commits to tasks.' },
+    { key: 'slack', icon: '', name: 'Slack', desc: 'Send workspace notifications to Slack channels.' },
+    { key: 'jira', icon: '', name: 'Jira', desc: 'Import and sync issues with Jira projects.' },
+    { key: 'googledrive', icon: '', name: 'Google Drive', desc: 'Attach Drive files directly to tasks.' },
+    { key: 'notion', icon: '', name: 'Notion', desc: 'Embed Notion pages in project descriptions.' },
+    { key: 'figma', icon: '', name: 'Figma', desc: 'Preview Figma frames inside task detail view.' },
   ];
 
   return (
@@ -335,13 +335,13 @@ export default function Settings({ user, onUpdateUser }) {
               <p style={styles.sectionSubtitle}>Manage your subscription and payment details.</p>
 
               <div className="billing-plan-card">
-                <div className="billing-plan-badge">✦ FREE PLAN</div>
+                <div className="billing-plan-badge">FREE PLAN</div>
                 <div style={{ fontSize: '28px', fontWeight: '700', color: '#1A1D20', marginBottom: '8px' }}>$0 / month</div>
                 <p style={{ fontSize: '13px', color: '#6C7A87', marginBottom: '20px', lineHeight: '1.5' }}>
                   Up to 3 workspaces · 5 team members · 10GB storage · Basic AI insights
                 </p>
                 <button className="btn-gradient" style={{ padding: '12px 28px' }} onClick={() => alert('Redirecting to Pro upgrade...')}>
-                  ✦ Upgrade to Pro — $19/month
+                  Upgrade to Pro — $19/month
                 </button>
               </div>
 
@@ -406,7 +406,7 @@ export default function Settings({ user, onUpdateUser }) {
                       className={`integration-connect-btn ${integrations[item.key] ? 'connected' : ''}`}
                       onClick={() => toggleIntegration(item.key)}
                     >
-                      {integrations[item.key] ? '✓ Connected' : 'Connect'}
+                      {integrations[item.key] ? 'Connected' : 'Connect'}
                     </button>
                   </div>
                 ))}

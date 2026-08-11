@@ -122,7 +122,7 @@ function TestimonialCard({ quote, name, role, company, avatar, delay = 0 }) {
         transition: `opacity 0.5s ease ${delay}s, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}s`,
       }}
     >
-      <div className="lp-testimonial-stars">{'★'.repeat(5)}</div>
+      <div className="lp-testimonial-stars">5/5</div>
       <p className="lp-testimonial-quote">"{quote}"</p>
       <div className="lp-testimonial-author">
         <img src={avatar} alt={name} className="lp-testimonial-avatar" />
@@ -206,7 +206,7 @@ export default function Landing({ onLogin }) {
   const stats = [
     { value: 12000, suffix: '+', label: 'Teams Worldwide' },
     { value: 98, suffix: '%', label: 'On-time Delivery Rate' },
-    { value: 4, suffix: '.9★', label: 'Average Rating' },
+    { value: 4, suffix: '.9/5', label: 'Average Rating' },
   ];
 
   const steps = [
@@ -385,7 +385,7 @@ export default function Landing({ onLogin }) {
                   />
                 ))}
               </div>
-              <span className="lp-hero-trust-text"><strong>4.9★</strong> from 2,400+ reviews</span>
+              <span className="lp-hero-trust-text"><strong>4.9/5</strong> from 2,400+ reviews</span>
             </div>
           </div>
 
@@ -429,7 +429,7 @@ export default function Landing({ onLogin }) {
 
             {/* Floating AI alert card */}
             <div className="lp-hero-card lp-hero-card--alert lp-float-a">
-              <div className="lp-hero-alert-icon">⚡</div>
+              <div className="lp-hero-alert-icon"></div>
               <div>
                 <div className="lp-hero-alert-title">AI Risk Detected</div>
                 <div className="lp-hero-alert-sub">Sarah Chen overloaded by 35%</div>
@@ -653,7 +653,7 @@ export default function Landing({ onLogin }) {
         </div>
         <div className="lp-footer-bottom">
           <span>© 2026 Wostup, Inc. All rights reserved.</span>
-          <span>Built with ❤️ for teams that care about delivery.</span>
+          <span>Built with care for teams that care about delivery.</span>
         </div>
       </footer>
     </div>

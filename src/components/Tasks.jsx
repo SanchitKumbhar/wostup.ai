@@ -363,7 +363,7 @@ export default function Tasks({
               backgroundColor: methodology === 'scrum' ? '#EDE9FE' : '#E0F2FE',
               color: methodology === 'scrum' ? '#7C3AED' : '#0369A1',
             }}>
-              {methodology === 'scrum' ? '🏃 SCRUM' : '📋 KANBAN'}
+              {methodology === 'scrum' ? 'SCRUM' : 'KANBAN'}
             </span>
           </p>
         </div>
@@ -385,20 +385,20 @@ export default function Tasks({
               style={{ background: 'var(--color-danger)', fontSize: '13px', padding: '8px 16px' }}
               onClick={() => setCompleteSprintModal(true)}
             >
-              ✓ Complete Sprint
+              Complete Sprint
             </button>
           )}
           <button
             onClick={() => setIsCreateEpicOpen(true)}
             style={styles.headerSecondaryBtn}
           >
-            🎯 New Epic
+            New Epic
           </button>
           <button
             onClick={() => setIsCreateSprintOpen(true)}
             style={styles.headerSecondaryBtn}
           >
-            🏃 New Sprint
+            New Sprint
           </button>
           <button className="btn-gradient" onClick={() => setIsNewTaskModalOpen(true)}>
             + New Task
@@ -417,7 +417,7 @@ export default function Tasks({
                 onClick={() => setBoardView(v)}
                 style={{ ...styles.toggleBtn, ...(boardView === v ? styles.toggleBtnActive : {}) }}
               >
-                {v === 'board' ? '⬛ Board' : '📋 Backlog'}
+                {v === 'board' ? 'Board' : 'Backlog'}
               </button>
             ))}
           </div>
@@ -457,7 +457,7 @@ export default function Tasks({
                 style={{ fontSize: '12px', padding: '5px 30px 5px 10px', width: 'auto', minWidth: '140px' }}
               >
                 <option value="">All Sprints</option>
-                <option value="__active__">⚡ Active Sprint Only</option>
+                <option value="__active__">Active Sprint Only</option>
                 {projectSprints.map(sp => {
                   const statusColors = getSprintStatusColor(sp.status);
                   return (
@@ -530,7 +530,7 @@ export default function Tasks({
                 <div style={styles.sprintLeft}>
                   <span style={styles.sprintLabel}>CURRENT SPRINT</span>
                   <span style={styles.sprintName}>{activeSprint.name}</span>
-                  <span style={styles.sprintDates}>📅 {formatSprintDates(activeSprint)}</span>
+                  <span style={styles.sprintDates}>{formatSprintDates(activeSprint)}</span>
                 </div>
                 <div style={styles.sprintRight}>
                   <span style={styles.sprintGoalLabel}>Goal:</span>
@@ -598,7 +598,7 @@ export default function Tasks({
                           <span style={styles.columnCount}>{columnTasks.length}</span>
                         )}
                         {isOverWip && (
-                          <span style={styles.wipWarningBadge} title="WIP limit exceeded">⚠</span>
+                          <span style={styles.wipWarningBadge} title="WIP limit exceeded">!</span>
                         )}
                       </div>
                       <button style={styles.columnMenuBtn}>•••</button>
@@ -654,7 +654,7 @@ export default function Tasks({
                             {/* Sprint indicator chip */}
                             {taskSprint && (
                               <div style={styles.sprintChip}>
-                                <span style={styles.sprintChipIcon}>🏃</span>
+                                <span style={styles.sprintChipIcon}>S</span>
                                 <span>{taskSprint.name}</span>
                                 <span style={{
                                   ...styles.sprintChipStatus,
@@ -670,7 +670,7 @@ export default function Tasks({
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <img src={task.avatar} alt={task.assignee} style={styles.cardAvatar} />
                                 {task.commentsCount > 0 && (
-                                  <span style={styles.commentsIndicator}>💬 {task.commentsCount}</span>
+                                  <span style={styles.commentsIndicator}>{task.commentsCount} comments</span>
                                 )}
                               </div>
                               <span style={styles.dueDateText}>{task.dueDate}</span>
@@ -753,7 +753,7 @@ export default function Tasks({
                           backgroundColor: getSprintStatusColor(sp.status).bg,
                           color: getSprintStatusColor(sp.status).text,
                         }}>
-                          🏃 {sp.name}
+                          {sp.name}
                         </span>
                       </div>
                     </div>
@@ -772,7 +772,7 @@ export default function Tasks({
                       <strong>John Doe</strong>
                       <span>2h ago</span>
                     </div>
-                    <p>I've updated the API routes for the sync logic. Please review! 🚀</p>
+                    <p>I've updated the API routes for the sync logic. Please review!</p>
                   </div>
                 </div>
               </div>
@@ -827,7 +827,7 @@ export default function Tasks({
                     >
                       {/* Drag handle */}
                       <td style={styles.backlogTd}>
-                        <span style={styles.dragHandle} title="Drag to reorder">⠿</span>
+                        <span style={styles.dragHandle} title="Drag to reorder">::</span>
                       </td>
                       <td style={styles.backlogTd}>
                         <span style={styles.backlogTaskId}>{task.id}</span>
@@ -869,13 +869,13 @@ export default function Tasks({
                                 setOpenEllipsisId(null);
                               }}
                             >
-                              🚀 Move to Active Sprint
+                              Move to Active Sprint
                             </button>
                             <button
                               style={{ ...styles.ellipsisMenuItem, color: '#EF4444' }}
                               onClick={() => setOpenEllipsisId(null)}
                             >
-                              🗑 Delete
+                              Delete
                             </button>
                           </div>
                         )}
@@ -887,7 +887,7 @@ export default function Tasks({
                 {/* Inline creation row */}
                 <tr style={styles.inlineCreateRow}>
                   <td style={styles.backlogTd}>
-                    <span style={{ ...styles.dragHandle, opacity: 0.3 }}>⠿</span>
+                    <span style={{ ...styles.dragHandle, opacity: 0.3 }}>::</span>
                   </td>
                   <td style={styles.backlogTd}>
                     <span style={{ ...styles.backlogTaskId, color: '#C4CDD6' }}>NEW</span>
@@ -963,7 +963,7 @@ export default function Tasks({
                     <option value="">— No Epic —</option>
                     {epics.filter(ep => ep.projectId === newTaskProjectId).map(ep => (
                       <option key={ep.id} value={ep.id} style={{ color: ep.color, fontWeight: '600' }}>
-                        ● {ep.name}
+                        {ep.name}
                       </option>
                     ))}
                   </select>
@@ -1033,7 +1033,7 @@ export default function Tasks({
           <div className="modal-content" style={{ ...styles.modalContent, maxWidth: '520px' }} onClick={e => e.stopPropagation()}>
             <div style={styles.modalHeader}>
               <h2 style={styles.modalTitle}>
-                <span style={{ marginRight: '8px' }}>🎯</span>
+
                 Create New Epic
               </h2>
               <button style={styles.modalCloseBtn} onClick={() => setIsCreateEpicOpen(false)}>×</button>
@@ -1161,7 +1161,7 @@ export default function Tasks({
           <div className="modal-content" style={{ ...styles.modalContent, maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
             <div style={styles.modalHeader}>
               <h2 style={styles.modalTitle}>
-                <span style={{ marginRight: '8px' }}>🏃</span>
+
                 Create New Sprint
               </h2>
               <button style={styles.modalCloseBtn} onClick={() => setIsCreateSprintOpen(false)}>×</button>
@@ -1264,20 +1264,20 @@ export default function Tasks({
         <div className="modal-overlay" onClick={() => setCompleteSprintModal(false)}>
           <div className="modal-content" style={{ maxWidth: '480px' }} onClick={e => e.stopPropagation()}>
             <div style={styles.modalHeader}>
-              <h2 style={{ ...styles.modalTitle, color: '#DC2626' }}>⚡ Complete {activeSprint?.name || 'Sprint'}?</h2>
+              <h2 style={{ ...styles.modalTitle, color: '#DC2626' }}>Complete {activeSprint?.name || 'Sprint'}?</h2>
               <button style={styles.modalCloseBtn} onClick={() => setCompleteSprintModal(false)}>×</button>
             </div>
             <div style={{ padding: '24px 28px' }}>
               <div style={styles.sprintCompleteWarning}>
                 <div style={styles.warningRow}>
-                  <span style={styles.warningIcon}>📦</span>
+                  <span style={styles.warningIcon}></span>
                   <div>
                     <div style={styles.warningTitle}>Completed tasks will be archived</div>
                     <div style={styles.warningDesc}>{boardTasks.filter(t => t.status === 'Completed').length} task(s) will be marked as done and removed from the active board.</div>
                   </div>
                 </div>
                 <div style={styles.warningRow}>
-                  <span style={styles.warningIcon}>🔄</span>
+                  <span style={styles.warningIcon}></span>
                   <div>
                     <div style={styles.warningTitle}>Unfinished tasks move to Backlog</div>
                     <div style={styles.warningDesc}>{boardTasks.filter(t => t.status !== 'Completed').length} in-progress / todo task(s) will be returned to the Product Backlog for re-prioritization.</div>

@@ -69,7 +69,7 @@ export default function TeamLoad({ onAdjustCapacity }) {
         <div className="premium-card" style={styles.statCard}>
           <div style={styles.statMetaRow}>
             <div style={styles.statTitle}>TOTAL MEMBERS</div>
-            <div style={styles.statIconBlue}>👥</div>
+            <div style={styles.statIconBlue}></div>
           </div>
           <div style={styles.statValue}>12</div>
           <div style={styles.statSubText}>Active workspace members</div>
@@ -78,7 +78,7 @@ export default function TeamLoad({ onAdjustCapacity }) {
         <div className="premium-card" style={styles.statCard}>
           <div style={styles.statMetaRow}>
             <div style={styles.statTitle}>OVERLOADED</div>
-            <div style={styles.statIconRed}>⚠️</div>
+            <div style={styles.statIconRed}>!</div>
           </div>
           <div style={{ ...styles.statValue, color: '#EF4444' }}>3</div>
           <div style={styles.statSubText}>
@@ -89,7 +89,7 @@ export default function TeamLoad({ onAdjustCapacity }) {
         <div className="premium-card" style={styles.statCard}>
           <div style={styles.statMetaRow}>
             <div style={styles.statTitle}>AVERAGE LOAD</div>
-            <div style={styles.statIconPurple}>⚡</div>
+            <div style={styles.statIconPurple}></div>
           </div>
           <div style={{ ...styles.statValue, color: '#5B5FFB' }}>4.2</div>
           <div style={styles.statSubText}>System-wide capacity score</div>
@@ -98,7 +98,7 @@ export default function TeamLoad({ onAdjustCapacity }) {
         <div className="premium-card" style={styles.statCard}>
           <div style={styles.statMetaRow}>
             <div style={styles.statTitle}>OPTIMAL STATE</div>
-            <div style={styles.statIconGreen}>✓</div>
+            <div style={styles.statIconGreen}></div>
           </div>
           <div style={{ ...styles.statValue, color: '#10B981' }}>64%</div>
           <div style={styles.statSubText}>

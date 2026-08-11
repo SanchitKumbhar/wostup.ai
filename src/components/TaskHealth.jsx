@@ -79,7 +79,7 @@ export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects 
         <div className="premium-card" style={styles.kpiCard}>
           <div style={styles.kpiHeader}>
             <span style={styles.kpiTitle}>TOTAL TASKS</span>
-            <span style={styles.iconSpan}>📋</span>
+            <span style={styles.iconSpan}></span>
           </div>
           <div style={{ ...styles.kpiVal, color: '#5B5FFB' }}>124</div>
           <div style={styles.kpiChange}><span style={{ color: '#10B981', fontWeight: '600' }}>↗ 12%</span> from last week</div>
@@ -88,7 +88,7 @@ export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects 
         <div className="premium-card" style={styles.kpiCard}>
           <div style={styles.kpiHeader}>
             <span style={styles.kpiTitle}>AT RISK</span>
-            <span style={styles.iconSpan}>⚠️</span>
+            <span style={styles.iconSpan}>!</span>
           </div>
           <div style={{ ...styles.kpiVal, color: '#EF4444' }}>{atRiskCount}</div>
           <div style={styles.kpiChange}><span style={{ color: '#EF4444', fontWeight: '600' }}>↘ 3%</span> from last week</div>
@@ -97,7 +97,7 @@ export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects 
         <div className="premium-card" style={styles.kpiCard}>
           <div style={styles.kpiHeader}>
             <span style={styles.kpiTitle}>ON TRACK</span>
-            <span style={styles.iconSpan}>✓</span>
+            <span style={styles.iconSpan}></span>
           </div>
           <div style={{ ...styles.kpiVal, color: '#10B981' }}>{onTrackCount}</div>
           <div style={styles.kpiChange}><span style={{ color: '#10B981', fontWeight: '600' }}>↗ 8%</span> from last week</div>
@@ -106,7 +106,7 @@ export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects 
         <div className="premium-card" style={styles.kpiCard}>
           <div style={styles.kpiHeader}>
             <span style={styles.kpiTitle}>AVG. DELAY</span>
-            <span style={styles.iconSpan}>⏱</span>
+            <span style={styles.iconSpan}></span>
           </div>
           <div style={{ ...styles.kpiVal, color: '#FF7A00' }}>{atRiskCount > 0 ? '1.2d' : '0.1d'}</div>
           <div style={styles.kpiChange}>
@@ -149,7 +149,7 @@ export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects 
                       
                       <div style={styles.cardFooter}>
                         <img src={t.avatar} alt="Assignee" style={styles.cardAvatar} />
-                        <span style={styles.cardDue}>📅 {t.due}</span>
+                        <span style={styles.cardDue}>{t.due}</span>
                       </div>
                     </div>
                   ))}

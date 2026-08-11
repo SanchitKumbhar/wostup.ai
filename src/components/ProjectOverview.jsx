@@ -221,7 +221,7 @@ export default function ProjectOverview({
           </div>
           <div style={styles.ownerActions}>
             <button className="btn-secondary" style={{ flex: 1, padding: '8px 12px', fontSize: '12px' }} onClick={() => setIsShareModalOpen(true)}>
-              🔗 Share
+              Share
             </button>
           </div>
         </div>
@@ -603,7 +603,7 @@ export default function ProjectOverview({
                     <div style={styles.reactionRow}>
                       {Object.entries(comment.reactions).map(([reaction, count]) => (
                         <button key={reaction} className="reaction-chip" style={styles.reactionBtn}>
-                          {reaction === 'thumb' ? '👍' : '👏'} {count}
+                          {reaction === 'thumb' ? '+1' : 'clap'} {count}
                         </button>
                       ))}
                     </div>
@@ -623,9 +623,9 @@ export default function ProjectOverview({
               />
               <div style={styles.chatFooterRow}>
                 <div style={styles.editorTools}>
-                  <button type="button" style={styles.toolIconBtn}>📎</button>
+                  <button type="button" style={styles.toolIconBtn}>Attach</button>
                   <button type="button" style={styles.toolIconBtn}>@</button>
-                  <button type="button" style={styles.toolIconBtn}>😊</button>
+                  <button type="button" style={styles.toolIconBtn}>Emoji</button>
                 </div>
                 <button type="submit" className="btn-gradient">
                   Post Comment
@@ -666,15 +666,15 @@ export default function ProjectOverview({
             <h4 style={styles.detailsSidebarTitle}>SHARED ASSETS</h4>
             <div style={styles.assetsList}>
               <a href="#asset" style={styles.assetItem}>
-                <span style={styles.assetIcon}>📄</span>
+                <span style={styles.assetIcon}>DOC</span>
                 System_Architecture.pdf
               </a>
               <a href="#asset" style={styles.assetItem}>
-                <span style={styles.assetIcon}>🎨</span>
+                <span style={styles.assetIcon}>FIG</span>
                 Workflow_Draft_v2.fig
               </a>
               <a href="#asset" style={styles.assetItem}>
-                <span style={styles.assetIcon}>📄</span>
+                <span style={styles.assetIcon}>PDF</span>
                 Requirement_Specs.docx
               </a>
             </div>

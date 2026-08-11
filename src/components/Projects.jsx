@@ -212,28 +212,28 @@ export default function Projects({
       {/* Bottom Summary Stats Box */}
       <div style={styles.statsPanel}>
         <div style={styles.statBox}>
-          <div style={styles.statIcon}>📁</div>
+          <div style={styles.statIcon}></div>
           <div>
             <div style={styles.statTitle}>TOTAL PROJECTS</div>
             <div style={styles.statValue}>{total}</div>
           </div>
         </div>
         <div style={styles.statBox}>
-          <div style={styles.statIcon}>✓</div>
+          <div style={styles.statIcon}></div>
           <div>
             <div style={styles.statTitle}>COMPLETED</div>
             <div style={styles.statValue}>{completed}</div>
           </div>
         </div>
         <div style={styles.statBox}>
-          <div style={styles.statIcon}>⏱</div>
+          <div style={styles.statIcon}></div>
           <div>
             <div style={styles.statTitle}>IN PROGRESS</div>
             <div style={styles.statValue}>{inProgress}</div>
           </div>
         </div>
         <div style={styles.statBox}>
-          <div style={styles.statIcon}>👥</div>
+          <div style={styles.statIcon}></div>
           <div>
             <div style={styles.statTitle}>TEAM ACTIVE</div>
             <div style={styles.statValue}>12 Members</div>
@@ -316,8 +316,8 @@ export default function Projects({
                     value={template}
                     onChange={(e) => setTemplate(e.target.value)}
                   >
-                    <option value="Scrum">🏃 Scrum — Sprint-based delivery</option>
-                    <option value="Kanban">📋 Kanban — Continuous flow board</option>
+                    <option value="Scrum">Scrum — Sprint-based delivery</option>
+                    <option value="Kanban">Kanban — Continuous flow board</option>
                   </select>
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
@@ -333,7 +333,7 @@ export default function Projects({
                           ...(privacy === opt ? styles.privacyOptionActive : {})
                         }}
                       >
-                        {opt === 'Public Workspace' ? '🌐' : '🔒'} {opt === 'Public Workspace' ? 'Public' : 'Private'}
+                        {opt === 'Public Workspace' ? '' : ''} {opt === 'Public Workspace' ? 'Public' : 'Private'}
                       </button>
                     ))}
                   </div>

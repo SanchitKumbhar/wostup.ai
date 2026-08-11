@@ -93,7 +93,7 @@ function ProblemCube({ text, target, cubeRef }) {
         anchorX="center"
         anchorY="middle"
       >
-        ⚠
+        !
       </Text>
     </mesh>
   );

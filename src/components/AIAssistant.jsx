@@ -70,7 +70,7 @@ export default function AIAssistant() {
         {/* Chat Section */}
         <div className="premium-card" style={styles.chatContainer}>
           <div style={styles.chatHeader}>
-            <div style={styles.aiAvatarIcon}>🤖</div>
+            <div style={styles.aiAvatarIcon}>AI</div>
             <div>
               <div style={styles.aiName}>Wostup AI Orchestrator</div>
               <div style={styles.aiStatus}>Online • Monitoring Workspace</div>
@@ -87,7 +87,7 @@ export default function AIAssistant() {
                   alignSelf: msg.sender === 'ai' ? 'flex-start' : 'flex-end',
                 }}
               >
-                {msg.sender === 'ai' && <div style={styles.msgAvatar}>🤖</div>}
+                {msg.sender === 'ai' && <div style={styles.msgAvatar}>AI</div>}
                 <div style={{
                   ...styles.messageBubble,
                   backgroundColor: msg.sender === 'ai' ? '#F0F2FF' : '#5B5FFB',
@@ -104,7 +104,7 @@ export default function AIAssistant() {
             ))}
             {isTyping && (
               <div style={{ ...styles.messageItem, alignSelf: 'flex-start' }}>
-                <div style={styles.msgAvatar}>🤖</div>
+                <div style={styles.msgAvatar}>AI</div>
                 <div style={{ ...styles.messageBubble, backgroundColor: '#F0F2FF', color: '#6C7A87' }}>
                   <span>Wostup AI is evaluating metrics...</span>
                 </div>
@@ -121,7 +121,7 @@ export default function AIAssistant() {
                 className="suggestion-chip"
                 style={styles.suggestionBtn}
               >
-                💡 {s.label}
+                {s.label}
               </button>
             ))}
           </div>
