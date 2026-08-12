@@ -498,7 +498,7 @@ const styles = {
   tabsPanel: { padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '4px' },
   tabLink: {
     display: 'flex', alignItems: 'center', gap: '12px', width: '100%',
-    background: 'none', border: 'none', padding: '12px 16px', borderRadius: '8px',
+    backgroundColor: 'transparent', border: 'none', padding: '12px 16px', borderRadius: '8px',
     textAlign: 'left', fontSize: '14px', fontWeight: '500', color: '#6C7A87',
     cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: 'var(--font-sans)',
   },
