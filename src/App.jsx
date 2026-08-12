@@ -19,6 +19,8 @@ import GithubIntegration from './components/Github/GithubIntegration';
 import ProtectedRoute from './components/ProtectedRoute';
 import SignInPage from './components/SignInPage';
 import SignUpPage from './components/SignUpPage';
+import ProfileSetup from './components/ProfileSetup';
+import OnboardingWorkspace from './components/OnboardingWorkspace';
 
 export default function App() {
   const { user: clerkUser, isLoaded } = useUser();
@@ -44,7 +46,8 @@ export default function App() {
   const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
 
   // Compulsory workspace check
-  const isWorkspaceRequired = user && workspaces.length === 0;
+  const isOnboarding = location.pathname.startsWith('/onboarding');
+  const isWorkspaceRequired = user && workspaces.length === 0 && !isOnboarding;
   const showWorkspaceModal = isWorkspaceModalOpen || isWorkspaceRequired;
 
   // Navigation States
@@ -318,6 +321,10 @@ export default function App() {
 
       {/* Protected Layout & Routes */}
       <Route element={<ProtectedRoute />}>
+        {/* Dedicated Onboarding Layout (no sidebar/topbar) */}
+        <Route path="/onboarding/profile" element={<ProfileSetup />} />
+        <Route path="/onboarding/workspace" element={<OnboardingWorkspace onGenerate={handleGenerateWorkspace} />} />
+
         <Route element={
           <div className="app-container">
             <div className={`sidebar-overlay ${isSidebarOpen ? 'active' : ''}`} onClick={() => setIsSidebarOpen(false)}></div>
