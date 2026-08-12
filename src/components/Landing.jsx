@@ -143,7 +143,6 @@ export default function Landing({ onLogin }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Trigger hero animation once preloader finishes or is active
     if (!showPreloader) {
       const t = setTimeout(() => setHeroVisible(true), 80);
       return () => clearTimeout(t);
@@ -326,20 +325,20 @@ export default function Landing({ onLogin }) {
           >
             <div className="lp-hero-eyebrow">
               <span className="lp-hero-pulse" />
-              Trusted by 12,000+ teams worldwide
+              Welcome to the Future of Work
             </div>
 
             <h1 className="lp-hero-headline">
-              The Workspace Engine
+              The Autonomous Workspace
               <br />
-              <span className="lp-hero-gradient-text">Built for Teams That Ship.</span>
+              <span className="lp-hero-gradient-text">For High-Velocity Teams.</span>
             </h1>
 
             <p
               className="lp-hero-sub"
               style={{ transitionDelay: '0.1s', opacity: heroVisible ? 1 : 0, transform: heroVisible ? 'translateY(0)' : 'translateY(16px)', transition: 'opacity 0.7s ease 0.1s, transform 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s' }}
             >
-              Wostup combines intelligent task tracking, AI-powered risk detection, and real-time collaboration into one unified workspace — so your team delivers on time, every time.
+              Wostup isn't just another task tracker—it's an intelligent engine that actively balances team workloads, flags sprint risks before they become blockers, and automates your workflows. Unify your execution in one smart platform and ship with absolute confidence.
             </p>
 
             <div

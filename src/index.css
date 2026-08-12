@@ -211,8 +211,8 @@ h1, h2, h3, h4 {
 
 /* ===== CUSTOM SCROLLBARS ===== */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -220,12 +220,12 @@ h1, h2, h3, h4 {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(154, 166, 178, 0.3);
+  background: rgba(154, 166, 178, 0.2);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(91, 95, 251, 0.4);
+  background: rgba(91, 95, 251, 0.5);
 }
 
 /* ===== GRADIENT BUTTONS ===== */
@@ -2155,13 +2155,13 @@ h1, h2, h3, h4 {
 /* For Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(154, 166, 178, 0.3) transparent;
+  scrollbar-color: rgba(154, 166, 178, 0.2) transparent;
 }
 
 /* For WebKit browsers (Chrome, Safari, Edge) */
 *::-webkit-scrollbar {
-  width: 6px;
-  height: 6px; /* For horizontal scrollbars */
+  width: 4px;
+  height: 4px; /* For horizontal scrollbars */
 }
 
 *::-webkit-scrollbar-track {
@@ -2169,12 +2169,12 @@ h1, h2, h3, h4 {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(154, 166, 178, 0.3); /* Unobtrusive thin gray */
+  background: rgba(154, 166, 178, 0.2); /* Unobtrusive thin gray */
   border-radius: 10px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(154, 166, 178, 0.5); /* Slightly darker on hover */
+  background: rgba(91, 95, 251, 0.5); /* Brand purple on hover */
 }
 
 *::-webkit-scrollbar-corner {
