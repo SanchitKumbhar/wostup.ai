@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { SignedIn, SignedOut } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, useAuth } from '@clerk/clerk-react';
+import { Navigate } from 'react-router-dom';
 import LandingIntro from './LandingIntro';
 
 // ─── Logo SVG ────────────────────────────────────────────────────────────────
@@ -141,6 +142,7 @@ export default function Landing({ onLogin }) {
   const [scrolled, setScrolled] = useState(false);
   const [heroVisible, setHeroVisible] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { isSignedIn, isLoaded } = useAuth();
 
   useEffect(() => {
     if (!showPreloader) {
@@ -235,6 +237,10 @@ export default function Landing({ onLogin }) {
   const companies = ['Stellar Dynamics', 'Neural Systems', 'Vogue Retail', 'Global Bank', 'Logistics Pro', 'Future Labs'];
 
   // ── Render ────────────────────────────────────────────────────────────────
+  if (isLoaded && isSignedIn) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <div className="lp-root">
       {showPreloader && (

@@ -25,7 +25,7 @@ export default function SignInPage() {
         </div>
         <div style={styles.tagline}>V2.0 Workspace Engine</div>
 
-        <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" appearance={{
+        <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" fallbackRedirectUrl="/dashboard" appearance={{
           elements: {
             rootBox: {
               width: '100%',

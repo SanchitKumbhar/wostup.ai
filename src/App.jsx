@@ -14,7 +14,7 @@ import TeamLoad from './components/TeamLoad';
 import TaskHealth from './components/TaskHealth';
 import Settings from './components/Settings';
 import WorkspaceSelector from './components/WorkspaceSelector';
-import AIAssistant from './components/AiAssistant';
+import AIAssistant from './components/AIAssistant';
 import GithubIntegration from './components/Github/GithubIntegration';
 import ProtectedRoute from './components/ProtectedRoute';
 import SignInPage from './components/SignInPage';
