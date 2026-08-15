@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
+import { useTasks, useCreateTask } from '../hooks/useTasks';
+import { useMilestones, useCreateMilestone, useUpdateMilestone, useDeleteMilestone } from '../hooks/useMilestones';
+import { useCurrentUser } from '../hooks/useUser';
+import { useProjectStats, useProjectHealth } from '../hooks/useProjectHealth';
 
 export default function ProjectOverview({
   project,
-  tasks,
-  milestones,
   onBack,
-  onAddTask,
-  onAddMilestone,
   onAddComment,
   onNavigate,
 }) {
@@ -42,11 +42,31 @@ export default function ProjectOverview({
   const [newMilestoneOwner, setNewMilestoneOwner] = useState('Alex Rivera');
   const [newMilestoneDesc, setNewMilestoneDesc] = useState('');
   
+  const [isEditMilestoneModalOpen, setIsEditMilestoneModalOpen] = useState(false);
+  const [editingMilestoneId, setEditingMilestoneId] = useState(null);
+  const [editMilestoneTitle, setEditMilestoneTitle] = useState('');
+  const [editMilestonePhase, setEditMilestonePhase] = useState('');
+  const [editMilestoneDate, setEditMilestoneDate] = useState('');
+  const [editMilestoneOwner, setEditMilestoneOwner] = useState('');
+  const [editMilestoneDesc, setEditMilestoneDesc] = useState('');
+  const [editMilestoneStatus, setEditMilestoneStatus] = useState('');
+  
   const [commentText, setCommentText] = useState('');
 
-  // Filter tasks specific to this project
-  const projectTasks = tasks.filter(t => t.projectId === project.id);
-  const projectMilestones = milestones.filter(m => m.projectId === project.id);
+  const projectId = project?.id || project?._id;
+  const workspaceId = project?.workspaceId;
+
+  // ── API Hooks ─────────────────────────────────────────────────────
+  const { data: currentUser } = useCurrentUser();
+  const { data: projectTasks = [] } = useTasks(projectId);
+  const { mutateAsync: createTask } = useCreateTask();
+  const { data: projectMilestones = [] } = useMilestones(projectId);
+  const { mutateAsync: createMilestone } = useCreateMilestone();
+  const { mutateAsync: updateMilestone } = useUpdateMilestone();
+  const { mutateAsync: deleteMilestone } = useDeleteMilestone();
+  
+  const { data: projectStats } = useProjectStats(projectId);
+  const { data: projectHealth } = useProjectHealth(projectId);
 
   // Mock comments
   const [comments, setComments] = useState([
@@ -94,68 +114,69 @@ export default function ProjectOverview({
     setTimeout(() => setLinkCopied(false), 2500);
   };
 
-  const handleAddProjectTask = (e) => {
+  const handleAddProjectTask = async (e) => {
     e.preventDefault();
     if (!poTaskTitle.trim() || !poTaskDueDate) return;
-    const newT = {
-      id: `TSK-${Math.floor(100 + Math.random() * 900)}`,
-      projectId: project.id,
-      title: poTaskTitle,
-      assignee: poTaskAssignee,
-      avatar: poTaskAssignee === 'Sarah Chen'
-        ? 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80'
-        : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
-      status: 'Todo',
-      dueDate: new Date(poTaskDueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      priority: poTaskPriority,
-      progress: 0,
-      commentsCount: 0,
-    };
-    onAddTask(newT);
-    setPoTaskTitle(''); setPoTaskDueDate('');
-    setIsAddTaskModalOpen(false);
+    try {
+      await createTask({
+        workspaceId,
+        projectId,
+        title: poTaskTitle,
+        description: '',
+        assigneeUserId: currentUser?._id || currentUser?.id,
+        status: 'todo',
+        actualProgress: 0,
+        dueDate: new Date(poTaskDueDate).toISOString(),
+        dependency: []
+      });
+      setPoTaskTitle(''); setPoTaskDueDate('');
+      setIsAddTaskModalOpen(false);
+    } catch (err) {
+      console.error('Failed to create project task:', err);
+    }
   };
 
-  const handleCreateMilestone = (e) => {
+  const handleCreateMilestone = async (e) => {
     e.preventDefault();
     if (!newMilestoneTitle.trim() || !newMilestoneDate) return;
-    const newMil = {
-      id: `M-${Date.now()}`,
-      projectId: project.id,
-      title: newMilestoneTitle,
-      phase: newMilestonePhase,
-      dueDate: new Date(newMilestoneDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      owner: newMilestoneOwner,
-      description: newMilestoneDesc,
-      progress: 0,
-      status: 'Upcoming'
-    };
-    onAddMilestone(newMil);
-    setIsMilestoneModalOpen(false);
-    // Reset
-    setNewMilestoneTitle('');
-    setNewMilestoneDate('');
-    setNewMilestoneDesc('');
+    try {
+      await createMilestone({
+        workspaceId,
+        projectId,
+        title: newMilestoneTitle,
+        phase: newMilestonePhase,
+        owner: newMilestoneOwner,
+        description: newMilestoneDesc,
+        dueDate: new Date(newMilestoneDate).toISOString()
+      });
+      setIsMilestoneModalOpen(false);
+      setNewMilestoneTitle('');
+      setNewMilestoneDate('');
+      setNewMilestoneDesc('');
+    } catch (err) {
+      console.error('Failed to create milestone:', err);
+    }
   };
 
-  const handleAddInlineTask = (e) => {
+  const handleAddInlineTask = async (e) => {
     e.preventDefault();
     if (!inlineTaskDesc.trim()) return;
-    const newT = {
-      id: `TSK-${Math.floor(100 + Math.random() * 900)}`,
-      projectId: project.id,
-      title: inlineTaskDesc,
-      assignee: inlineTaskAssignee,
-      avatar: inlineTaskAssignee === 'Sarah Chen' 
-        ? 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80'
-        : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
-      status: 'Todo',
-      dueDate: 'Jun 30',
-      priority: 'Medium',
-      progress: 0
-    };
-    onAddTask(newT);
-    setInlineTaskDesc('');
+    try {
+      await createTask({
+        workspaceId,
+        projectId,
+        title: inlineTaskDesc,
+        description: '',
+        assigneeUserId: currentUser?._id || currentUser?.id,
+        status: 'todo',
+        actualProgress: 0,
+        dueDate: new Date().toISOString(),
+        dependency: []
+      });
+      setInlineTaskDesc('');
+    } catch (err) {
+      console.error('Failed to create inline task:', err);
+    }
   };
 
   const getPriorityStyle = (priority) => {
@@ -248,26 +269,26 @@ export default function ProjectOverview({
             {/* KPI Cards Row */}
             <div className="kpi-row-small" style={styles.kpiRowSmall}>
               <div className="premium-card kpi-card-small" style={styles.kpiCardSmall}>
-                <div style={styles.kpiSmallTitle}>BUDGET USED</div>
-                <div style={styles.kpiSmallVal}>$45,200</div>
-                <span style={styles.kpiSmallChange}>↗ +12%</span>
+                <div style={styles.kpiSmallTitle}>TOTAL TASKS</div>
+                <div style={styles.kpiSmallVal}>{projectStats ? projectStats.totalTasks : totalTasks}</div>
+                <span style={styles.kpiSmallChange}>Completion: {projectStats ? projectStats.completionRate : '0'}%</span>
               </div>
               <div className="premium-card kpi-card-small" style={styles.kpiCardSmall}>
                 <div style={styles.kpiSmallTitle}>TASKS COMPLETED</div>
-                <div style={styles.kpiSmallVal}>{completedTasks}/{totalTasks}</div>
-                <span style={styles.kpiSmallChange}>↗ +8 today</span>
+                <div style={styles.kpiSmallVal}>{projectStats ? projectStats.completedTasks : completedTasks}/{projectStats ? projectStats.totalTasks : totalTasks}</div>
+                <span style={styles.kpiSmallChange}>In Progress: {projectStats ? projectStats.inProgressTasks : 0}</span>
               </div>
               <div className="premium-card kpi-card-small" style={styles.kpiCardSmall}>
                 <div style={styles.kpiSmallTitle}>VELOCITY</div>
-                <div style={styles.kpiSmallVal}>18.5</div>
-                <span style={{ ...styles.kpiSmallChange, color: '#EF4444' }}>↘ -1.2</span>
+                <div style={styles.kpiSmallVal}>{projectHealth?.velocity?.averagePointsPerSprint || '18.5'}</div>
+                <span style={{ ...styles.kpiSmallChange, color: '#EF4444' }}>Trend: {projectHealth?.velocity?.trend || 'stable'}</span>
               </div>
               <div className="premium-card kpi-card-small" style={styles.kpiCardSmall}>
-                <div style={styles.kpiSmallTitle}>MILESTONES</div>
+                <div style={styles.kpiSmallTitle}>HEALTH SCORE</div>
                 <div style={styles.kpiSmallVal}>
-                  {projectMilestones.filter(m => m.status === 'Completed').length}/{projectMilestones.length}
+                  {projectStats?.healthScore || 92}/100
                 </div>
-                <span style={styles.kpiSmallChange}>On Time</span>
+                <span style={styles.kpiSmallChange}>Risk: {projectStats?.riskLevel || 'Low'}</span>
               </div>
             </div>
 
@@ -355,16 +376,25 @@ export default function ProjectOverview({
               {/* Risk Assessment */}
               <div className="premium-card" style={{ ...styles.panelCard, flex: 1 }}>
                 <h3 style={styles.cardTitle}>Risk Assessment</h3>
-                <div style={styles.riskCard}>
-                  <div style={styles.riskHeaderHigh}>HIGH RISK</div>
-                  <div style={styles.riskBody}>
-                    Third-party API integration delays might affect sprint 4 delivery.
+                {projectHealth?.blockers?.length > 0 ? projectHealth.blockers.map((blocker, i) => (
+                  <div key={i} style={styles.riskCard}>
+                    <div style={styles.riskHeaderHigh}>BLOCKER</div>
+                    <div style={styles.riskBody}>
+                      <strong>{blocker.title}</strong>: {blocker.reason}
+                    </div>
                   </div>
-                </div>
+                )) : (
+                  <div style={styles.riskCard}>
+                    <div style={styles.riskHeaderHigh}>HIGH RISK</div>
+                    <div style={styles.riskBody}>
+                      Third-party API integration delays might affect sprint 4 delivery.
+                    </div>
+                  </div>
+                )}
                 <div style={{ ...styles.riskCard, borderLeft: '4px solid #10B981', marginTop: '12px' }}>
-                  <div style={styles.riskHeaderGreen}>MITIGATION READY</div>
+                  <div style={styles.riskHeaderGreen}>AI SUMMARY</div>
                   <div style={styles.riskBody}>
-                    Backup vendor identified for specialized encryption modules.
+                    {projectHealth?.aiSummary || "Backup vendor identified for specialized encryption modules."}
                   </div>
                 </div>
               </div>
@@ -550,13 +580,30 @@ export default function ProjectOverview({
                   <div className="premium-card" style={styles.milestoneDetailCard}>
                     <div style={styles.milestoneHeader}>
                       <span style={styles.milestonePhase}>{milestone.phase}</span>
-                      {milestone.status === 'Completed' ? (
-                        <span className="badge badge-completed">COMPLETED</span>
-                      ) : milestone.status === 'At Risk' ? (
-                        <span className="badge badge-atrisk">AT RISK</span>
-                      ) : (
-                        <span className="badge badge-todo">UPCOMING</span>
-                      )}
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        {milestone.status === 'Completed' ? (
+                          <span className="badge badge-completed">COMPLETED</span>
+                        ) : milestone.status === 'At Risk' ? (
+                          <span className="badge badge-atrisk">AT RISK</span>
+                        ) : (
+                          <span className="badge badge-todo">UPCOMING</span>
+                        )}
+                        <button onClick={() => {
+                          setEditingMilestoneId(milestone.id || milestone._id);
+                          setEditMilestoneTitle(milestone.title);
+                          setEditMilestoneDesc(milestone.description || '');
+                          setEditMilestonePhase(milestone.phase || 'Phase 1');
+                          setEditMilestoneOwner(milestone.owner || 'Sarah Chen');
+                          setEditMilestoneStatus(milestone.status || 'To Do');
+                          setEditMilestoneDate(milestone.dueDate ? new Date(milestone.dueDate).toISOString().split('T')[0] : '');
+                          setIsEditMilestoneModalOpen(true);
+                        }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5B5FFB', fontSize: '11px', fontWeight: '600', marginLeft: '8px' }}>Edit</button>
+                        <button onClick={async () => {
+                          if (window.confirm('Are you sure you want to delete this milestone?')) {
+                            try { await deleteMilestone(milestone.id || milestone._id); } catch(e) { console.error(e); }
+                          }
+                        }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', fontSize: '11px', fontWeight: '600' }}>Delete</button>
+                      </div>
                     </div>
                     <h4 style={styles.milestoneCardTitle}>{milestone.title}</h4>
                     <p style={styles.milestoneCardDesc}>{milestone.description}</p>
@@ -758,6 +805,115 @@ export default function ProjectOverview({
                 </button>
                 <button type="submit" className="btn-gradient">
                   Create Milestone
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Milestone Modal */}
+      {isEditMilestoneModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={styles.modalContent}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>Edit Milestone</h2>
+              <button style={styles.modalCloseBtn} onClick={() => setIsEditMilestoneModalOpen(false)}>×</button>
+            </div>
+
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              try {
+                await updateMilestone({
+                  milestoneId: editingMilestoneId,
+                  updates: {
+                    title: editMilestoneTitle,
+                    phase: editMilestonePhase,
+                    owner: editMilestoneOwner,
+                    status: editMilestoneStatus,
+                    description: editMilestoneDesc,
+                    dueDate: new Date(editMilestoneDate).toISOString(),
+                    projectId: projectId
+                  }
+                });
+                setIsEditMilestoneModalOpen(false);
+              } catch (err) { console.error('Failed to update milestone'); }
+            }} style={styles.modalForm}>
+
+              <div className="form-group">
+                <label className="form-label">Milestone Title *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={editMilestoneTitle}
+                  onChange={(e) => setEditMilestoneTitle(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="split-row" style={styles.row}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Project Phase</label>
+                  <select
+                    className="form-input"
+                    value={editMilestonePhase}
+                    onChange={(e) => setEditMilestonePhase(e.target.value)}
+                  >
+                    <option value="Phase 1">Phase 1: Discovery</option>
+                    <option value="Phase 2">Phase 2: Development</option>
+                    <option value="Phase 3">Phase 3: Deployment</option>
+                    <option value="Phase 4">Phase 4: Optimization</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Lead Owner</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={editMilestoneOwner}
+                    onChange={(e) => setEditMilestoneOwner(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="split-row" style={styles.row}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Due Date *</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={editMilestoneDate}
+                    onChange={(e) => setEditMilestoneDate(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Status</label>
+                  <select className="form-input" value={editMilestoneStatus} onChange={(e) => setEditMilestoneStatus(e.target.value)}>
+                    <option value="To Do">To Do</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="At Risk">At Risk</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Description</label>
+                <textarea
+                  className="form-input"
+                  style={{ minHeight: '60px', resize: 'vertical' }}
+                  value={editMilestoneDesc}
+                  onChange={(e) => setEditMilestoneDesc(e.target.value)}
+                />
+              </div>
+
+              <div style={styles.modalActions}>
+                <button type="button" onClick={() => setIsEditMilestoneModalOpen(false)} style={styles.discardBtn}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-gradient">
+                  Save Changes
                 </button>
               </div>
             </form>

@@ -2180,3 +2180,8 @@ h1, h2, h3, h4 {
 *::-webkit-scrollbar-corner {
   background: transparent;
 }
+
+/* Loading spinner animation */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useConflicts } from '../hooks/useConflicts';
 
 export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects }) {
+  const workspaceId = projects && projects.length > 0 ? projects[0].workspaceId : null;
+  const { data: conflictsData } = useConflicts(workspaceId);
   const [localTasks, setLocalTasks] = useState([
     { id: 'T-10', title: 'Refactor Auth Service', project: 'P-12', priority: 'High', due: 'Oct 24', status: 'Not Started', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80' },
     { id: 'T-11', title: 'Update Documentation', project: 'P-5', priority: 'Low', due: 'Oct 28', status: 'Not Started', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80' },
@@ -66,9 +69,14 @@ export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects 
               onChange={(e) => setSelectedProjectFilter(e.target.value)}
             >
               <option value="all">All Projects</option>
-              {projects.map(proj => (
-                <option key={proj.id} value={proj.id}>{proj.name}</option>
-              ))}
+              {projects.map(proj => {
+                const projId = proj.id || proj._id;
+                return (
+                  <option key={projId} value={projId}>
+                    {proj.key ? `[${proj.key}] ${proj.name}` : proj.name}
+                  </option>
+                );
+              })}
             </select>
           )}
         </div>
@@ -81,7 +89,7 @@ export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects 
             <span style={styles.kpiTitle}>TOTAL TASKS</span>
             <span style={styles.iconSpan}></span>
           </div>
-          <div style={{ ...styles.kpiVal, color: '#5B5FFB' }}>124</div>
+          <div style={{ ...styles.kpiVal, color: '#5B5FFB' }}>{localTasks.length}</div>
           <div style={styles.kpiChange}><span style={{ color: '#10B981', fontWeight: '600' }}>↗ 12%</span> from last week</div>
         </div>
 
@@ -96,11 +104,17 @@ export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects 
 
         <div className="premium-card" style={styles.kpiCard}>
           <div style={styles.kpiHeader}>
-            <span style={styles.kpiTitle}>ON TRACK</span>
+            <span style={styles.kpiTitle}>CONFLICTS DETECTED</span>
             <span style={styles.iconSpan}></span>
           </div>
-          <div style={{ ...styles.kpiVal, color: '#10B981' }}>{onTrackCount}</div>
-          <div style={styles.kpiChange}><span style={{ color: '#10B981', fontWeight: '600' }}>↗ 8%</span> from last week</div>
+          <div style={{ ...styles.kpiVal, color: '#10B981' }}>{conflictsData?.conflictCount || 0}</div>
+          <div style={styles.kpiChange}>
+            {conflictsData?.hasConflicts ? (
+              <span style={{ color: '#EF4444', fontWeight: '600' }}>Review needed</span>
+            ) : (
+              <span style={{ color: '#10B981', fontWeight: '600' }}>Schedule clear</span>
+            )}
+          </div>
         </div>
 
         <div className="premium-card" style={styles.kpiCard}>

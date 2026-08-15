@@ -1,18 +1,40 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
+import { useUpdateProfile } from '../hooks/useUser';
 
 export default function ProfileSetup() {
   const { user } = useUser();
   const navigate = useNavigate();
-  const [role, setRole] = useState('');
-  const [department, setDepartment] = useState('');
+  const { mutateAsync: updateProfile, isPending } = useUpdateProfile();
+  
+  const [roleTitle, setRoleTitle] = useState('');
+  const [skillsText, setSkillsText] = useState('');
+  const [shortbio, setShortbio] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const profile = { role, department };
-    localStorage.setItem('wostup_user_profile', JSON.stringify(profile));
-    navigate('/onboarding/workspace');
+    setError('');
+
+    const skills = skillsText.split(',').map(s => s.trim()).filter(Boolean);
+    
+    if (skills.length < 3) {
+      setError('Please provide at least 3 skills, separated by commas.');
+      return;
+    }
+    
+    if (shortbio.length < 20) {
+      setError('Your bio must be at least 20 characters long.');
+      return;
+    }
+
+    try {
+      await updateProfile({ roleTitle, skills, shortbio });
+      navigate('/onboarding/workspace');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update profile. Please try again.');
+    }
   };
 
   return (
@@ -41,39 +63,46 @@ export default function ProfileSetup() {
           <h2 style={styles.headerTitle}>Welcome, {user?.firstName || 'there'}!</h2>
           <p style={styles.subtitle}>Let's set up your profile to personalize your experience.</p>
           
+          {error && <div style={styles.errorMessage}>{error}</div>}
+
           <form onSubmit={handleSubmit} style={{ width: '100%', marginTop: '24px' }}>
             <div style={styles.formGroup}>
               <label style={styles.formLabel}>Your Role / Job Title</label>
               <input
                 type="text"
                 style={styles.formInput}
-                placeholder="e.g. Product Manager"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
+                placeholder="e.g. Full Stack Developer"
+                value={roleTitle}
+                onChange={(e) => setRoleTitle(e.target.value)}
                 required
               />
             </div>
             
             <div style={styles.formGroup}>
-              <label style={styles.formLabel}>Department</label>
-              <select
+              <label style={styles.formLabel}>Top Skills (min. 3, comma separated)</label>
+              <input
+                type="text"
                 style={styles.formInput}
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
+                placeholder="React, Node.js, MongoDB"
+                value={skillsText}
+                onChange={(e) => setSkillsText(e.target.value)}
                 required
-              >
-                <option value="" disabled>Select your department...</option>
-                <option value="engineering">Engineering</option>
-                <option value="design">Design</option>
-                <option value="product">Product</option>
-                <option value="marketing">Marketing</option>
-                <option value="sales">Sales</option>
-                <option value="other">Other</option>
-              </select>
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.formLabel}>Short Bio</label>
+              <textarea
+                style={{ ...styles.formInput, resize: 'vertical', minHeight: '80px' }}
+                placeholder="Tell us a bit about what you do (min 20 characters)..."
+                value={shortbio}
+                onChange={(e) => setShortbio(e.target.value)}
+                required
+              />
             </div>
             
-            <button type="submit" style={styles.formButtonPrimary}>
-              Continue to Workspace
+            <button type="submit" style={styles.formButtonPrimary} disabled={isPending}>
+              {isPending ? 'Saving...' : 'Complete Profile'}
             </button>
           </form>
         </div>
@@ -173,6 +202,18 @@ const styles = {
     margin: 0,
     lineHeight: '1.5',
   },
+  errorMessage: {
+    width: '100%',
+    marginTop: '16px',
+    padding: '12px',
+    backgroundColor: '#FEF2F2',
+    color: '#DC2626',
+    borderRadius: '8px',
+    fontSize: '13px',
+    fontWeight: '500',
+    border: '1px solid #FCA5A5',
+    boxSizing: 'border-box',
+  },
   formGroup: {
     display: 'flex',
     flexDirection: 'column',
@@ -210,6 +251,6 @@ const styles = {
     borderRadius: '10px',
     cursor: 'pointer',
     marginTop: '12px',
-    transition: 'filter 0.2s',
+    transition: 'opacity 0.2s',
   }
 };

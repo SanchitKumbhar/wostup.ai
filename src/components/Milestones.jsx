@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
+import { useMilestones, useCreateMilestone, useUpdateMilestone, useDeleteMilestone } from '../hooks/useMilestones';
 
-export default function Milestones({
-  milestones,
-  projects,
-  onAddMilestone,
-}) {
+export default function Milestones({ projects }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState(projects[0]?.id || '');
+  const [selectedProjectId, setSelectedProjectId] = useState(projects[0]?.id || projects[0]?._id || '');
+  const [viewProjectId, setViewProjectId] = useState(projects[0]?.id || projects[0]?._id || '');
   const [title, setTitle] = useState('');
   const [phase, setPhase] = useState('Phase 1');
   const [dueDate, setDueDate] = useState('');
@@ -14,33 +12,47 @@ export default function Milestones({
   const [desc, setDesc] = useState('');
   const [error, setError] = useState('');
 
-  const handleCreateMilestone = (e) => {
+  const [status, setStatus] = useState('To Do');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingMilestoneId, setEditingMilestoneId] = useState(null);
+
+  const { data: milestones = [] } = useMilestones(viewProjectId);
+  const { mutateAsync: createMilestone } = useCreateMilestone();
+  const { mutateAsync: updateMilestone } = useUpdateMilestone();
+  const { mutateAsync: deleteMilestone } = useDeleteMilestone();
+
+  const handleCreateMilestone = async (e) => {
     e.preventDefault();
     if (!title.trim() || !dueDate) {
       setError('Please fill out all required fields.');
       return;
     }
 
-    const newMil = {
-      id: `M-${Date.now()}`,
-      projectId: selectedProjectId,
-      title: title,
-      phase: phase,
-      dueDate: new Date(dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      owner: owner,
-      description: desc,
-      progress: 0,
-      status: 'Upcoming'
-    };
+    const proj = projects.find(p => (p.id || p._id) === selectedProjectId);
+    if (!proj) {
+      setError('Project not found');
+      return;
+    }
 
-    onAddMilestone(newMil);
-    setIsModalOpen(false);
-
-    // Reset
-    setTitle('');
-    setDueDate('');
-    setDesc('');
-    setError('');
+    try {
+      await createMilestone({
+        workspaceId: proj.workspaceId,
+        projectId: selectedProjectId,
+        title: title,
+        phase: phase,
+        owner: owner,
+        description: desc,
+        dueDate: new Date(dueDate).toISOString()
+      });
+      setIsModalOpen(false);
+      setTitle('');
+      setDueDate('');
+      setDesc('');
+      setStatus('To Do');
+      setError('');
+    } catch (err) {
+      setError('Failed to create milestone');
+    }
   };
 
   const getStatusBadgeStyle = (status) => {
@@ -57,11 +69,28 @@ export default function Milestones({
       <div className="page-header">
         <div className="page-title-group">
           <h1>Strategic Milestones</h1>
-          <p>Timeline-based milestone tracking across all active workspace initiatives.</p>
+          <p>Timeline-based milestone tracking for the selected project.</p>
         </div>
-        <button className="btn-gradient" onClick={() => setIsModalOpen(true)}>
-          + Add Milestone
-        </button>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <select 
+            className="form-input" 
+            style={{ width: '200px', margin: 0 }}
+            value={viewProjectId}
+            onChange={(e) => setViewProjectId(e.target.value)}
+          >
+            {projects.map((proj) => {
+              const projId = proj.id || proj._id;
+              return (
+                <option key={projId} value={projId}>
+                  {proj.key ? `[${proj.key}] ${proj.name}` : proj.name}
+                </option>
+              );
+            })}
+          </select>
+          <button className="btn-gradient" onClick={() => setIsModalOpen(true)}>
+            + Add Milestone
+          </button>
+        </div>
       </div>
 
       {/* Overview stats cards */}
@@ -99,9 +128,27 @@ export default function Milestones({
                 <div style={styles.timelineRight}>
                   <div style={styles.cardHeader}>
                     <div style={styles.projectContext}>{proj ? proj.name : 'Unknown Project'}</div>
-                    <span className={`badge ${getStatusBadgeStyle(ms.status)}`}>
-                      {ms.status}
-                    </span>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span className={`badge ${getStatusBadgeStyle(ms.status)}`}>
+                        {ms.status}
+                      </span>
+                      <button onClick={() => {
+                        setEditingMilestoneId(ms.id || ms._id);
+                        setTitle(ms.title);
+                        setDesc(ms.description || '');
+                        setPhase(ms.phase || 'Phase 1');
+                        setOwner(ms.owner || 'Sarah Chen');
+                        setStatus(ms.status || 'To Do');
+                        setDueDate(ms.dueDate ? new Date(ms.dueDate).toISOString().split('T')[0] : '');
+                        setSelectedProjectId(ms.projectId);
+                        setIsEditModalOpen(true);
+                      }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5B5FFB', fontSize: '12px', fontWeight: '600' }}>Edit</button>
+                      <button onClick={async () => {
+                        if (window.confirm('Are you sure you want to delete this milestone?')) {
+                          await deleteMilestone(ms.id || ms._id);
+                        }
+                      }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', fontSize: '12px', fontWeight: '600' }}>Delete</button>
+                    </div>
                   </div>
                   <h4 style={styles.milestoneTitleText}>{ms.title}</h4>
                   <p style={styles.milestoneDescText}>{ms.description}</p>
@@ -109,7 +156,7 @@ export default function Milestones({
                   <div style={styles.milestoneFooter}>
                     <div><strong>Phase:</strong> {ms.phase}</div>
                     <div><strong>Lead:</strong> {ms.owner}</div>
-                    <div><strong>Due Date:</strong> {ms.dueDate}</div>
+                    <div><strong>Due Date:</strong> {new Date(ms.dueDate).toLocaleDateString()}</div>
                   </div>
                 </div>
               </div>
@@ -151,9 +198,14 @@ export default function Milestones({
                   onChange={(e) => setSelectedProjectId(e.target.value)}
                   required
                 >
-                  {projects.map((proj) => (
-                    <option key={proj.id} value={proj.id}>{proj.name}</option>
-                  ))}
+                  {projects.map((proj) => {
+                    const projId = proj.id || proj._id;
+                    return (
+                      <option key={projId} value={projId}>
+                        {proj.key ? `[${proj.key}] ${proj.name}` : proj.name}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
@@ -213,6 +265,135 @@ export default function Milestones({
                 </button>
                 <button type="submit" className="btn-gradient">
                   Create Milestone
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal Onboarding */}
+      {isEditModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={styles.modalContent}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>Edit Milestone</h2>
+              <button style={styles.modalCloseBtn} onClick={() => setIsEditModalOpen(false)}>×</button>
+            </div>
+
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              try {
+                await updateMilestone({
+                  milestoneId: editingMilestoneId,
+                  updates: {
+                    title, phase, owner, status,
+                    description: desc,
+                    dueDate: new Date(dueDate).toISOString(),
+                    projectId: selectedProjectId
+                  }
+                });
+                setIsEditModalOpen(false);
+              } catch (err) { setError('Failed to update milestone'); }
+            }} style={styles.modalForm}>
+              {error && <div style={styles.errorText}>{error}</div>}
+
+              <div className="form-group">
+                <label className="form-label">Milestone Title *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Project *</label>
+                <select
+                  className="form-input"
+                  value={selectedProjectId}
+                  onChange={(e) => setSelectedProjectId(e.target.value)}
+                  required
+                >
+                  {projects.map((proj) => {
+                    const projId = proj.id || proj._id;
+                    return (
+                      <option key={projId} value={projId}>
+                        {proj.key ? `[${proj.key}] ${proj.name}` : proj.name}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              <div style={styles.row}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Project Phase</label>
+                  <select
+                    className="form-input"
+                    value={phase}
+                    onChange={(e) => setPhase(e.target.value)}
+                  >
+                    <option value="Phase 1">Phase 1: Discovery</option>
+                    <option value="Phase 2">Phase 2: Development</option>
+                    <option value="Phase 3">Phase 3: Deployment</option>
+                    <option value="Phase 4">Phase 4: Optimization</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Lead Owner</label>
+                  <select
+                    className="form-input"
+                    value={owner}
+                    onChange={(e) => setOwner(e.target.value)}
+                  >
+                    <option value="Sarah Chen">Sarah Chen</option>
+                    <option value="Alex Rivers">Alex Rivers</option>
+                    <option value="Jordan Smith">Jordan Smith</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="split-row" style={styles.row}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Due Date *</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Status</label>
+                  <select className="form-input" value={status} onChange={(e) => setStatus(e.target.value)}>
+                    <option value="To Do">To Do</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="At Risk">At Risk</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Description</label>
+                <textarea
+                  className="form-input"
+                  style={{ minHeight: '60px', resize: 'vertical' }}
+                  value={desc}
+                  onChange={(e) => setDesc(e.target.value)}
+                />
+              </div>
+
+              <div style={styles.modalActions}>
+                <button type="button" onClick={() => setIsEditModalOpen(false)} style={styles.discardBtn}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-gradient">
+                  Save Changes
                 </button>
               </div>
             </form>
