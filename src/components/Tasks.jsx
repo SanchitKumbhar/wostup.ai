@@ -1,4 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from '../hooks/useTasks';
+import { useEpics, useCreateEpic } from '../hooks/useEpics';
+import { useSprints, useCreateSprint, useUpdateSprint } from '../hooks/useSprints';
+import { useCurrentUser } from '../hooks/useUser';
 
 // ─── WIP LIMITS per column ──────────────────────────────────────────
 const WIP_LIMITS = {
@@ -23,17 +27,7 @@ const EPIC_COLOR_PALETTE = [
 const TASK_STATUS_OPTIONS = ['Backlog', 'Todo', 'In Progress', 'Blocked', 'Waiting Review', 'Done'];
 
 export default function Tasks({
-  tasks,
   projects,
-  epics = [],
-  sprints = [],
-  onAddTask,
-  onUpdateTaskStatus,
-  onUpdateTask,
-  onMoveToBoard,
-  onCompleteSprint,
-  onAddEpic,
-  onAddSprint,
   isMyTasksView,
   onUpdateProject,
 }) {
@@ -44,9 +38,21 @@ export default function Tasks({
   const [filterEpic, setFilterEpic] = useState(null); // epic id or null
   const [filterSprint, setFilterSprint] = useState(null); // sprint id or null
   const [filterActiveSprintOnly, setFilterActiveSprintOnly] = useState(false);
-  const [activeProjectId, setActiveProjectId] = useState(projects[0]?.id || '');
+  const [activeProjectId, setActiveProjectId] = useState(projects[0]?.id || projects[0]?._id || '');
 
-  // ── Sync with sidebar nav ─────────────────────────────────────────
+  // ── API Hooks ─────────────────────────────────────────────────────
+  const { data: currentUser } = useCurrentUser();
+  const { data: tasks = [] } = useTasks(activeProjectId);
+  const { mutateAsync: createTask } = useCreateTask();
+  const { mutateAsync: updateTask } = useUpdateTask();
+  const { mutateAsync: deleteTask } = useDeleteTask();
+  const { data: epics = [] } = useEpics(activeProjectId);
+  const { mutateAsync: createEpic } = useCreateEpic();
+  const { data: sprints = [] } = useSprints(activeProjectId);
+  const { mutateAsync: createSprint } = useCreateSprint();
+  const { mutateAsync: updateSprint } = useUpdateSprint();
+
+  // ── Sync with sidebar nav and project load ─────────────────────────
   useEffect(() => {
     if (isMyTasksView) {
       setFilterView('My Tasks');
@@ -55,9 +61,12 @@ export default function Tasks({
     }
   }, [isMyTasksView]);
 
+
+
   // ── Panel / modal state ───────────────────────────────────────────
   const [activeTaskDetail, setActiveTaskDetail] = useState(null);
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
+  const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
   const [isCreateEpicOpen, setIsCreateEpicOpen] = useState(false);
   const [isCreateSprintOpen, setIsCreateSprintOpen] = useState(false);
   const [completeSprintModal, setCompleteSprintModal] = useState(false);
@@ -85,6 +94,14 @@ export default function Tasks({
   const [newTaskStatus, setNewTaskStatus] = useState('Backlog');
 
   // ── Create Epic form ──────────────────────────────────────────────
+  useEffect(() => {
+    if (projects.length > 0) {
+      if (!activeProjectId) setActiveProjectId(projects[0].id || projects[0]._id);
+      if (!newTaskProjectId) setNewTaskProjectId(projects[0].id || projects[0]._id);
+    }
+  }, [projects, activeProjectId, newTaskProjectId]);
+
+
   const [newEpicName, setNewEpicName] = useState('');
   const [newEpicSummary, setNewEpicSummary] = useState('');
   const [newEpicDesc, setNewEpicDesc] = useState('');
@@ -102,11 +119,11 @@ export default function Tasks({
   const [newSprintEndDate, setNewSprintEndDate] = useState('');
 
   // ─── Derived ─────────────────────────────────────────────────────
-  const activeProject = projects.find(p => p.id === activeProjectId) || projects[0];
-  const methodology = activeProject?.methodology || 'scrum';
-  const projectEpics = epics.filter(e => e.projectId === activeProjectId);
-  const projectSprints = sprints.filter(s => s.projectId === activeProjectId);
-  const activeSprint = projectSprints.find(s => s.status === 'Active');
+  const activeProject = projects.find(p => (p.id || p._id) === activeProjectId) || projects[0];
+  const methodology = activeProject?.methodology || activeProject?.projectType || 'scrum';
+  const projectEpics = epics;
+  const projectSprints = sprints;
+  const activeSprint = projectSprints.find(s => (s.status || '').toLowerCase() === 'active');
 
   const activeBoardView = boardView || 'board';
   const activeFilterView = filterView || (isMyTasksView ? 'My Tasks' : 'All Tasks');
@@ -120,9 +137,9 @@ export default function Tasks({
   }, [isCreateSprintOpen, projectSprints.length]);
 
   // Board tasks = non-backlog tasks for active project
-  const boardTasks = tasks.filter(t => t.projectId === activeProjectId && !t.isBacklog);
+  const boardTasks = tasks.filter(t => !t.isBacklog);
   // Backlog tasks
-  const rawBacklogTasks = tasks.filter(t => t.projectId === activeProjectId && t.isBacklog);
+  const rawBacklogTasks = tasks.filter(t => t.isBacklog);
   const backlogTasks = backlogOrder
     ? backlogOrder.map(id => rawBacklogTasks.find(t => t.id === id)).filter(Boolean)
     : rawBacklogTasks;
@@ -161,8 +178,8 @@ export default function Tasks({
     }
   };
 
-  const getEpicById = (id) => epics.find(e => e.id === id);
-  const getSprintById = (id) => sprints.find(s => s.id === id);
+  const getEpicById = (id) => epics.find(e => (e.id || e._id) === (id?._id || id));
+  const getSprintById = (id) => sprints.find(s => (s.id || s._id) === (id?._id || id));
 
   const getAvatarForAssignee = (name) => {
     const map = {
@@ -197,12 +214,19 @@ export default function Tasks({
     e.dataTransfer.setData('text/plain', taskId);
   };
   const handleDragOver = (e) => e.preventDefault();
-  const handleDrop = (e, targetStatus) => {
+  const handleDrop = async (e, targetStatus) => {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('text/plain');
-    onUpdateTaskStatus(taskId, targetStatus);
-    if (activeTaskDetail?.id === taskId) {
-      setActiveTaskDetail(prev => ({ ...prev, status: targetStatus }));
+    let mappedStatus = targetStatus.toLowerCase().replace(' ', '-');
+    if (mappedStatus === 'completed') mappedStatus = 'done';
+    
+    try {
+      await updateTask({ taskId: taskId, updates: { status: mappedStatus } });
+      if (activeTaskDetail?.id === taskId || activeTaskDetail?._id === taskId) {
+        setActiveTaskDetail(prev => ({ ...prev, status: targetStatus }));
+      }
+    } catch (error) {
+      console.error('Failed to update task status:', error);
     }
   };
 
@@ -227,98 +251,104 @@ export default function Tasks({
   };
 
   // ─── Inline backlog creation ──────────────────────────────────────
-  const handleInlineCreate = (e) => {
+  const handleInlineCreate = async (e) => {
     e.preventDefault();
     if (!inlineTitle.trim()) return;
-    const newT = {
-      id: `TSK-${Math.floor(100 + Math.random() * 900)}`,
-      projectId: activeProjectId,
-      title: inlineTitle,
-      assignee: 'Sarah Chen',
-      avatar: getAvatarForAssignee('Sarah Chen'),
-      status: 'Backlog',
-      dueDate: 'TBD',
-      priority: 'Medium',
-      progress: 0,
-      commentsCount: 0,
-      storyPoints: inlinePoints,
-      epic: null,
-      sprintId: null,
-      isBacklog: true,
-    };
-    onAddTask(newT);
-    setInlineTitle('');
-    setInlinePoints(3);
+    try {
+      await createTask({
+        workspaceId: activeProject.workspaceId,
+        projectId: activeProjectId,
+        title: inlineTitle,
+        description: '',
+        assigneeUserId: currentUser?._id || currentUser?.id,
+        status: 'todo',
+        actualProgress: 0,
+        dueDate: new Date().toISOString(),
+        dependency: []
+      });
+      setInlineTitle('');
+      setInlinePoints(3);
+    } catch (error) {
+      console.error('Failed to create inline task:', error);
+    }
   };
 
   // ─── New Task modal submit ────────────────────────────────────────
-  const handleCreateTaskSubmit = (e) => {
+  const handleCreateTaskSubmit = async (e) => {
     e.preventDefault();
     if (!newTaskTitle.trim() || !newTaskDueDate) return;
-    const isBacklog = newTaskStatus === 'Backlog' || !newTaskSprint;
-    const newT = {
-      id: `TSK-${Math.floor(100 + Math.random() * 900)}`,
-      projectId: newTaskProjectId,
-      title: newTaskTitle,
-      description: newTaskDesc,
-      assignee: newTaskAssignee,
-      avatar: getAvatarForAssignee(newTaskAssignee),
-      status: newTaskStatus === 'Done' ? 'Completed' : (newTaskStatus === 'Waiting Review' ? 'Review' : newTaskStatus),
-      dueDate: new Date(newTaskDueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      priority: newTaskPriority,
-      progress: newTaskStatus === 'Done' ? 100 : 0,
-      commentsCount: 0,
-      storyPoints: newTaskPoints,
-      epic: newTaskEpic || null,
-      sprintId: newTaskSprint || null,
-      isBacklog: isBacklog,
-    };
-    onAddTask(newT);
-    setIsNewTaskModalOpen(false);
-    setNewTaskTitle(''); setNewTaskDesc(''); setNewTaskPriority('Medium');
-    setNewTaskDueDate(''); setNewTaskPoints(3); setNewTaskEpic('');
-    setNewTaskSprint(''); setNewTaskStatus('Backlog');
+    
+    let mappedStatus = newTaskStatus === 'Done' ? 'done' : (newTaskStatus === 'Waiting Review' ? 'review' : newTaskStatus.toLowerCase().replace(' ', '-'));
+    if (mappedStatus === 'backlog') mappedStatus = 'todo'; // Map backlog to todo for API
+    
+    try {
+      await createTask({
+        workspaceId: activeProject.workspaceId,
+        projectId: newTaskProjectId,
+        title: newTaskTitle,
+        description: newTaskDesc,
+        assigneeUserId: currentUser?._id || currentUser?.id,
+        status: mappedStatus,
+        actualProgress: newTaskStatus === 'Done' ? 100 : 0,
+        epicId: newTaskEpic || undefined,
+        sprintId: newTaskSprint || undefined,
+        dueDate: new Date(newTaskDueDate).toISOString(),
+        dependency: []
+      });
+      setIsNewTaskModalOpen(false);
+      setNewTaskTitle(''); setNewTaskDesc(''); setNewTaskPriority('Medium');
+      setNewTaskDueDate(''); setNewTaskPoints(3); setNewTaskEpic('');
+      setNewTaskSprint(''); setNewTaskStatus('Backlog');
+    } catch (error) {
+      console.error('Failed to create task:', error);
+    }
   };
 
   // ─── Create Epic submit ──────────────────────────────────────────
-  const handleCreateEpicSubmit = (e) => {
+  const handleCreateEpicSubmit = async (e) => {
     e.preventDefault();
     if (!newEpicName.trim()) return;
-    const newEpic = {
-      id: `EP-${Math.floor(100 + Math.random() * 900)}`,
-      name: newEpicName,
-      summary: newEpicSummary,
-      description: newEpicDesc,
-      color: newEpicColor,
-      status: newEpicStatus,
-      startDate: newEpicStartDate,
-      dueDate: newEpicDueDate,
-      projectId: activeProjectId,
-    };
-    onAddEpic(newEpic);
-    setIsCreateEpicOpen(false);
-    setNewEpicName(''); setNewEpicSummary(''); setNewEpicDesc('');
-    setNewEpicColor('#8B5CF6'); setNewEpicColorInput('#8B5CF6');
-    setNewEpicStatus('To Do'); setNewEpicStartDate(''); setNewEpicDueDate('');
+    try {
+      await createEpic({
+        workspaceId: activeProject.workspaceId,
+        projectId: activeProjectId,
+        name: newEpicName,
+        summary: newEpicSummary,
+        description: newEpicDesc,
+        color: newEpicColor,
+        status: newEpicStatus,
+        startDate: newEpicStartDate ? new Date(newEpicStartDate).toISOString() : new Date().toISOString(),
+        dueDate: newEpicDueDate ? new Date(newEpicDueDate).toISOString() : new Date().toISOString()
+      });
+      setIsCreateEpicOpen(false);
+      setNewEpicName(''); setNewEpicSummary(''); setNewEpicDesc('');
+      setNewEpicColor('#8B5CF6'); setNewEpicColorInput('#8B5CF6');
+      setNewEpicStatus('To Do'); setNewEpicStartDate(''); setNewEpicDueDate('');
+    } catch (error) {
+      console.error('Failed to create epic:', error);
+    }
   };
 
   // ─── Create Sprint submit ────────────────────────────────────────
-  const handleCreateSprintSubmit = (e) => {
+  const handleCreateSprintSubmit = async (e) => {
     e.preventDefault();
     if (!newSprintName.trim() || !newSprintStartDate || !newSprintEndDate) return;
-    const newSpr = {
-      id: `SPR-${Math.floor(100 + Math.random() * 900)}`,
-      name: newSprintName,
-      goal: newSprintGoal,
-      status: newSprintStatus,
-      startDate: newSprintStartDate,
-      endDate: newSprintEndDate,
-      projectId: activeProjectId,
-    };
-    onAddSprint(newSpr);
-    setIsCreateSprintOpen(false);
-    setNewSprintName(''); setNewSprintGoal(''); setNewSprintStatus('Future');
-    setNewSprintStartDate(''); setNewSprintEndDate('');
+    try {
+      await createSprint({
+        workspaceId: activeProject.workspaceId,
+        projectId: activeProjectId,
+        name: newSprintName,
+        goal: newSprintGoal,
+        status: newSprintStatus.toLowerCase(),
+        startDate: new Date(newSprintStartDate).toISOString(),
+        endDate: new Date(newSprintEndDate).toISOString()
+      });
+      setIsCreateSprintOpen(false);
+      setNewSprintName(''); setNewSprintGoal(''); setNewSprintStatus('Future');
+      setNewSprintStartDate(''); setNewSprintEndDate('');
+    } catch (error) {
+      console.error('Failed to create sprint:', error);
+    }
   };
 
   // ─── Sprint date presets ──────────────────────────────────────────
@@ -333,8 +363,17 @@ export default function Tasks({
   };
 
   // ─── Complete Sprint confirm ──────────────────────────────────────
-  const handleConfirmCompleteSprint = () => {
-    onCompleteSprint(activeProjectId);
+  const handleConfirmCompleteSprint = async () => {
+    if (activeSprint) {
+      try {
+        await updateSprint({
+          id: activeSprint.id || activeSprint._id,
+          payload: { status: 'completed' }
+        });
+      } catch (error) {
+        console.error('Failed to complete sprint:', error);
+      }
+    }
     setCompleteSprintModal(false);
   };
 
@@ -374,9 +413,14 @@ export default function Tasks({
             className="form-input form-select"
             style={{ fontSize: '14px', fontWeight: '700', padding: '4px 28px 4px 8px', width: 'auto', border: 'none', backgroundColor: 'transparent', color: '#1A1D20', cursor: 'pointer' }}
           >
-            {projects.map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
+            {projects.map(p => {
+              const projectId = p.id || p._id;
+              return (
+                <option key={projectId} value={projectId}>
+                  {p.key ? `[${p.key}] ${p.name}` : p.name}
+                </option>
+              );
+            })}
           </select>
 
           <span style={{
@@ -502,10 +546,52 @@ export default function Tasks({
         <div style={styles.boardWrapper}>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
+            {/* Sprint Header (if a sprint is selected or active) */}
+            {(() => {
+              const displayedSprint = filterSprint ? getSprintById(filterSprint) : activeSprint;
+              if (!displayedSprint) return null;
+              
+              const totalTasks = boardTasks.filter(t => t.sprintId === displayedSprint.id || t.sprintId === displayedSprint._id).length;
+              const completedTasks = boardTasks.filter(t => (t.sprintId === displayedSprint.id || t.sprintId === displayedSprint._id) && (t.status === 'done' || t.status === 'completed')).length;
+              
+              return (
+                <div style={styles.sprintHeaderBar}>
+                  <div style={styles.sprintLeft}>
+                    <div>
+                      <div style={styles.sprintLabel}>SPRINT</div>
+                      <div style={styles.sprintName}>{displayedSprint.name}</div>
+                    </div>
+                    <div style={{ width: '1px', height: '24px', backgroundColor: '#E0E4FF' }} />
+                    <div style={styles.sprintDates}>{formatSprintDates(displayedSprint)}</div>
+                  </div>
+                  <div style={styles.sprintRight}>
+                    {displayedSprint.goal && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={styles.sprintGoalLabel}>GOAL</span>
+                        <span style={styles.sprintGoal}>{displayedSprint.goal}</span>
+                      </div>
+                    )}
+                    <div style={{ flex: 1 }} />
+                    <div style={styles.sprintStats}>
+                      <div style={styles.sprintStat}>
+                        <div style={styles.sprintStatVal}>{completedTasks}/{totalTasks}</div>
+                        <div style={styles.sprintStatLabel}>TASKS DONE</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Kanban columns */}
             <div className="kanban-board-scroll" style={styles.kanbanGrid}>
               {columns.map(column => {
-                const columnTasks = sortedBoardTasks.filter(t => t.status.toLowerCase() === column.toLowerCase());
+                const columnTasks = sortedBoardTasks.filter(t => {
+                  let s = (t.status || '').toLowerCase();
+                  if (s === 'done') s = 'completed';
+                  s = s.replace('-', ' ');
+                  return s === column.toLowerCase();
+                });
                 const wipLimit = WIP_LIMITS[column];
                 const isOverWip = methodology === 'kanban' && columnTasks.length > wipLimit;
 
@@ -570,16 +656,66 @@ export default function Tasks({
                               </div>
                             )}
 
-                              <div style={styles.cardTopRow}>
+                              <div style={{ ...styles.cardTopRow, position: 'relative' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                   {task.storyPoints && (
                                     <span style={styles.storyPointsBadge}>{task.storyPoints} SP</span>
                                   )}
                                   <span style={styles.taskId}>{task.id}</span>
                                 </div>
-                                <span className={`badge ${getPriorityStyle(task.priority)}`} style={{ fontSize: '10px', padding: '2px 6px' }}>
-                                  {task.priority.toLowerCase()}
-                                </span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <span className={`badge ${getPriorityStyle(task.priority)}`} style={{ fontSize: '10px', padding: '2px 6px' }}>
+                                    {task.priority.toLowerCase()}
+                                  </span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenEllipsisId(openEllipsisId === task.id ? null : task.id);
+                                    }}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', padding: '0 4px', fontSize: '14px', lineHeight: '1' }}
+                                  >
+                                    •••
+                                  </button>
+                                  {openEllipsisId === task.id && (
+                                    <div style={{ ...styles.ellipsisMenu, right: 0, left: 'auto', top: '24px' }} onClick={e => e.stopPropagation()}>
+                                      <button
+                                        style={styles.ellipsisMenuItem}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setActiveTaskDetail(task);
+                                          setNewTaskTitle(task.title);
+                                          setNewTaskDesc(task.description || '');
+                                          setNewTaskStatus(task.status || 'Todo');
+                                          setNewTaskPriority(task.priority || 'Medium');
+                                          setNewTaskPoints(task.storyPoints || 3);
+                                          setNewTaskAssignee(task.assignee || 'Sarah Chen');
+                                          setNewTaskProjectId(task.projectId || activeProjectId);
+                                          setNewTaskEpic(task.epicId || '');
+                                          setNewTaskSprint(task.sprintId || '');
+                                          setIsEditTaskModalOpen(true);
+                                          setOpenEllipsisId(null);
+                                        }}
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        style={{ ...styles.ellipsisMenuItem, color: '#EF4444' }}
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          if (window.confirm('Are you sure you want to delete this task?')) {
+                                            await deleteTask(task.id || task._id);
+                                            if (activeTaskDetail && (activeTaskDetail.id === task.id || activeTaskDetail._id === task.id)) {
+                                              setActiveTaskDetail(null);
+                                            }
+                                          }
+                                          setOpenEllipsisId(null);
+                                        }}
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
 
                             <h4 style={styles.cardTitle}>{task.title}</h4>
@@ -642,7 +778,27 @@ export default function Tasks({
                   <div style={{ fontSize: '11px', fontWeight: '700', color: '#9AA6B2', letterSpacing: '0.05em', marginBottom: '4px' }}>{activeTaskDetail.id}</div>
                   <h3 style={styles.panelTitle}>{activeTaskDetail.title}</h3>
                 </div>
-                <button onClick={() => setActiveTaskDetail(null)} style={styles.panelCloseBtn}>×</button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button onClick={() => {
+                    setNewTaskTitle(activeTaskDetail.title);
+                    setNewTaskDesc(activeTaskDetail.description || '');
+                    setNewTaskStatus(activeTaskDetail.status || 'Todo');
+                    setNewTaskPriority(activeTaskDetail.priority || 'Medium');
+                    setNewTaskPoints(activeTaskDetail.storyPoints || 3);
+                    setNewTaskAssignee(activeTaskDetail.assignee || 'Sarah Chen');
+                    setNewTaskProjectId(activeTaskDetail.projectId || activeProjectId);
+                    setNewTaskEpic(activeTaskDetail.epicId || '');
+                    setNewTaskSprint(activeTaskDetail.sprintId || '');
+                    setIsEditTaskModalOpen(true);
+                  }} style={{ ...styles.panelCloseBtn, fontSize: '13px', padding: '4px 8px', borderRadius: '4px', backgroundColor: '#F0F2FF', color: '#5B5FFB' }}>Edit</button>
+                  <button onClick={async () => {
+                    if (window.confirm('Are you sure you want to delete this task?')) {
+                      await deleteTask(activeTaskDetail.id || activeTaskDetail._id);
+                      setActiveTaskDetail(null);
+                    }
+                  }} style={{ ...styles.panelCloseBtn, fontSize: '13px', padding: '4px 8px', borderRadius: '4px', backgroundColor: '#FEF2F2', color: '#EF4444' }}>Delete</button>
+                  <button onClick={() => setActiveTaskDetail(null)} style={styles.panelCloseBtn}>×</button>
+                </div>
               </div>
 
               {activeTaskDetail.epic && (() => {
@@ -768,7 +924,8 @@ export default function Tasks({
                       onDragEnter={() => handleBacklogDragEnter(index)}
                       onDragEnd={handleBacklogDragEnd}
                       onDragOver={e => e.preventDefault()}
-                      style={styles.backlogRow}
+                      onClick={() => setActiveTaskDetail(task)}
+                      style={{ ...styles.backlogRow, cursor: 'pointer' }}
                     >
                       {/* Drag handle */}
                       <td style={styles.backlogTd}>
@@ -809,8 +966,33 @@ export default function Tasks({
                           <div style={styles.ellipsisMenu} onClick={e => e.stopPropagation()}>
                             <button
                               style={styles.ellipsisMenuItem}
-                              onClick={() => {
-                                onMoveToBoard(task.id);
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveTaskDetail(task);
+                                setNewTaskTitle(task.title);
+                                setNewTaskDesc(task.description || '');
+                                setNewTaskStatus(task.status || 'Todo');
+                                setNewTaskPriority(task.priority || 'Medium');
+                                setNewTaskPoints(task.storyPoints || 3);
+                                setNewTaskAssignee(task.assignee || 'Sarah Chen');
+                                setNewTaskProjectId(task.projectId || activeProjectId);
+                                setNewTaskEpic(task.epicId || '');
+                                setNewTaskSprint(task.sprintId || '');
+                                setIsEditTaskModalOpen(true);
+                                setOpenEllipsisId(null);
+                              }}
+                            >
+                              Edit Task
+                            </button>
+                            <button
+                              style={styles.ellipsisMenuItem}
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if (activeSprint) {
+                                  await updateTask({ taskId: task.id || task._id, updates: { sprintId: activeSprint.id || activeSprint._id, status: 'todo', isBacklog: false } });
+                                } else {
+                                  alert("No active sprint available to move the task to.");
+                                }
                                 setOpenEllipsisId(null);
                               }}
                             >
@@ -818,7 +1000,13 @@ export default function Tasks({
                             </button>
                             <button
                               style={{ ...styles.ellipsisMenuItem, color: '#EF4444' }}
-                              onClick={() => setOpenEllipsisId(null)}
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if (window.confirm('Are you sure you want to delete this task?')) {
+                                  await deleteTask(task.id || task._id);
+                                }
+                                setOpenEllipsisId(null);
+                              }}
                             >
                               Delete
                             </button>
@@ -866,7 +1054,112 @@ export default function Tasks({
         </div>
       )}
 
-      {/* ── New Task Modal ───────────────────────────────────────── */}
+      {/* Edit Task Modal */}
+      {isEditTaskModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ width: '700px' }}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>Edit Task</h2>
+              <button style={styles.modalCloseBtn} onClick={() => setIsEditTaskModalOpen(false)}>×</button>
+            </div>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              try {
+                await updateTask({
+                  taskId: activeTaskDetail.id || activeTaskDetail._id,
+                  updates: {
+                    title: newTaskTitle,
+                    description: newTaskDesc,
+                    projectId: newTaskProjectId,
+                    assignee: newTaskAssignee,
+                    priority: newTaskPriority,
+                    dueDate: newTaskDueDate ? new Date(newTaskDueDate).toISOString() : undefined,
+                    storyPoints: Number(newTaskPoints),
+                    epicId: newTaskEpic || undefined,
+                    sprintId: newTaskSprint || undefined,
+                    status: newTaskStatus,
+                    isBacklog: newTaskStatus === 'Backlog'
+                  }
+                });
+                setIsEditTaskModalOpen(false);
+                setActiveTaskDetail(null);
+              } catch (error) {
+                console.error("Failed to update task", error);
+              }
+            }}>
+              <div className="form-group">
+                <label className="form-label">Task Title</label>
+                <input type="text" className="form-input" value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} required />
+              </div>
+
+              <div className="split-row">
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Status</label>
+                  <select className="form-input form-select" value={newTaskStatus} onChange={e => setNewTaskStatus(e.target.value)}>
+                    {TASK_STATUS_OPTIONS.map(st => <option key={st}>{st}</option>)}
+                  </select>
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Assignee</label>
+                  <select className="form-input form-select" value={newTaskAssignee} onChange={e => setNewTaskAssignee(e.target.value)}>
+                    <option>Sarah Chen</option>
+                    <option>Alex Rivers</option>
+                    <option>Jordan Smith</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="split-row">
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Priority</label>
+                  <select className="form-input form-select" value={newTaskPriority} onChange={e => setNewTaskPriority(e.target.value)}>
+                    <option>Low</option><option>Medium</option><option>High</option><option>Urgent</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Story Points</label>
+                  <select className="form-input form-select" value={newTaskPoints} onChange={e => setNewTaskPoints(e.target.value)}>
+                    {STORY_POINTS.map(sp => <option key={sp} value={sp}>{sp}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="split-row">
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Epic</label>
+                  <select className="form-input form-select" value={newTaskEpic} onChange={e => setNewTaskEpic(e.target.value)}>
+                    <option value="">No Epic</option>
+                    {projectEpics.map(ep => (
+                      <option key={ep.id} value={ep.id}>{ep.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">Sprint</label>
+                  <select className="form-input form-select" value={newTaskSprint} onChange={e => setNewTaskSprint(e.target.value)}>
+                    <option value="">No Sprint (Backlog)</option>
+                    {projectSprints.map(sp => (
+                      <option key={sp.id} value={sp.id}>{sp.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Description</label>
+                <textarea className="form-input" style={{ minHeight: '80px' }} value={newTaskDesc} onChange={e => setNewTaskDesc(e.target.value)} />
+              </div>
+
+              <div style={styles.modalFooter}>
+                <button type="button" className="btn-secondary" onClick={() => setIsEditTaskModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn-gradient">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* New Task Modal */}
       {isNewTaskModalOpen && (
         <div className="modal-overlay" onClick={() => setIsNewTaskModalOpen(false)}>
           <div className="modal-content" style={styles.modalContent} onClick={e => e.stopPropagation()}>

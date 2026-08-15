@@ -1,6 +1,7 @@
 import React from 'react';
+import './Sidebar.css';
 
-export default function Sidebar({ isOpen, onClose, currentScreen, onNavigate, onLogout }) {
+export default function Sidebar({ isOpen, onClose, currentScreen, onNavigate }) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -64,10 +65,10 @@ export default function Sidebar({ isOpen, onClose, currentScreen, onNavigate, on
   ];
 
   return (
-    <aside className={`app-sidebar ${isOpen ? 'open' : ''}`} style={styles.sidebar}>
+    <aside className={`app-sidebar ${isOpen ? 'open' : ''}`}>
       {/* Brand logo */}
-      <div style={styles.brand}>
-        <div style={styles.logoIcon}>
+      <div className="sidebar-brand">
+        <div className="sidebar-logo-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M12 2L2 12L12 22L22 12L12 2Z" stroke="url(#sidebarLogoGrad)" strokeWidth="2.5" fill="none" />
             <circle cx="12" cy="12" r="4" fill="url(#sidebarLogoGrad)" />
@@ -79,8 +80,8 @@ export default function Sidebar({ isOpen, onClose, currentScreen, onNavigate, on
             </defs>
           </svg>
         </div>
-        <span style={styles.brandName}>Wostup</span>
-        <button onClick={onClose} className="sidebar-close-btn" style={styles.closeBtn}>
+        <span className="sidebar-brand-name">Wostup</span>
+        <button onClick={onClose} className="sidebar-close-btn">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
@@ -89,7 +90,7 @@ export default function Sidebar({ isOpen, onClose, currentScreen, onNavigate, on
       </div>
 
       {/* Navigation menu */}
-      <nav style={styles.nav}>
+      <nav className="sidebar-nav">
         {menuItems.map((item) => {
           const isActive = currentScreen === item.id;
           return (
@@ -97,18 +98,14 @@ export default function Sidebar({ isOpen, onClose, currentScreen, onNavigate, on
               key={item.id}
               onClick={() => onNavigate(item.id)}
               className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
-              style={styles.navItem}
             >
-              <span style={{
-                ...styles.navIcon,
-                color: isActive ? '#5B5FFB' : '#6C7A87'
-              }}>
+              <span className="sidebar-nav-icon">
                 {item.icon}
               </span>
-              <span style={styles.navLabel}>{item.label}</span>
+              <span className="sidebar-nav-label">{item.label}</span>
               {item.id === 'task-health' && (
-                <span style={styles.pulseIndicator}>
-                  <span className="pulse-dot warning" style={{ width: '6px', height: '6px' }} />
+                <span className="sidebar-pulse-indicator">
+                  <span className="pulse-dot warning" />
                 </span>
               )}
             </button>
@@ -117,152 +114,11 @@ export default function Sidebar({ isOpen, onClose, currentScreen, onNavigate, on
       </nav>
 
       {/* Pro upgrade card */}
-      <div className="sidebar-upgrade-card" style={styles.upgradeCard}>
-        <div style={styles.upgradeHeader}>PRO PLAN</div>
-        <div style={styles.upgradeBody}>Upgrade for advanced health analytics.</div>
-        <button className="sidebar-upgrade-btn" style={styles.upgradeBtn} onClick={() => alert('Billing module simulated.')}>Upgrade Now</button>
+      <div className="sidebar-upgrade-card">
+        <div className="sidebar-upgrade-header">PRO PLAN</div>
+        <div className="sidebar-upgrade-body">Upgrade for advanced health analytics.</div>
+        <button className="sidebar-upgrade-btn" onClick={() => alert('Billing module simulated.')}>Upgrade Now</button>
       </div>
-
-      {/* Logout */}
-      <button onClick={onLogout} className="sidebar-logout-btn" style={styles.logoutBtn}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-          <polyline points="16 17 21 12 16 7" />
-          <line x1="21" y1="12" x2="9" y2="12" />
-        </svg>
-        Sign Out
-      </button>
     </aside>
   );
 }
-
-const styles = {
-  sidebar: {
-    width: '260px',
-    backgroundColor: '#FFFFFF',
-    borderRight: '1px solid #ECEEF4',
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100vh',
-    padding: '24px 16px',
-    flexShrink: 0,
-    zIndex: 20,
-  },
-  brand: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    paddingLeft: '12px',
-    marginBottom: '32px',
-  },
-  closeBtn: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    color: '#6C7A87',
-    padding: '4px',
-    marginLeft: 'auto',
-  },
-  logoIcon: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brandName: {
-    fontFamily: "'Outfit', sans-serif",
-    fontSize: '20px',
-    fontWeight: '700',
-    color: '#1A1D20',
-    letterSpacing: '-0.02em',
-  },
-  nav: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-    flex: 1,
-    overflowY: 'auto',
-  },
-  navItem: {
-    display: 'flex',
-    alignItems: 'center',
-    background: 'none',
-    border: 'none',
-    padding: '12px 14px',
-    borderRadius: '10px',
-    width: '100%',
-    cursor: 'pointer',
-    textAlign: 'left',
-    fontFamily: "'Inter', sans-serif",
-    fontSize: '14px',
-    fontWeight: '500',
-    color: '#6C7A87',
-  },
-  navIcon: {
-    marginRight: '12px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'color 0.2s ease',
-  },
-  navLabel: {
-    flex: 1,
-  },
-  pulseIndicator: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  upgradeCard: {
-    borderRadius: '14px',
-    padding: '16px',
-    marginBottom: '16px',
-    marginTop: '20px',
-    position: 'relative',
-    zIndex: 1,
-  },
-  upgradeHeader: {
-    fontSize: '10px',
-    fontWeight: '700',
-    color: '#5B5FFB',
-    letterSpacing: '0.08em',
-    marginBottom: '4px',
-    position: 'relative',
-    zIndex: 2,
-  },
-  upgradeBody: {
-    fontSize: '12px',
-    color: '#6C7A87',
-    lineHeight: '1.4',
-    marginBottom: '12px',
-    position: 'relative',
-    zIndex: 2,
-  },
-  upgradeBtn: {
-    width: '100%',
-    background: '#FFFFFF',
-    border: '1px solid #ECEEF4',
-    borderRadius: '8px',
-    padding: '8px',
-    fontSize: '12px',
-    fontWeight: '600',
-    color: '#1A1D20',
-    cursor: 'pointer',
-    position: 'relative',
-    zIndex: 2,
-  },
-  logoutBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    background: 'none',
-    border: 'none',
-    padding: '12px 14px',
-    borderRadius: '10px',
-    width: '100%',
-    cursor: 'pointer',
-    textAlign: 'left',
-    fontFamily: "'Inter', sans-serif",
-    fontSize: '14px',
-    fontWeight: '500',
-    color: '#6C7A87',
-  },
-};

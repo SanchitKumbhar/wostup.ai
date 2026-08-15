@@ -1,13 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useTeamLoad } from '../hooks/useTeamLoad';
 
-export default function TeamLoad({ onAdjustCapacity }) {
-  const [registryMembers, setRegistryMembers] = useState([
-    { id: 1, name: 'Sarah Chen', role: 'Lead Designer', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', tasks: 12, score: '4.8/5.0', status: 'Critical' },
-    { id: 2, name: 'Marcus Rodriguez', role: 'Senior Developer', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', tasks: 8, score: '4.2/5.0', status: 'Critical' },
-    { id: 3, name: 'Aisha Gupta', role: 'Product Manager', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80', tasks: 6, score: '3.5/5.0', status: 'Optimal' },
-    { id: 4, name: 'James Wilson', role: 'QA Engineer', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80', tasks: 3, score: '2.1/5.0', status: 'Under-utilized' },
-    { id: 5, name: 'Elena Sokolov', role: 'Frontend Dev', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80', tasks: 7, score: '3.8/5.0', status: 'Optimal' },
-  ]);
+export default function TeamLoad({ onAdjustCapacity, workspaceId }) {
+  const { data: teamLoadData } = useTeamLoad(workspaceId);
+  const [registryMembers, setRegistryMembers] = useState([]);
+
+  useEffect(() => {
+    if (teamLoadData && teamLoadData.members) {
+      setRegistryMembers(teamLoadData.members.map((m, index) => {
+        // Fallback names/avatars if not provided by backend
+        const fallbackNames = ['Sarah Chen', 'Marcus Rodriguez', 'Aisha Gupta', 'James Wilson', 'Elena Sokolov'];
+        const fallbackAvatars = [
+          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
+          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80'
+        ];
+        
+        // determine status based on load score mapping
+        let status = 'Optimal';
+        if (m.loadScore >= 8 || m.assignedTasks.length >= 6) status = 'Critical';
+        else if (m.loadScore <= 2 && m.assignedTasks.length <= 2) status = 'Under-utilized';
+
+        return {
+          id: m.userId,
+          name: m.name || fallbackNames[index % fallbackNames.length],
+          role: m.role || 'Member',
+          avatar: m.avatar || fallbackAvatars[index % fallbackAvatars.length],
+          tasks: m.assignedTasks ? m.assignedTasks.length : 0,
+          score: (m.loadScore / 2).toFixed(1) + '/5.0', // converting overloadScore to max 5.0 (assuming 10 is max)
+          status: status
+        };
+      }));
+    } else {
+      setRegistryMembers([
+        { id: 1, name: 'Sarah Chen', role: 'Lead Designer', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', tasks: 12, score: '4.8/5.0', status: 'Critical' },
+        { id: 2, name: 'Marcus Rodriguez', role: 'Senior Developer', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', tasks: 8, score: '4.2/5.0', status: 'Critical' },
+        { id: 3, name: 'Aisha Gupta', role: 'Product Manager', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80', tasks: 6, score: '3.5/5.0', status: 'Optimal' },
+        { id: 4, name: 'James Wilson', role: 'QA Engineer', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80', tasks: 3, score: '2.1/5.0', status: 'Under-utilized' },
+        { id: 5, name: 'Elena Sokolov', role: 'Frontend Dev', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80', tasks: 7, score: '3.8/5.0', status: 'Optimal' },
+      ]);
+    }
+  }, [teamLoadData]);
 
   const handleDownloadReport = () => {
     const headers = ['Name', 'Role', 'Tasks', 'Utilization Score', 'Status'];
@@ -71,7 +106,7 @@ export default function TeamLoad({ onAdjustCapacity }) {
             <div style={styles.statTitle}>TOTAL MEMBERS</div>
             <div style={styles.statIconBlue}></div>
           </div>
-          <div style={styles.statValue}>12</div>
+          <div style={styles.statValue}>{teamLoadData?.totalMembers || 12}</div>
           <div style={styles.statSubText}>Active workspace members</div>
         </div>
 
@@ -80,7 +115,7 @@ export default function TeamLoad({ onAdjustCapacity }) {
             <div style={styles.statTitle}>OVERLOADED</div>
             <div style={styles.statIconRed}>!</div>
           </div>
-          <div style={{ ...styles.statValue, color: '#EF4444' }}>3</div>
+          <div style={{ ...styles.statValue, color: '#EF4444' }}>{teamLoadData?.overloadedMembers || 3}</div>
           <div style={styles.statSubText}>
             <span style={{ color: '#EF4444', fontWeight: '600' }}>↗ 15%</span> exceeding 4.0 score
           </div>
@@ -91,7 +126,7 @@ export default function TeamLoad({ onAdjustCapacity }) {
             <div style={styles.statTitle}>AVERAGE LOAD</div>
             <div style={styles.statIconPurple}></div>
           </div>
-          <div style={{ ...styles.statValue, color: '#5B5FFB' }}>4.2</div>
+          <div style={{ ...styles.statValue, color: '#5B5FFB' }}>{teamLoadData?.averageLoadScore?.toFixed(1) || 4.2}</div>
           <div style={styles.statSubText}>System-wide capacity score</div>
         </div>
 
@@ -100,7 +135,9 @@ export default function TeamLoad({ onAdjustCapacity }) {
             <div style={styles.statTitle}>OPTIMAL STATE</div>
             <div style={styles.statIconGreen}></div>
           </div>
-          <div style={{ ...styles.statValue, color: '#10B981' }}>64%</div>
+          <div style={{ ...styles.statValue, color: '#10B981' }}>
+            {teamLoadData ? Math.round(((teamLoadData.totalMembers - teamLoadData.overloadedMembers - teamLoadData.underloadedMembers) / teamLoadData.totalMembers) * 100) : 64}%
+          </div>
           <div style={styles.statSubText}>
             <span style={{ color: '#10B981', fontWeight: '600' }}>↘ 4%</span> of team at target load
           </div>

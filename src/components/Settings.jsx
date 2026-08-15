@@ -1,22 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useWorkspaces, useUpdateWorkspace, useDeleteWorkspace } from '../hooks/useWorkspaces';
+import { useUpdateProfile, useDeleteProfile } from '../hooks/useUser';
+import { useSecurityLogs } from '../hooks/useSessions';
+import { useGithubRepos } from '../hooks/useGithub';
 
-export default function Settings({ user, onUpdateUser }) {
+export default function Settings({ user, onUpdateUser, activeWorkspaceId }) {
   const [activeTab, setActiveTab] = useState('profile');
 
   // Profile state
   const [firstName, setFirstName] = useState(user?.name?.split(' ')[0] || 'Alex');
   const [lastName, setLastName] = useState(user?.name?.split(' ')[1] || 'Rivers');
   const [email, setEmail] = useState(user?.email || 'alex.rivers@wostup.com');
-  const [bio, setBio] = useState('Design-focused project manager based in London...');
-  const [timezone, setTimezone] = useState('GMT+0 (London, UK)');
-  const [language, setLanguage] = useState('English (UK)');
+  const [bio, setBio] = useState(user?.bio || 'Design-focused project manager based in London...');
+  const [timezone, setTimezone] = useState(user?.timezone || 'GMT+0 (London, UK)');
+  const [language, setLanguage] = useState(user?.language || 'English (UK)');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  
+  const { mutateAsync: updateProfile } = useUpdateProfile();
+  const { mutateAsync: deleteProfile } = useDeleteProfile();
 
   // Workspace state
+  const { data: workspaces = [] } = useWorkspaces();
+  const { mutateAsync: updateWorkspace } = useUpdateWorkspace();
+  const { mutateAsync: deleteWorkspace } = useDeleteWorkspace();
+
+  const currentWs = workspaces.find(w => (w.id || w._id) === activeWorkspaceId);
+
   const [wsName, setWsName] = useState('Engineering Workspace');
   const [wsDesc, setWsDesc] = useState('Primary engineering and product development hub.');
   const [wsVisibility, setWsVisibility] = useState('Private');
   const [wsTimezone, setWsTimezone] = useState('GMT+0 (London, UK)');
+
+  useEffect(() => {
+    if (currentWs) {
+      setWsName(currentWs.name || '');
+      setWsDesc(currentWs.description || '');
+      // wsVisibility and wsTimezone are not natively mapped in currentWs structure from App.jsx so keep defaults for now
+    }
+  }, [currentWs]);
 
   // Notifications state
   const [notifs, setNotifs] = useState({
@@ -34,11 +55,28 @@ export default function Settings({ user, onUpdateUser }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [twoFAEnabled, setTwoFAEnabled] = useState(false);
-  const [sessions, setSessions] = useState([
-    { id: 1, device: '', name: 'MacBook Pro — Chrome 126', location: 'London, UK', time: 'Active now', current: true },
-    { id: 2, device: '', name: 'iPhone 15 — Safari', location: 'London, UK', time: '3 hours ago', current: false },
-    { id: 3, device: '', name: 'Windows PC — Edge', location: 'Manchester, UK', time: '2 days ago', current: false },
-  ]);
+  const [sessions, setSessions] = useState([]);
+  const { data: securityLogs } = useSecurityLogs();
+  const { data: githubRepos } = useGithubRepos();
+
+  useEffect(() => {
+    if (securityLogs) {
+      setSessions(securityLogs.map((log, index) => ({
+        id: log._id || index,
+        device: log.device || 'Unknown Device',
+        name: log.userAgent || 'Unknown Agent',
+        location: log.location || 'Unknown Location',
+        time: log.timestamp ? new Date(log.timestamp).toLocaleString() : 'Just now',
+        current: index === 0
+      })));
+    } else {
+      setSessions([
+        { id: 1, device: '', name: 'MacBook Pro — Chrome 126', location: 'London, UK', time: 'Active now', current: true },
+        { id: 2, device: '', name: 'iPhone 15 — Safari', location: 'London, UK', time: '3 hours ago', current: false },
+        { id: 3, device: '', name: 'Windows PC — Edge', location: 'Manchester, UK', time: '2 days ago', current: false },
+      ]);
+    }
+  }, [securityLogs]);
 
   // Integrations state
   const [integrations, setIntegrations] = useState({
@@ -50,17 +88,68 @@ export default function Settings({ user, onUpdateUser }) {
     figma: false,
   });
 
-  const handleSave = (e) => {
+  useEffect(() => {
+    if (githubRepos && githubRepos.length > 0) {
+      setIntegrations(prev => ({ ...prev, github: true }));
+    }
+  }, [githubRepos]);
+
+  const handleSave = async (e) => {
     if (e) e.preventDefault();
-    onUpdateUser({ name: `${firstName} ${lastName}`, email });
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    try {
+      await updateProfile({
+        name: `${firstName} ${lastName}`,
+        email,
+        bio,
+        timezone,
+        language
+      });
+      if (onUpdateUser) onUpdateUser({ name: `${firstName} ${lastName}`, email });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      alert('Failed to update profile');
+    }
   };
 
-  const handleWsSave = (e) => {
+  const handleProfileDelete = async () => {
+    if (window.confirm('Are you sure you want to delete your profile? This action is irreversible.')) {
+      try {
+        await deleteProfile();
+        alert('Profile deleted. You will be signed out.');
+        window.location.href = '/';
+      } catch (err) {
+        alert('Failed to delete profile');
+      }
+    }
+  };
+
+  const handleWsSave = async (e) => {
     e.preventDefault();
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    if (!currentWs) return;
+    try {
+      await updateWorkspace({
+        workspaceId: currentWs.id || currentWs._id,
+        updates: { name: wsName, description: wsDesc }
+      });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      alert('Failed to update workspace');
+    }
+  };
+
+  const handleWsDelete = async () => {
+    if (!currentWs) return;
+    if (window.confirm('Are you sure you want to delete this workspace? This action is irreversible.')) {
+      try {
+        await deleteWorkspace(currentWs.id || currentWs._id);
+        alert('Workspace deleted. Please switch to another workspace.');
+        // Optionally redirect or handle active workspace switch
+      } catch (err) {
+        alert('Failed to delete workspace');
+      }
+    }
   };
 
   const handlePasswordChange = (e) => {
@@ -215,6 +304,12 @@ export default function Settings({ user, onUpdateUser }) {
                   </select>
                 </div>
               </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                <button type="button" onClick={handleProfileDelete} style={{ background: 'none', border: '1px solid #FCA5A5', color: '#DC2626', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
+                  Delete Profile
+                </button>
+              </div>
             </form>
           )}
 
@@ -267,7 +362,10 @@ export default function Settings({ user, onUpdateUser }) {
                 </div>
               </div>
 
-              <button type="submit" className="btn-gradient" style={{ marginTop: '8px' }}>Save Workspace Settings</button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                <button type="submit" className="btn-gradient">Save Workspace Settings</button>
+                <button type="button" onClick={handleWsDelete} style={{ background: 'none', border: '1px solid #FCA5A5', color: '#DC2626', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>Delete Workspace</button>
+              </div>
             </form>
           )}
 
@@ -498,7 +596,7 @@ const styles = {
   tabsPanel: { padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '4px' },
   tabLink: {
     display: 'flex', alignItems: 'center', gap: '12px', width: '100%',
-    background: 'none', border: 'none', padding: '12px 16px', borderRadius: '8px',
+    backgroundColor: 'transparent', border: 'none', padding: '12px 16px', borderRadius: '8px',
     textAlign: 'left', fontSize: '14px', fontWeight: '500', color: '#6C7A87',
     cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: 'var(--font-sans)',
   },

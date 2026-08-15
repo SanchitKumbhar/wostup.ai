@@ -1,817 +1,327 @@
-import React, { Suspense, useRef, useMemo, useState, useCallback, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Text, Edges } from '@react-three/drei';
-import { EffectComposer, Bloom } from '@react-three/postprocessing';
-import * as THREE from 'three';
+import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import './LandingIntro.css';
 
-// ─── CONSTANTS ──────────────────────────────────────────────────────────────────
 const PROBLEMS = [
   'Missed Deadlines', 'Scope Creep', 'Budget Overruns', 'Team Burnout',
   'Poor Communication', 'Resource Conflicts', 'Unclear Goals', 'Task Overload',
   'No Visibility', 'Status Chaos', 'Manual Tracking', 'Lost Priorities',
   'Bottlenecks', 'Rework Cycles', 'Siloed Teams', 'Delayed Feedback',
-  'Risk Blindness', 'Context Switching', 'Approval Delays', 'Data Silos',
-  'Broken Workflows', 'Misaligned Sprints', 'Dependency Hell', 'Untracked Bugs',
+  'Approval Delays', 'Dependency Hell'
 ];
 
-const BRAND_COLOR_A = '#5B5FFB';
-const BRAND_COLOR_B = '#B24DFF';
-const BRAND_COLOR_C = '#00C292';
-
-// ─── HELPER: Generate cube layout in 3D space ──────────────────────────────────
-function generateCubePositions(count) {
-  const positions = [];
-  const cols = 6;
-  const rows = Math.ceil(count / cols);
-  for (let i = 0; i < count; i++) {
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    const x = (col - cols / 2 + 0.5) * 2.2;
-    const y = (row - rows / 2 + 0.5) * 1.8;
-    const z = ((i * 7) % 5 - 2) * 0.3;
-    const rotX = ((i * 13) % 30 - 15) * (Math.PI / 180);
-    const rotZ = ((i * 17) % 24 - 12) * (Math.PI / 180);
-    positions.push({ x, y, z, rotX, rotZ, delay: i * 0.04 });
-  }
-  return positions;
-}
-
-// ─── SUB-COMPONENT: CameraRig for Parallax ──────────────────────────────────────
-function CameraRig() {
-  useFrame(({ camera, pointer }) => {
-    const targetX = pointer.x * 0.4;
-    const targetY = pointer.y * 0.4;
-    camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.05);
-    camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.05);
-    camera.lookAt(0, 0, 0);
-  });
-  return null;
-}
-
-// ─── SUB-COMPONENT: ProblemCube ─────────────────────────────────────────────────
-function ProblemCube({ text, target, cubeRef }) {
-  const meshRef = useRef();
+export default function LandingIntro({ onComplete }) {
+  const stageRef = useRef(null);
+  const gridRef = useRef(null);
+  const canvasRef = useRef(null);
+  const chipFieldRef = useRef(null);
+  const coreWrapRef = useRef(null);
+  const shockwaveRef = useRef(null);
+  const brandRef = useRef(null);
+  const ctaRef = useRef(null);
+  const skipBtnRef = useRef(null);
+  
+  const tlRef = useRef(null);
+  const particlesRef = useRef([]);
+  const rafIdRef = useRef(null);
+  const ctxRef = useRef(null);
 
   useEffect(() => {
-    if (cubeRef) cubeRef.current = meshRef.current;
-  }, [cubeRef]);
-
-  return (
-    <mesh
-      ref={meshRef}
-      position={[target.x, target.y + 14, target.z]}
-      rotation={[target.rotX, 0, target.rotZ]}
-      scale={0}
-    >
-      <boxGeometry args={[1.6, 0.9, 0.15]} />
-      <meshStandardMaterial
-        color="#2a0808"
-        emissive="#ff2222"
-        emissiveIntensity={0.15}
-        transparent
-        opacity={0.92}
-        roughness={0.4}
-        metalness={0.2}
-      />
-      <Edges scale={1} threshold={15} color="#ff4444" />
-      <Text
-        position={[0.08, 0, 0.09]}
-        fontSize={0.16}
-        color="#ffaaaa"
-        anchorX="center"
-        anchorY="middle"
-        maxWidth={1.3}
-        textAlign="center"
-        letterSpacing={0.02}
-      >
-        {text}
-      </Text>
-      <Text
-        position={[-0.58, 0, 0.09]}
-        fontSize={0.18}
-        anchorX="center"
-        anchorY="middle"
-      >
-        !
-      </Text>
-    </mesh>
-  );
-}
-
-// ─── SUB-COMPONENT: SolutionButton3D ────────────────────────────────────────────
-function SolutionButton3D({ buttonRef }) {
-  const groupRef = useRef();
-  const glowRef = useRef();
-  const ringRef = useRef();
-
-  useEffect(() => {
-    if (buttonRef) buttonRef.current = groupRef.current;
-  }, [buttonRef]);
-
-  useFrame(({ clock }) => {
-    if (glowRef.current) {
-      const s = 1 + Math.sin(clock.elapsedTime * 2.5) * 0.12;
-      glowRef.current.scale.set(s, s, s);
-    }
-    if (ringRef.current) {
-      ringRef.current.rotation.z += 0.01;
-    }
-  });
-
-  return (
-    <group ref={groupRef} position={[0, 0, 0.5]} scale={0} visible={false}>
-      <mesh ref={glowRef} scale={1.8}>
-        <sphereGeometry args={[1, 32, 32]} />
-        <meshBasicMaterial
-          color={BRAND_COLOR_A}
-          transparent
-          opacity={0.12}
-          depthWrite={false}
-        />
-      </mesh>
-
-      <mesh ref={ringRef}>
-        <torusGeometry args={[1.1, 0.03, 16, 64]} />
-        <meshStandardMaterial
-          color={BRAND_COLOR_B}
-          emissive={BRAND_COLOR_B}
-          emissiveIntensity={2}
-          toneMapped={false}
-        />
-      </mesh>
-
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.7, 0.7, 0.12, 48]} />
-        <meshStandardMaterial
-          color={BRAND_COLOR_A}
-          emissive={BRAND_COLOR_A}
-          emissiveIntensity={1.5}
-          roughness={0.2}
-          metalness={0.6}
-          toneMapped={false}
-        />
-      </mesh>
-
-      <mesh position={[0, 0, 0.08]} rotation={[0, 0, Math.PI / 4]}>
-        <ringGeometry args={[0.12, 0.22, 4]} />
-        <meshBasicMaterial color="#ffffff" side={THREE.DoubleSide} />
-      </mesh>
-
-      <Text
-        position={[0, -1.0, 0]}
-        fontSize={0.28}
-        color="#ffffff"
-        anchorX="center"
-        anchorY="middle"
-        letterSpacing={0.1}
-      >
-        SOLUTION
-      </Text>
-    </group>
-  );
-}
-
-// ─── SUB-COMPONENT: AnimatedCursor ──────────────────────────────────────────────
-function AnimatedCursor({ cursorRef }) {
-  const groupRef = useRef();
-
-  useEffect(() => {
-    if (cursorRef) cursorRef.current = groupRef.current;
-  }, [cursorRef]);
-
-  return (
-    <group ref={groupRef} position={[5, -4, 3]} scale={0} visible={false}>
-      <mesh rotation={[0, 0, Math.PI / 6]}>
-        <coneGeometry args={[0.15, 0.4, 3]} />
-        <meshStandardMaterial
-          color="#ffffff"
-          emissive="#ffffff"
-          emissiveIntensity={0.3}
-          roughness={0.3}
-          metalness={0.5}
-        />
-      </mesh>
-      <mesh position={[0.05, -0.15, 0]}>
-        <ringGeometry args={[0.06, 0.1, 16]} />
-        <meshBasicMaterial
-          color={BRAND_COLOR_A}
-          transparent
-          opacity={0.6}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-    </group>
-  );
-}
-
-// ─── SUB-COMPONENT: ShockwaveRing ───────────────────────────────────────────────
-function ShockwaveRing({ shockwaveRef }) {
-  const meshRef = useRef();
-
-  useEffect(() => {
-    if (shockwaveRef) shockwaveRef.current = meshRef.current;
-  }, [shockwaveRef]);
-
-  return (
-    <mesh ref={meshRef} position={[0, 0, 0.5]} scale={0} visible={false}>
-      <ringGeometry args={[0.8, 1.0, 64]} />
-      <meshBasicMaterial
-        color="#ffffff"
-        transparent
-        opacity={0.8}
-        side={THREE.DoubleSide}
-        depthWrite={false}
-        toneMapped={false}
-      />
-    </mesh>
-  );
-}
-
-// ─── SUB-COMPONENT: ExplosionParticles ──────────────────────────────────────────
-function ExplosionParticles({ particlesRef }) {
-  const pointsRef = useRef();
-  const count = 200;
-
-  const { positions, colors, velocities } = useMemo(() => {
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    const velocities = [];
-    const colorChoices = [
-      new THREE.Color(BRAND_COLOR_A),
-      new THREE.Color(BRAND_COLOR_B),
-      new THREE.Color(BRAND_COLOR_C),
-      new THREE.Color('#ffffff'),
-    ];
-
-    for (let i = 0; i < count; i++) {
-      positions[i * 3] = 0;
-      positions[i * 3 + 1] = 0;
-      positions[i * 3 + 2] = 0.5;
-
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.random() * Math.PI;
-      const speed = 3 + Math.random() * 6;
-      velocities.push({
-        x: Math.sin(phi) * Math.cos(theta) * speed,
-        y: Math.sin(phi) * Math.sin(theta) * speed,
-        z: Math.cos(phi) * speed * 0.5,
-      });
-
-      const c = colorChoices[i % colorChoices.length];
-      colors[i * 3] = c.r;
-      colors[i * 3 + 1] = c.g;
-      colors[i * 3 + 2] = c.b;
-    }
-    return { positions, colors, velocities };
-  }, []);
-
-  useEffect(() => {
-    if (particlesRef) {
-      particlesRef.current = {
-        points: pointsRef.current,
-        velocities,
+    let resize, handleMouseMove;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    let ctxGsap = gsap.context(() => {
+      // Setup Canvas
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      ctxRef.current = ctx;
+      
+      resize = () => {
+        canvas.width = window.innerWidth * devicePixelRatio;
+        canvas.height = window.innerHeight * devicePixelRatio;
+        canvas.style.width = window.innerWidth + 'px';
+        canvas.style.height = window.innerHeight + 'px';
+        ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
       };
-    }
-  }, [particlesRef, velocities]);
+      resize();
+      window.addEventListener('resize', resize);
 
-  useEffect(() => {
-    if (pointsRef.current) {
-      const geo = pointsRef.current.geometry;
-      geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    }
-  }, [positions, colors]);
+      // Parallax
+      handleMouseMove = (e) => {
+        if (reduced || !gridRef.current) return;
+        const x = (e.clientX / window.innerWidth - 0.5) * 14;
+        const y = (e.clientY / window.innerHeight - 0.5) * 14;
+        gsap.to(gridRef.current, { x, y, duration: 1.1, ease: 'power2.out' });
+      };
+      window.addEventListener('mousemove', handleMouseMove);
 
-  return (
-    <points ref={pointsRef} visible={false}>
-      <bufferGeometry />
-      <pointsMaterial
-        size={0.08}
-        vertexColors
-        transparent
-        opacity={1}
-        depthWrite={false}
-        sizeAttenuation
-        toneMapped={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </points>
-  );
-}
+      // Chips
+      const chipEls = [];
+      const GOLDEN = 137.508 * (Math.PI / 180);
+      // Use Math.max with a balanced multiplier to utilize full screen safely
+      const spread = Math.max(window.innerWidth, window.innerHeight) * 0.50;
+      
+      // Clear field
+      if (chipFieldRef.current) {
+        chipFieldRef.current.innerHTML = '';
+        PROBLEMS.forEach((text, i) => {
+          const el = document.createElement('div');
+          el.className = 'chip';
+          el.innerHTML = `<span class="mark">!</span>${text}`;
+          chipFieldRef.current.appendChild(el);
 
-// ─── SUB-COMPONENT: BrandReveal3D ───────────────────────────────────────────────
-function BrandReveal3D({ brandRef }) {
-  const groupRef = useRef();
-  const orbitRingRef = useRef();
-  const haloRef = useRef();
+          const angle = i * GOLDEN;
+          // Start radius at 120 to completely clear the center and push them out
+          const radius = spread * Math.sqrt((i + 0.5) / PROBLEMS.length) + 120;
+          
+          // Add subtle random scatter to X and Y
+          const scatterX = (Math.random() - 0.5) * 50;
+          const scatterY = (Math.random() - 0.5) * 50;
+          
+          const x = Math.cos(angle) * radius + scatterX;
+          // Less flattening on Y to use more vertical screen space
+          const y = Math.sin(angle) * radius * 0.75 + scatterY;
+          const rot = (Math.sin(i * 12.9) * 12) + (Math.random() * 15 - 7.5);
+          
+          // Randomize scale for depth
+          const targetScale = 0.75 + Math.random() * 0.45;
 
-  useEffect(() => {
-    if (brandRef) brandRef.current = groupRef.current;
-  }, [brandRef]);
-
-  useFrame(({ clock }) => {
-    if (orbitRingRef.current) {
-      orbitRingRef.current.rotation.y = clock.elapsedTime * 0.5;
-      orbitRingRef.current.rotation.x = Math.sin(clock.elapsedTime * 0.3) * 0.2;
-    }
-    if (haloRef.current) {
-      const pulse = 1 + Math.sin(clock.elapsedTime * 1.5) * 0.05;
-      haloRef.current.scale.set(pulse, pulse, pulse);
-    }
-  });
-
-  return (
-    <group ref={groupRef} scale={0} visible={false}>
-      <mesh ref={haloRef} position={[0, 0, -0.5]}>
-        <circleGeometry args={[3.5, 64]} />
-        <meshBasicMaterial
-          color={BRAND_COLOR_A}
-          transparent
-          opacity={0.06}
-          depthWrite={false}
-        />
-      </mesh>
-
-      <mesh ref={orbitRingRef}>
-        <torusGeometry args={[2.8, 0.02, 16, 100]} />
-        <meshStandardMaterial
-          color={BRAND_COLOR_B}
-          emissive={BRAND_COLOR_B}
-          emissiveIntensity={3}
-          toneMapped={false}
-        />
-      </mesh>
-
-      <group position={[0, 1.6, 0]}>
-        <mesh rotation={[0, 0, Math.PI / 4]}>
-          <ringGeometry args={[0.25, 0.4, 4]} />
-          <meshStandardMaterial
-            color={BRAND_COLOR_A}
-            emissive={BRAND_COLOR_A}
-            emissiveIntensity={2}
-            toneMapped={false}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-        <mesh>
-          <sphereGeometry args={[0.12, 16, 16]} />
-          <meshStandardMaterial
-            color={BRAND_COLOR_B}
-            emissive={BRAND_COLOR_B}
-            emissiveIntensity={2}
-            toneMapped={false}
-          />
-        </mesh>
-      </group>
-
-      <Text
-        position={[0, 0, 0]}
-        fontSize={1.4}
-        anchorX="center"
-        anchorY="middle"
-        letterSpacing={0.15}
-        color="#e8e8ff"
-        fontWeight="bold"
-      >
-        WOSTUP
-      </Text>
-
-      <Text
-        position={[2.6, 0.35, 0]}
-        fontSize={0.35}
-        anchorX="center"
-        anchorY="middle"
-        letterSpacing={0.1}
-        color={BRAND_COLOR_B}
-        fontWeight="bold"
-      >
-        AI
-      </Text>
-
-      <group position={[-0.55, -0.95, 0]}>
-        <mesh>
-          <planeGeometry args={[0.8, 0.3]} />
-          <meshBasicMaterial
-            color={BRAND_COLOR_A}
-            transparent
-            opacity={0.12}
-          />
-        </mesh>
-        <Text
-          position={[0, 0, 0.01]}
-          fontSize={0.14}
-          color={BRAND_COLOR_A}
-          anchorX="center"
-          anchorY="middle"
-          letterSpacing={0.06}
-        >
-          V2.0
-        </Text>
-      </group>
-
-      <Text
-        position={[0.55, -0.95, 0]}
-        fontSize={0.14}
-        color="#666688"
-        anchorX="center"
-        anchorY="middle"
-        letterSpacing={0.04}
-      >
-        Workspace Engine
-      </Text>
-
-      <Text
-        position={[0, -1.5, 0]}
-        fontSize={0.2}
-        color="#666688"
-        anchorX="center"
-        anchorY="middle"
-        letterSpacing={0.03}
-        maxWidth={8}
-        textAlign="center"
-      >
-        Every problem, one intelligent solution.
-      </Text>
-    </group>
-  );
-}
-
-// ─── SUB-COMPONENT: AmbientParticles ──────────────────────────────────────────
-function AmbientParticles() {
-  const pointsRef = useRef();
-  const count = 80;
-
-  const positions = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 20;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 14;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 8;
-    }
-    return pos;
-  }, []);
-
-  useEffect(() => {
-    if (pointsRef.current) {
-      pointsRef.current.geometry.setAttribute(
-        'position',
-        new THREE.BufferAttribute(positions, 3)
-      );
-    }
-  }, [positions]);
-
-  useFrame(({ clock }) => {
-    if (pointsRef.current) {
-      const attr = pointsRef.current.geometry.attributes.position;
-      if (!attr) return;
-      const arr = attr.array;
-      for (let i = 0; i < count; i++) {
-        arr[i * 3 + 1] += Math.sin(clock.elapsedTime * 0.3 + i) * 0.002;
+          chipEls.push({ el, x, y, rot, targetScale, delay: i * 0.045 });
+        });
+        
+        chipEls.forEach((c) => {
+          c.el.style.transform = `translate(calc(-50% + ${c.x*2}px), calc(-50% + ${c.y*2}px)) rotate(${c.rot*2}deg) scale(0.1)`;
+        });
       }
-      attr.needsUpdate = true;
-    }
-  });
 
-  return (
-    <points ref={pointsRef}>
-      <bufferGeometry />
-      <pointsMaterial
-        size={0.03}
-        color="#5B5FFB"
-        transparent
-        opacity={0.3}
-        depthWrite={false}
-        sizeAttenuation
-        blending={THREE.AdditiveBlending}
-      />
-    </points>
-  );
-}
+      // Particles
+      const spawnBurst = (cx, cy) => {
+        const colors = ['#5B5FFB', '#B24DFF', '#00D9A3', '#ffffff'];
+        particlesRef.current = [];
+        for (let i = 0; i < 90; i++) {
+          const a = Math.random() * Math.PI * 2;
+          const speed = 2 + Math.random() * 6;
+          particlesRef.current.push({
+            x: cx, y: cy,
+            vx: Math.cos(a) * speed,
+            vy: Math.sin(a) * speed,
+            life: 1,
+            size: 1.5 + Math.random() * 2,
+            color: colors[i % colors.length],
+          });
+        }
+      };
 
-// ─── SCENE ORCHESTRATOR ─────────────────────────────────────────────────────────
-function SceneOrchestrator({ onComplete, skipTriggered }) {
-  const cubeRefs = useRef([]);
-  const buttonRef = useRef();
-  const cursorRef = useRef();
-  const shockwaveRef = useRef();
-  const particlesRef = useRef();
-  const brandRef = useRef();
-  const timelineRef = useRef(null);
-  const hasCompletedRef = useRef(false);
-
-  const cubePositions = useMemo(() => generateCubePositions(PROBLEMS.length), []);
-
-  if (cubeRefs.current.length !== PROBLEMS.length) {
-    cubeRefs.current = Array(PROBLEMS.length).fill(null).map(() => ({ current: null }));
-  }
-
-  const explosionActiveRef = useRef(false);
-  const explosionProgressRef = useRef(0);
-
-  useFrame((_, delta) => {
-    if (explosionActiveRef.current && particlesRef.current?.points) {
-      explosionProgressRef.current += delta * 1.5;
-      const progress = Math.min(explosionProgressRef.current, 1);
-      const pts = particlesRef.current.points;
-      const vels = particlesRef.current.velocities;
-      const posAttr = pts.geometry.attributes.position;
-      if (!posAttr) return;
-      const posArr = posAttr.array;
-
-      for (let i = 0; i < vels.length; i++) {
-        posArr[i * 3] = vels[i].x * progress;
-        posArr[i * 3 + 1] = vels[i].y * progress;
-        posArr[i * 3 + 2] = 0.5 + vels[i].z * progress;
-      }
-      posAttr.needsUpdate = true;
-      pts.material.opacity = 1 - progress * 0.8;
-
-      if (progress >= 1) {
-        explosionActiveRef.current = false;
-      }
-    }
-  });
-
-  useEffect(() => {
-    const initTimeout = setTimeout(() => {
-      const tl = gsap.timeline({
-        onComplete: () => {
-          if (!hasCompletedRef.current) {
-            hasCompletedRef.current = true;
-            onComplete();
+      const tickParticles = () => {
+        if (!ctxRef.current) return;
+        ctxRef.current.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        particlesRef.current.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          p.vx *= 0.97; p.vy *= 0.97;
+          p.life -= 0.012;
+          if (p.life > 0) {
+            ctxRef.current.globalAlpha = Math.max(p.life, 0);
+            ctxRef.current.fillStyle = p.color;
+            ctxRef.current.beginPath();
+            ctxRef.current.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctxRef.current.fill();
           }
-        },
-      });
-      timelineRef.current = tl;
+        });
+        particlesRef.current = particlesRef.current.filter(p => p.life > 0);
+        ctxRef.current.globalAlpha = 1;
+        if (particlesRef.current.length) {
+          rafIdRef.current = requestAnimationFrame(tickParticles);
+        }
+      };
 
-      // PHASE 1: Problem Cubes Drop In
-      cubeRefs.current.forEach((ref, i) => {
-        const mesh = ref.current;
-        if (!mesh) return;
-        const target = cubePositions[i];
-
-        tl.to(mesh.position, {
-          y: target.y,
-          duration: 0.7,
-          ease: 'bounce.out',
-        }, 0.15 + target.delay);
-
-        tl.to(mesh.scale, {
-          x: 1, y: 1, z: 1,
-          duration: 0.5,
-          ease: 'back.out(1.7)',
-        }, 0.15 + target.delay);
-      });
-
-      // PHASE 2: Solution Button Appears
-      const btnGroup = buttonRef.current;
-      if (btnGroup) {
-        tl.call(() => { btnGroup.visible = true; }, [], 1.8);
-        tl.to(btnGroup.scale, {
-          x: 1, y: 1, z: 1,
-          duration: 0.8,
-          ease: 'elastic.out(1, 0.5)',
-        }, 1.8);
-      }
-
-      // PHASE 3: Cursor Animates Toward Button
-      const cursorGroup = cursorRef.current;
-      if (cursorGroup) {
-        tl.call(() => { cursorGroup.visible = true; }, [], 2.6);
-        tl.to(cursorGroup.scale, {
-          x: 1, y: 1, z: 1,
-          duration: 0.4,
-          ease: 'back.out(2)',
-        }, 2.6);
-        tl.to(cursorGroup.position, {
-          x: 0.3, y: -0.3, z: 1.5,
-          duration: 0.9,
-          ease: 'power2.inOut',
-        }, 2.7);
-      }
-
-      // PHASE 4: Click + Shockwave
-      if (cursorGroup) {
-        tl.to(cursorGroup.scale, {
-          x: 0.7, y: 0.7, z: 0.7,
-          duration: 0.08,
-          ease: 'power2.in',
-        }, 3.6);
-        tl.to(cursorGroup.scale, {
-          x: 1, y: 1, z: 1,
-          duration: 0.1,
-          ease: 'power2.out',
-        }, 3.68);
-      }
-
-      const swMesh = shockwaveRef.current;
-      if (swMesh) {
-        tl.call(() => { swMesh.visible = true; }, [], 3.6);
-        tl.to(swMesh.scale, {
-          x: 15, y: 15, z: 15,
-          duration: 0.7,
-          ease: 'power2.out',
-        }, 3.6);
-        tl.to(swMesh.material, {
+      let completed = false;
+      const finish = () => {
+        if (completed) return;
+        completed = true;
+        if (skipBtnRef.current) skipBtnRef.current.style.display = 'none';
+        
+        // Fade out the entire stage smoothly before firing onComplete
+        gsap.to(stageRef.current, {
           opacity: 0,
-          duration: 0.5,
-          ease: 'power2.out',
-        }, 3.7);
-      }
-
-      cubeRefs.current.forEach((ref, i) => {
-        const mesh = ref.current;
-        if (!mesh) return;
-        const offset = (i % 3 - 1) * 0.1;
-        tl.to(mesh.position, {
-          x: `+=${offset}`,
-          y: `+=${offset * 0.5}`,
-          duration: 0.08,
+          duration: 0.6,
           ease: 'power2.inOut',
+          onComplete: () => {
+            if (onComplete) onComplete();
+          }
+        });
+      };
+
+      const tl = gsap.timeline({ onComplete: finish, paused: reduced });
+      tlRef.current = tl;
+
+      chipEls.forEach((c) => {
+        const proxy = { s: 0.1, x: c.x * 2, y: c.y * 2, r: c.rot * 2 };
+        c.proxy = proxy;
+        tl.to(c.el, { opacity: 1, duration: 0.45, ease: 'power1.out' }, 0.15 + c.delay);
+        tl.to(proxy, {
+          s: c.targetScale, x: c.x, y: c.y, r: c.rot,
+          duration: 0.8,
+          ease: 'back.out(1.2)',
+          onUpdate: () => {
+            c.el.style.transform = `translate(calc(-50% + ${proxy.x}px), calc(-50% + ${proxy.y}px)) rotate(${proxy.r}deg) scale(${proxy.s})`;
+          }
+        }, 0.15 + c.delay);
+      });
+
+      chipEls.forEach((c, i) => {
+        const jitter = (i % 3 - 1) * 3;
+        tl.to(c.el, {
+          x: `+=${jitter}`,
+          duration: 0.06,
+          ease: 'power1.inOut',
           yoyo: true,
-          repeat: 3,
-        }, 3.6);
+          repeat: 5,
+        }, 1.55);
       });
 
-      // PHASE 5: Vortex Convergence into Core
-      if (btnGroup) {
-        tl.to(btnGroup.scale, {
-          x: 2.5, y: 2.5, z: 2.5,
-          duration: 0.2,
-          ease: 'power2.out',
-        }, 3.85);
-        tl.to(btnGroup.scale, {
-          x: 0, y: 0, z: 0,
-          duration: 0.15,
+      tl.to(coreWrapRef.current, { opacity: 1, duration: 0.5, ease: 'power2.out' }, 1.9);
+      tl.fromTo(coreWrapRef.current, { scale: 0.4 }, { scale: 1, duration: 0.7, ease: 'elastic.out(1, 0.55)' }, 1.9);
+
+      chipEls.forEach((c, i) => {
+        tl.to(c.proxy, {
+          x: 0, y: 0, s: 0, r: c.rot + (i % 2 ? 40 : -40),
+          duration: 0.55,
           ease: 'power2.in',
-        }, 4.05);
-        tl.call(() => { btnGroup.visible = false; }, [], 4.2);
-      }
-      if (cursorGroup) {
-        tl.to(cursorGroup.scale, {
-          x: 0, y: 0, z: 0,
-          duration: 0.2,
-        }, 3.85);
-        tl.call(() => { cursorGroup.visible = false; }, [], 4.05);
-      }
-
-      cubeRefs.current.forEach((ref, i) => {
-        const mesh = ref.current;
-        if (!mesh) return;
-
-        tl.to(mesh.position, {
-          x: 0, y: 0, z: -1,
-          duration: 0.5,
-          ease: 'power3.in',
-        }, 3.8 + (i * 0.01));
-
-        tl.to(mesh.scale, {
-          x: 0, y: 0, z: 0,
-          duration: 0.2,
-          ease: 'power2.in',
-        }, 4.2);
+          onUpdate: () => {
+            c.el.style.transform = `translate(calc(-50% + ${c.proxy.x}px), calc(-50% + ${c.proxy.y}px)) rotate(${c.proxy.r}deg) scale(${c.proxy.s})`;
+          }
+        }, 2.65 + i * 0.02);
+        tl.to(c.el, { opacity: 0, duration: 0.35, ease: 'power1.in' }, 2.85 + i * 0.02);
       });
+
+      tl.to(coreWrapRef.current, { scale: 1.35, duration: 0.16, ease: 'power2.out' }, 3.55);
+      tl.to(coreWrapRef.current, { scale: 1, duration: 0.22, ease: 'power2.out' }, 3.71);
+
+      tl.set(shockwaveRef.current, { opacity: 1, scale: 0.3 }, 3.55);
+      tl.to(shockwaveRef.current, { scale: 22, duration: 0.75, ease: 'power2.out' }, 3.55);
+      tl.to(shockwaveRef.current, { opacity: 0, duration: 0.5, ease: 'power2.out' }, 3.6);
 
       tl.call(() => {
-        if (particlesRef.current?.points) {
-          particlesRef.current.points.visible = true;
-          explosionActiveRef.current = true;
-          explosionProgressRef.current = 0;
+        spawnBurst(window.innerWidth / 2, window.innerHeight / 2);
+        cancelAnimationFrame(rafIdRef.current);
+        tickParticles();
+      }, [], 3.55);
+
+      tl.to(coreWrapRef.current, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 3.9);
+
+      tl.to(brandRef.current, { opacity: 1, duration: 0.5, ease: 'power2.out' }, 4.05);
+      tl.to(brandRef.current, { scale: 1, duration: 1.0, ease: 'elastic.out(1, 0.6)' }, 4.05);
+      tl.to(ctaRef.current, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, 4.65);
+
+      tl.to({}, { duration: 1.4 }, 5.0);
+
+      if (reduced) {
+        tl.progress(1);
+        if (coreWrapRef.current) coreWrapRef.current.style.opacity = 0;
+        if (brandRef.current) {
+          brandRef.current.style.opacity = 1;
+          brandRef.current.style.transform = 'translate(-50%,-50%) scale(1)';
         }
-      }, [], 3.9);
-
-      // PHASE 6: Brand Reveal
-      const brandGroup = brandRef.current;
-      if (brandGroup) {
-        tl.call(() => { brandGroup.visible = true; }, [], 4.4);
-        tl.fromTo(brandGroup.scale,
-          { x: 0, y: 0, z: 0 },
-          { x: 1, y: 1, z: 1, duration: 1.2, ease: 'elastic.out(1, 0.5)' },
-          4.4
-        );
+        if (ctaRef.current) {
+          ctaRef.current.style.opacity = 1;
+          ctaRef.current.style.transform = 'translateY(0)';
+        }
+        finish();
       }
-
-      // PHASE 7: Hold for 2s then complete
-      tl.to({}, { duration: 2.0 }, 5.8);
-
-    }, 150);
+    }, stageRef);
 
     return () => {
-      clearTimeout(initTimeout);
-      if (timelineRef.current) {
-        timelineRef.current.kill();
-      }
+      if (resize) window.removeEventListener('resize', resize);
+      if (handleMouseMove) window.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(rafIdRef.current);
+      if (tlRef.current) tlRef.current.kill();
+      if (ctxGsap) ctxGsap.revert();
     };
-  }, [cubePositions, onComplete]);
-
-  useEffect(() => {
-    if (skipTriggered && timelineRef.current) {
-      timelineRef.current.progress(1);
-    }
-  }, [skipTriggered]);
-
-  return (
-    <>
-      <CameraRig />
-      <ambientLight intensity={0.3} />
-      <directionalLight position={[5, 8, 5]} intensity={0.6} color="#ffffff" />
-      <pointLight position={[0, 0, 4]} intensity={1.2} color={BRAND_COLOR_A} distance={15} />
-      <pointLight position={[-3, -2, 3]} intensity={0.5} color={BRAND_COLOR_B} distance={12} />
-
-      <AmbientParticles />
-
-      {PROBLEMS.map((text, i) => (
-        <ProblemCube
-          key={i}
-          text={text}
-          target={cubePositions[i]}
-          cubeRef={cubeRefs.current[i]}
-        />
-      ))}
-
-      <SolutionButton3D buttonRef={buttonRef} />
-      <AnimatedCursor cursorRef={cursorRef} />
-      <ShockwaveRing shockwaveRef={shockwaveRef} />
-      <ExplosionParticles particlesRef={particlesRef} />
-      <BrandReveal3D brandRef={brandRef} />
-
-      <EffectComposer>
-        <Bloom
-          intensity={1.2}
-          luminanceThreshold={0.3}
-          luminanceSmoothing={0.9}
-          mipmapBlur
-        />
-      </EffectComposer>
-    </>
-  );
-}
-
-// ─── MAIN COMPONENT ─────────────────────────────────────────────────────────────
-export default function LandingIntro({ onComplete }) {
-  const [fadeOut, setFadeOut] = useState(false);
-  const [skipTriggered, setSkipTriggered] = useState(false);
-
-  const handleComplete = useCallback(() => {
-    setFadeOut(true);
-    setTimeout(() => {
-      onComplete();
-    }, 800);
   }, [onComplete]);
 
-  const handleSkip = useCallback(() => {
-    if (!skipTriggered) {
-      setSkipTriggered(true);
-      setFadeOut(true);
-      setTimeout(() => {
-        onComplete();
-      }, 600);
-    }
-  }, [skipTriggered, onComplete]);
-
   return (
-    <div
-      className={`landing-intro ${fadeOut ? 'landing-intro--fade-out' : ''}`}
-      style={{ cursor: 'default' }}
-    >
-      <Canvas
-        camera={{ position: [0, 0, 10], fov: 50 }}
-        gl={{
-          antialias: true,
-          alpha: false,
-          powerPreference: 'high-performance',
-        }}
-        onCreated={({ gl }) => {
-          gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = 1.2;
-        }}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-        }}
-      >
-        <color attach="background" args={['#0B0D14']} />
-        <Suspense fallback={null}>
-          <SceneOrchestrator
-            onComplete={handleComplete}
-            skipTriggered={skipTriggered}
-          />
-        </Suspense>
-      </Canvas>
+    <div className="stage" ref={stageRef}>
+      <div className="grid" ref={gridRef}></div>
+      <canvas id="fx" ref={canvasRef}></canvas>
 
-      <button
-        className="landing-skip-btn"
-        onClick={handleSkip}
-        title="Skip animation"
+      <div className="chip-field" ref={chipFieldRef}></div>
+
+      <div className="core-wrap" ref={coreWrapRef}>
+        <div className="core-glow"></div>
+        <div className="core-ring r2"></div>
+        <div className="core-ring r1"></div>
+        <div className="core-node">
+          <svg viewBox="0 0 46 46" fill="none">
+            <defs>
+              <linearGradient id="coreGrad" x1="0" y1="0" x2="46" y2="46" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stopColor="#5B5FFB"/>
+                <stop offset="1" stopColor="#B24DFF"/>
+              </linearGradient>
+            </defs>
+            <rect x="1" y="1" width="44" height="44" rx="13" stroke="url(#coreGrad)" strokeWidth="1.4" fill="rgba(91,95,251,0.10)"/>
+            <path d="M14 27L20 15L26 24L32 17" stroke="url(#coreGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="32" cy="17" r="2.4" fill="#B24DFF"/>
+          </svg>
+        </div>
+      </div>
+
+      <div className="shockwave" ref={shockwaveRef}></div>
+
+      <div className="brand" ref={brandRef}>
+        <svg className="mark" viewBox="0 0 52 52" fill="none">
+          <defs>
+            <linearGradient id="brandGrad" x1="0" y1="0" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stopColor="#5B5FFB"/>
+              <stop offset="1" stopColor="#B24DFF"/>
+            </linearGradient>
+          </defs>
+          <rect x="1" y="1" width="50" height="50" rx="15" stroke="url(#brandGrad)" strokeWidth="1.6" fill="rgba(91,95,251,0.08)"/>
+          <path d="M15 30L23 16L30 27L37 18" stroke="url(#brandGrad)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+          <circle cx="37" cy="18" r="2.8" fill="#B24DFF"/>
+        </svg>
+        <h1>WOSTUP<span className="ai">AI</span></h1>
+        <p className="tagline">Every problem, one intelligent solution.</p>
+        <button 
+          className="cta" 
+          ref={ctaRef} 
+          onClick={() => {
+            gsap.to(ctaRef.current, { scale: 0.96, duration: 0.1, yoyo: true, repeat: 1 });
+            
+            // Fast forward timeline and smoothly fade out
+            if (tlRef.current) tlRef.current.progress(1);
+            gsap.to(stageRef.current, {
+              opacity: 0,
+              duration: 0.4,
+              ease: 'power2.out',
+              onComplete: () => {
+                if (onComplete) onComplete();
+              }
+            });
+          }}
+        >
+          Enter Workspace →
+        </button>
+      </div>
+
+      <button 
+        className="skip-btn" 
+        ref={skipBtnRef} 
+        onClick={() => {
+          if (tlRef.current) tlRef.current.progress(1);
+          gsap.to(stageRef.current, {
+            opacity: 0,
+            duration: 0.4,
+            ease: 'power2.out',
+            onComplete: () => {
+              if (onComplete) onComplete();
+            }
+          });
+        }}
       >
         Skip
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="13 17 18 12 13 7" />
-          <polyline points="6 17 11 12 6 7" />
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="13 17 18 12 13 7"/>
+          <polyline points="6 17 11 12 6 7"/>
         </svg>
       </button>
     </div>
