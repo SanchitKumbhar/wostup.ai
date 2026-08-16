@@ -1,16 +1,52 @@
-# React + Vite
+# wostup.ai Frontend Workspace
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Welcome to the frontend workspace for **wostup.ai**. This project is built using React, Vite, and Three.js, offering a modern, dynamic, and immersive user experience.
 
-Currently, two official plugins are available:
+## Tech Stack
+- **Framework:** React 19 + Vite
+- **3D Rendering:** Three.js + React Three Fiber / Drei
+- **State & Data Fetching:** TanStack React Query + Axios
+- **Styling:** Custom CSS with GSAP for animations
+- **Authentication:** Clerk
+- **Real-time:** Socket.io
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Prerequisites
+- Node.js (v18+)
+- npm or yarn
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd wostup.ai
+   ```
 
-## Expanding the ESLint configuration
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+3. **Environment Setup:**
+   Copy the example environment file and fill in your credentials.
+   ```bash
+   cp .env.example .env.local
+   ```
+   Add your Clerk Publishable Key and API URL to `.env.local`.
+
+4. **Start the Development Server:**
+   ```bash
+   npm run dev
+   ```
+
+5. **Build for Production:**
+   ```bash
+   npm run build
+   ```
+
+## Security & Secrets
+- Never commit `.env.local` or `.env` files. These are ignored by Git.
+- All secrets are managed via environment variables.
+
+## License
+Proprietary software. All rights reserved.

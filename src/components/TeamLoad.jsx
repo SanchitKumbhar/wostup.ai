@@ -8,39 +8,25 @@ export default function TeamLoad({ onAdjustCapacity, workspaceId }) {
   useEffect(() => {
     if (teamLoadData && teamLoadData.members) {
       setRegistryMembers(teamLoadData.members.map((m, index) => {
-        // Fallback names/avatars if not provided by backend
-        const fallbackNames = ['Sarah Chen', 'Marcus Rodriguez', 'Aisha Gupta', 'James Wilson', 'Elena Sokolov'];
-        const fallbackAvatars = [
-          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
-          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
-          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
-          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80'
-        ];
-        
-        // determine status based on load score mapping
-        let status = 'Optimal';
-        if (m.loadScore >= 8 || m.assignedTasks.length >= 6) status = 'Critical';
-        else if (m.loadScore <= 2 && m.assignedTasks.length <= 2) status = 'Under-utilized';
-
+        // Map the member data using API values with fallbacks
         return {
-          id: m.userId,
+          id: m.userId || m.memberId || index,
           name: m.name || fallbackNames[index % fallbackNames.length],
-          role: m.role || 'Member',
+          role: m.roleTitle || m.role || 'Member',
           avatar: m.avatar || fallbackAvatars[index % fallbackAvatars.length],
-          tasks: m.assignedTasks ? m.assignedTasks.length : 0,
-          score: (m.loadScore / 2).toFixed(1) + '/5.0', // converting overloadScore to max 5.0 (assuming 10 is max)
-          status: status
+          tasks: m.taskBreakdown?.total || (m.assignedTasks ? m.assignedTasks.length : 0),
+          openTasks: m.taskBreakdown?.open || 0,
+          criticalTasks: m.taskBreakdown?.critical || 0,
+          blockedTasks: m.taskBreakdown?.blocked || 0,
+          score: m.loadScore ? (m.loadScore / 2).toFixed(1) + '/5.0' : '0.0/5.0',
+          rawScore: m.loadScore || 0,
+          utilization: m.utilizationPercentage || 0,
+          status: m.status || 'Optimal',
+          projectSplit: m.projectSplit || []
         };
       }));
     } else {
-      setRegistryMembers([
-        { id: 1, name: 'Sarah Chen', role: 'Lead Designer', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80', tasks: 12, score: '4.8/5.0', status: 'Critical' },
-        { id: 2, name: 'Marcus Rodriguez', role: 'Senior Developer', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', tasks: 8, score: '4.2/5.0', status: 'Critical' },
-        { id: 3, name: 'Aisha Gupta', role: 'Product Manager', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80', tasks: 6, score: '3.5/5.0', status: 'Optimal' },
-        { id: 4, name: 'James Wilson', role: 'QA Engineer', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80', tasks: 3, score: '2.1/5.0', status: 'Under-utilized' },
-        { id: 5, name: 'Elena Sokolov', role: 'Frontend Dev', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80', tasks: 7, score: '3.8/5.0', status: 'Optimal' },
-      ]);
+      setRegistryMembers([]);
     }
   }, [teamLoadData]);
 
@@ -67,9 +53,11 @@ export default function TeamLoad({ onAdjustCapacity, workspaceId }) {
 
   const getStatusBadgeStyle = (status) => {
     switch (status.toLowerCase()) {
+      case 'overloaded':
       case 'critical': return 'badge-atrisk';
       case 'optimal': return 'badge-completed';
-      case 'under-utilized': return 'badge-inprogress';
+      case 'underloaded':
+      case 'under-utilized': return 'badge-todo';
       default: return 'badge-todo';
     }
   };
@@ -106,7 +94,7 @@ export default function TeamLoad({ onAdjustCapacity, workspaceId }) {
             <div style={styles.statTitle}>TOTAL MEMBERS</div>
             <div style={styles.statIconBlue}></div>
           </div>
-          <div style={styles.statValue}>{teamLoadData?.totalMembers || 12}</div>
+          <div style={styles.statValue}>{teamLoadData?.totalMembers || 0}</div>
           <div style={styles.statSubText}>Active workspace members</div>
         </div>
 
@@ -115,31 +103,31 @@ export default function TeamLoad({ onAdjustCapacity, workspaceId }) {
             <div style={styles.statTitle}>OVERLOADED</div>
             <div style={styles.statIconRed}>!</div>
           </div>
-          <div style={{ ...styles.statValue, color: '#EF4444' }}>{teamLoadData?.overloadedMembers || 3}</div>
+          <div style={{ ...styles.statValue, color: '#EF4444' }}>{teamLoadData?.overloadedMembers || 0}</div>
           <div style={styles.statSubText}>
-            <span style={{ color: '#EF4444', fontWeight: '600' }}>↗ 15%</span> exceeding 4.0 score
+            <span style={{ color: '#EF4444', fontWeight: '600' }}>Exceeding 100% capacity</span>
           </div>
         </div>
 
         <div className="premium-card" style={styles.statCard}>
           <div style={styles.statMetaRow}>
-            <div style={styles.statTitle}>AVERAGE LOAD</div>
+            <div style={styles.statTitle}>AVERAGE UTILIZATION</div>
             <div style={styles.statIconPurple}></div>
           </div>
-          <div style={{ ...styles.statValue, color: '#5B5FFB' }}>{teamLoadData?.averageLoadScore?.toFixed(1) || 4.2}</div>
-          <div style={styles.statSubText}>System-wide capacity score</div>
+          <div style={{ ...styles.statValue, color: '#5B5FFB' }}>{teamLoadData?.averageCapacityUtilization || 0}%</div>
+          <div style={styles.statSubText}>System-wide capacity utilized</div>
         </div>
 
         <div className="premium-card" style={styles.statCard}>
           <div style={styles.statMetaRow}>
-            <div style={styles.statTitle}>OPTIMAL STATE</div>
+            <div style={styles.statTitle}>OPTIMAL / UNDERLOADED</div>
             <div style={styles.statIconGreen}></div>
           </div>
           <div style={{ ...styles.statValue, color: '#10B981' }}>
-            {teamLoadData ? Math.round(((teamLoadData.totalMembers - teamLoadData.overloadedMembers - teamLoadData.underloadedMembers) / teamLoadData.totalMembers) * 100) : 64}%
+            {(teamLoadData?.optimalMembers || 0) + (teamLoadData?.underloadedMembers || 0)}
           </div>
           <div style={styles.statSubText}>
-            <span style={{ color: '#10B981', fontWeight: '600' }}>↘ 4%</span> of team at target load
+            Members at target load or below
           </div>
         </div>
       </div>
@@ -163,28 +151,23 @@ export default function TeamLoad({ onAdjustCapacity, workspaceId }) {
               <line x1="40" y1="60" x2="380" y2="60" stroke="#EF4444" strokeWidth="1.5" strokeDasharray="4" />
               <text x="385" y="64" fontSize="8" fill="#EF4444" fontWeight="600">Limit (4.0)</text>
 
-              {/* Bar 1: S. Chen (Score 4.8) */}
-              <rect x="60" y="44" width="28" height="96" fill="#EF4444" rx="4" />
-              {/* Bar 2: M. Rodriguez (Score 4.2) */}
-              <rect x="120" y="56" width="28" height="84" fill="#EF4444" rx="4" />
-              {/* Bar 3: A. Gupta (Score 3.5) */}
-              <rect x="180" y="70" width="28" height="70" fill="#5B5FFB" rx="4" />
-              {/* Bar 4: J. Wilson (Score 2.1) */}
-              <rect x="240" y="98" width="28" height="42" fill="#5B5FFB" rx="4" />
-              {/* Bar 5: E. Sokolov (Score 3.8) */}
-              <rect x="300" y="64" width="28" height="76" fill="#5B5FFB" rx="4" />
+              {/* Dynamic Bars based on registryMembers limit to 5 max for layout */}
+              {registryMembers.slice(0, 5).map((member, i) => {
+                const xPos = 60 + (i * 60);
+                const score = member.rawScore || 0;
+                // Map rawScore (0-10) to height (0-140 max). Height per score point = 14
+                const barHeight = Math.min(score * 14, 140);
+                const barY = 140 - barHeight;
+                const fillClr = score >= 8 ? '#EF4444' : (score <= 2 ? '#9AA6B2' : '#5B5FFB');
+                const displayName = member.name.split(' ').map((n, idx) => idx === 0 ? n[0] + '.' : n.substring(0,3)).join(' ');
 
-              {/* Grid line baseline */}
-              <line x1="40" y1="140" x2="360" y2="140" stroke="#ECEEF4" strokeWidth="1.5" />
-
-              {/* X Axis Labels */}
-              <text x="74" y="152" fontSize="9" fill="#9AA6B2" textAnchor="middle">S. Chen</text>
-              <text x="134" y="152" fontSize="9" fill="#9AA6B2" textAnchor="middle">M. Rod</text>
-              <text x="194" y="152" fontSize="9" fill="#9AA6B2" textAnchor="middle">A. Gup</text>
-              <text x="254" y="152" fontSize="9" fill="#9AA6B2" textAnchor="middle">J. Wil</text>
-              <text x="314" y="152" fontSize="9" fill="#9AA6B2" textAnchor="middle">E. Sok</text>
-
-              {/* Y Axis Labels */}
+                return (
+                  <g key={member.id}>
+                    <rect x={xPos} y={barY} width="28" height={barHeight} fill={fillClr} rx="4" />
+                    <text x={xPos + 14} y="152" fontSize="9" fill="#9AA6B2" textAnchor="middle">{displayName}</text>
+                  </g>
+                );
+              })}
               <text x="30" y="144" fontSize="8" fill="#9AA6B2" textAnchor="end">0</text>
               <text x="30" y="104" fontSize="8" fill="#9AA6B2" textAnchor="end">2</text>
               <text x="30" y="64" fontSize="8" fill="#9AA6B2" textAnchor="end">4</text>
@@ -249,8 +232,9 @@ export default function TeamLoad({ onAdjustCapacity, workspaceId }) {
             <thead>
               <tr style={styles.tableHeadRow}>
                 <th style={styles.tableTh}>TEAM MEMBER</th>
-                <th style={styles.tableTh}>TASKS</th>
+                <th style={styles.tableTh}>TASKS (OPEN / BLOCKED)</th>
                 <th style={styles.tableTh}>UTILIZATION</th>
+                <th style={styles.tableTh}>PROJECTS</th>
                 <th style={styles.tableTh}>STATUS</th>
                 <th style={styles.tableTh}>ACTIONS</th>
               </tr>
@@ -267,17 +251,35 @@ export default function TeamLoad({ onAdjustCapacity, workspaceId }) {
                       </div>
                     </div>
                   </td>
-                  <td style={styles.tableTd}>{member.tasks}</td>
+                  <td style={styles.tableTd}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span style={{ fontWeight: '600', color: '#1A1D20' }}>{member.tasks}</span>
+                      <span style={{ fontSize: '11px', color: '#6C7A87' }}>({member.openTasks} open, <span style={{ color: member.blockedTasks > 0 ? '#EF4444' : '#6C7A87' }}>{member.blockedTasks} blocked</span>)</span>
+                    </div>
+                  </td>
                   <td style={styles.tableTd}>
                     <div style={styles.utilizationCell}>
-                      <span style={styles.utilizationLabel}>Score {member.score}</span>
+                      <span style={styles.utilizationLabel}>{member.utilization}% ({member.score})</span>
                       <div style={styles.utilProgressBarBg}>
                         <div style={{
                           ...styles.utilProgressBarFill,
-                          width: `${(parseFloat(member.score) / 5) * 100}%`,
-                          backgroundColor: member.status === 'Critical' ? '#EF4444' : member.status === 'Optimal' ? '#10B981' : '#5B5FFB'
+                          width: `${Math.min(member.utilization, 100)}%`,
+                          backgroundColor: member.status === 'Overloaded' ? '#EF4444' : member.status === 'Optimal' ? '#10B981' : '#5B5FFB'
                         }} />
                       </div>
+                    </div>
+                  </td>
+                  <td style={styles.tableTd}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      {member.projectSplit && member.projectSplit.length > 0 ? (
+                        member.projectSplit.map((ps, i) => (
+                          <div key={i} style={{ fontSize: '11px', color: '#6C7A87' }}>
+                            <span style={{ fontWeight: '600', color: '#5B5FFB' }}>{ps.tasksCount} tasks</span> in {ps.projectName}
+                          </div>
+                        ))
+                      ) : (
+                        <span style={{ fontSize: '11px', color: '#9AA6B2' }}>None</span>
+                      )}
                     </div>
                   </td>
                   <td style={styles.tableTd}>

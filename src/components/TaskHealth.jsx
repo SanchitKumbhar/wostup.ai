@@ -1,41 +1,50 @@
 import React, { useState } from 'react';
 import { useConflicts } from '../hooks/useConflicts';
+import { useTaskHealthDashboard } from '../hooks/useTaskHealth';
 
 export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects }) {
   const workspaceId = projects && projects.length > 0 ? projects[0].workspaceId : null;
   const { data: conflictsData } = useConflicts(workspaceId);
-  const [localTasks, setLocalTasks] = useState([
-    { id: 'T-10', title: 'Refactor Auth Service', project: 'P-12', priority: 'High', due: 'Oct 24', status: 'Not Started', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80' },
-    { id: 'T-11', title: 'Update Documentation', project: 'P-5', priority: 'Low', due: 'Oct 28', status: 'Not Started', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80' },
-    { id: 'T-12', title: 'Mobile Layout Redesign', project: 'P-8', priority: 'Medium', due: 'Oct 22', status: 'In Progress', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80' },
-    { id: 'T-13', title: 'API Load Balancing', project: 'P-12', priority: 'High', due: 'Oct 21', status: 'In Progress', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80' },
-    { id: 'T-14', title: 'Database Migration', project: 'P-12', priority: 'High', due: 'Oct 19', status: 'At Risk', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80' },
-    { id: 'T-15', title: 'Client Feedback Phase 2', project: 'P-3', priority: 'Medium', due: 'Oct 18', status: 'At Risk', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80' },
-    { id: 'T-16', title: 'Initial Prototype', project: 'P-5', priority: 'Low', due: 'Oct 10', status: 'Completed', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80' },
-    { id: 'T-17', title: 'Security Audit', project: 'P-12', priority: 'High', due: 'Oct 12', status: 'Completed', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80' },
-  ]);
-
-  const [atRiskCount, setAtRiskCount] = useState(8);
-  const [onTrackCount, setOnTrackCount] = useState(96);
-  const [showNotice, setShowNotice] = useState(true);
   const [selectedProjectFilter, setSelectedProjectFilter] = useState('all');
+
+  const { data: dashboardData } = useTaskHealthDashboard(
+    workspaceId,
+    selectedProjectFilter === 'all' ? null : selectedProjectFilter
+  );
+
+  const summary = dashboardData?.summary || {
+    totalTasks: 0,
+    completed: 0,
+    inProgress: 0,
+    atRisk: 0,
+    blocked: 0,
+    overdue: 0,
+    criticalCount: 0,
+    completionPercentage: 0,
+    avgProgress: 0,
+    healthScore: 0
+  };
+
+  const board = dashboardData?.board || {
+    columns: {
+      notStarted: [],
+      inProgress: [],
+      atRisk: [],
+      complete: []
+    }
+  };
+
+  const [showNotice, setShowNotice] = useState(true);
 
   const handleOptimizeLoad = () => {
     alert('Wostup Autonomous Engine: Rescheduled timeline overlaps. Tasks rebalanced.');
-    // Move 'At Risk' tasks to 'In Progress' and update counts
-    setLocalTasks(prev => prev.map(t => {
-      if (t.status === 'At Risk') {
-        return { ...t, status: 'In Progress', priority: 'Medium' };
-      }
-      return t;
-    }));
-    setAtRiskCount(0);
-    setOnTrackCount(104);
     if (onOptimizeLoad) onOptimizeLoad();
   };
 
   const getPriorityBadgeStyle = (priority) => {
+    if (!priority) return 'badge-low-priority';
     switch (priority.toLowerCase()) {
+      case 'critical':
       case 'high': return 'badge-high-priority';
       case 'medium': return 'badge-medium-priority';
       case 'low': return 'badge-low-priority';
@@ -43,12 +52,12 @@ export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects 
     }
   };
 
-  const columns = ['Not Started', 'In Progress', 'At Risk', 'Completed'];
-
-  // Filter tasks by selected project
-  const filteredTasks = selectedProjectFilter === 'all'
-    ? localTasks
-    : localTasks.filter(t => t.project === selectedProjectFilter);
+  const columns = [
+    { key: 'notStarted', label: 'Not Started' },
+    { key: 'inProgress', label: 'In Progress' },
+    { key: 'atRisk', label: 'At Risk' },
+    { key: 'complete', label: 'Completed' }
+  ];
 
   return (
     <div className="page-body" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)' }}>
@@ -89,17 +98,17 @@ export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects 
             <span style={styles.kpiTitle}>TOTAL TASKS</span>
             <span style={styles.iconSpan}></span>
           </div>
-          <div style={{ ...styles.kpiVal, color: '#5B5FFB' }}>{localTasks.length}</div>
-          <div style={styles.kpiChange}><span style={{ color: '#10B981', fontWeight: '600' }}>↗ 12%</span> from last week</div>
+          <div style={{ ...styles.kpiVal, color: '#5B5FFB' }}>{summary.totalTasks}</div>
+          <div style={styles.kpiChange}><span style={{ color: '#10B981', fontWeight: '600' }}>{summary.completionPercentage || 0}%</span> completed</div>
         </div>
 
         <div className="premium-card" style={styles.kpiCard}>
           <div style={styles.kpiHeader}>
-            <span style={styles.kpiTitle}>AT RISK</span>
+            <span style={styles.kpiTitle}>AT RISK / BLOCKED</span>
             <span style={styles.iconSpan}>!</span>
           </div>
-          <div style={{ ...styles.kpiVal, color: '#EF4444' }}>{atRiskCount}</div>
-          <div style={styles.kpiChange}><span style={{ color: '#EF4444', fontWeight: '600' }}>↘ 3%</span> from last week</div>
+          <div style={{ ...styles.kpiVal, color: '#EF4444' }}>{summary.atRisk + summary.blocked}</div>
+          <div style={styles.kpiChange}><span style={{ color: '#EF4444', fontWeight: '600' }}>{summary.overdue}</span> tasks overdue</div>
         </div>
 
         <div className="premium-card" style={styles.kpiCard}>
@@ -119,14 +128,12 @@ export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects 
 
         <div className="premium-card" style={styles.kpiCard}>
           <div style={styles.kpiHeader}>
-            <span style={styles.kpiTitle}>AVG. DELAY</span>
+            <span style={styles.kpiTitle}>HEALTH SCORE</span>
             <span style={styles.iconSpan}></span>
           </div>
-          <div style={{ ...styles.kpiVal, color: '#FF7A00' }}>{atRiskCount > 0 ? '1.2d' : '0.1d'}</div>
+          <div style={{ ...styles.kpiVal, color: '#10B981' }}>{summary.healthScore}/100</div>
           <div style={styles.kpiChange}>
-            <span style={{ color: '#FF7A00', fontWeight: '600' }}>
-              {atRiskCount > 0 ? '↗ 0.4d' : '↘ 1.1d'}
-            </span> from last week
+            Avg. Progress: <span style={{ color: '#5B5FFB', fontWeight: '600' }}>{summary.avgProgress}%</span>
           </div>
         </div>
       </div>
@@ -135,16 +142,16 @@ export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects 
       <div style={styles.boardWrapper}>
         <div className="columns-grid" style={styles.columnsGrid}>
           {columns.map((col) => {
-            const colTasks = filteredTasks.filter(t => t.status === col);
+            const colTasks = board.columns[col.key] || [];
             return (
-              <div key={col} className="health-column" style={styles.healthColumn}>
+              <div key={col.key} className="health-column" style={styles.healthColumn}>
                 <div style={styles.columnHeader}>
                   <div style={styles.columnTitleRow}>
                     <span style={{
                       ...styles.statusIndicator,
-                      backgroundColor: col === 'Completed' ? '#10B981' : col === 'At Risk' ? '#EF4444' : col === 'In Progress' ? '#5B5FFB' : '#9AA6B2'
+                      backgroundColor: col.key === 'complete' ? '#10B981' : col.key === 'atRisk' ? '#EF4444' : col.key === 'inProgress' ? '#5B5FFB' : '#9AA6B2'
                     }} />
-                    <span style={styles.columnTitle}>{col.toUpperCase()}</span>
+                    <span style={styles.columnTitle}>{col.label.toUpperCase()}</span>
                     <span style={styles.columnCount}>{colTasks.length}</span>
                   </div>
                   <button style={styles.moreBtn}>•••</button>
@@ -152,18 +159,32 @@ export default function TaskHealth({ onOptimizeLoad, tasks: propTasks, projects 
 
                 <div style={styles.cardsScroll}>
                   {colTasks.map((t) => (
-                    <div key={t.id} className="premium-card" style={styles.taskCard}>
+                    <div key={t.id || t._id} className="premium-card" style={styles.taskCard}>
                       <div style={styles.cardHeaderRow}>
-                        <span style={styles.cardProjectCode}>{t.project}</span>
+                        <span style={styles.cardProjectCode}>{t.projectName ? (t.projectName.substring(0, 15) + (t.projectName.length > 15 ? '...' : '')) : 'General'}</span>
                         <span className={`badge ${getPriorityBadgeStyle(t.priority)}`} style={{ fontSize: '8px', padding: '1px 5px' }}>
-                          {t.priority}
+                          {t.priority || 'Low'}
                         </span>
                       </div>
                       <h4 style={styles.taskTitle}>{t.title}</h4>
                       
+                      {t.statusBadge && (
+                        <div style={{ marginBottom: '10px' }}>
+                          <span style={{ fontSize: '10px', fontWeight: '700', padding: '3px 6px', borderRadius: '4px', backgroundColor: t.healthStatus === 'healthy' ? '#E6FFFA' : t.healthStatus === 'blocked' || t.healthStatus === 'at_risk' ? '#FFEBEB' : '#FAFCFF', color: t.healthStatus === 'healthy' ? '#10B981' : t.healthStatus === 'blocked' || t.healthStatus === 'at_risk' ? '#EF4444' : '#6C7A87' }}>
+                            {t.statusBadge}
+                          </span>
+                        </div>
+                      )}
+
                       <div style={styles.cardFooter}>
-                        <img src={t.avatar} alt="Assignee" style={styles.cardAvatar} />
-                        <span style={styles.cardDue}>{t.due}</span>
+                        {t.assignee && t.assignee.avatar ? (
+                           <img src={t.assignee.avatar} alt={t.assignee.name || "Assignee"} style={styles.cardAvatar} onError={(e) => { e.target.onerror = null; e.target.src = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=32&h=32&q=80"; }} />
+                        ) : (
+                           <div style={{...styles.cardAvatar, backgroundColor: '#ECEEF4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#6C7A87'}}>{t.assignee?.name?.charAt(0) || '?'}</div>
+                        )}
+                        <span style={{...styles.cardDue, color: t.isOverdue ? '#EF4444' : '#9AA6B2', fontWeight: t.isOverdue ? '600' : '400'}}>
+                           {t.dueDate ? new Date(t.dueDate).toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) : 'No date'}
+                        </span>
                       </div>
                     </div>
                   ))}

@@ -10,6 +10,9 @@ export default function TopBar({
   notificationCount = 3,
   onToggleSidebar,
   onNavigateToSettings,
+  notifications = [],
+  onMarkNotificationAsRead,
+  onlineCount = 0,
 }) {
   const [showWorkspaceDropdown, setShowWorkspaceDropdown] = useState(false);
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
@@ -32,12 +35,6 @@ export default function TopBar({
   }, []);
 
   const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId) || workspaces[0];
-
-  const mockNotifications = [
-    { id: 1, text: 'Milestone Alpha may miss its deadline due to Sarah Chen overloading.', type: 'danger', time: '5m ago' },
-    { id: 2, text: 'Task "API Integration" has been inactive for 4 days.', type: 'warning', time: '2h ago' },
-    { id: 3, text: 'Autonomous Evaluator completed workspace health check score: 92%.', type: 'success', time: '1d ago' },
-  ];
 
   return (
     <header ref={topBarRef} className="topbar-container" style={styles.topBar}>
@@ -139,10 +136,18 @@ export default function TopBar({
 
       {/* Right Tools */}
       <div className="topbar-tools-container" style={styles.toolsContainer}>
-        {/* AI status indicator */}
-        <div className="topbar-ai-status" style={styles.aiStatus}>
-          <span className="pulse-dot" />
-          <span style={styles.aiStatusText}>AI: ACTIVE</span>
+        {/* AI status indicator & Team Online */}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <div className="topbar-ai-status" style={styles.aiStatus}>
+            <span className="pulse-dot" />
+            <span style={styles.aiStatusText}>AI: ACTIVE</span>
+          </div>
+          {onlineCount > 0 && (
+            <div className="topbar-team-status" style={{...styles.aiStatus, backgroundColor: '#EFF6FF', borderColor: '#BFDBFE'}}>
+              <span className="pulse-dot" style={{ backgroundColor: '#3B82F6' }} />
+              <span style={{...styles.aiStatusText, color: '#1E40AF'}}>TEAM: {onlineCount} ONLINE</span>
+            </div>
+          )}
         </div>
 
         {/* Notification bell */}
@@ -166,20 +171,33 @@ export default function TopBar({
           {showNotificationDropdown && (
             <div className="notification-dropdown-responsive" style={styles.notificationDropdown}>
               <div style={styles.dropdownHeader}>Workspace Notifications</div>
-              {mockNotifications.map((notif) => (
-                <div key={notif.id} className="topbar-notif-item" style={styles.notificationItem}>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <div style={{
-                      ...styles.notifDot,
-                      backgroundColor: notif.type === 'danger' ? '#EF4444' : notif.type === 'warning' ? '#F59E0B' : '#10B981'
-                    }} />
-                    <div style={styles.notifContent}>
-                      <div style={styles.notifText}>{notif.text}</div>
-                      <div style={styles.notifTime}>{notif.time}</div>
+              {notifications.length === 0 ? (
+                <div style={{ padding: '16px', textAlign: 'center', color: '#9AA6B2', fontSize: '12px' }}>No new notifications</div>
+              ) : (
+                notifications.map((notif) => (
+                  <div 
+                    key={notif._id} 
+                    className="topbar-notif-item" 
+                    style={{...styles.notificationItem, opacity: notif.read ? 0.6 : 1}}
+                    onClick={() => {
+                      if (onMarkNotificationAsRead && !notif.read) {
+                        onMarkNotificationAsRead(notif._id);
+                      }
+                    }}
+                  >
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{
+                        ...styles.notifDot,
+                        backgroundColor: notif.type === 'overload_alert' ? '#EF4444' : notif.type === 'conflict_alert' ? '#F59E0B' : '#10B981'
+                      }} />
+                      <div style={styles.notifContent}>
+                        <div style={{...styles.notifText, fontWeight: notif.read ? '400' : '600'}}>{notif.message}</div>
+                        <div style={styles.notifTime}>{new Date(notif.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           )}
         </div>
