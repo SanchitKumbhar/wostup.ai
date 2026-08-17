@@ -9,6 +9,7 @@ import Dashboard from './components/Dashboard';
 import Projects from './components/Projects';
 import ProjectOverview from './components/ProjectOverview';
 import Tasks from './components/Tasks';
+import EpicsAndSprints from './components/EpicsAndSprints';
 import Milestones from './components/Milestones';
 import TeamLoad from './components/TeamLoad';
 import TaskHealth from './components/TaskHealth';
@@ -23,6 +24,8 @@ import ProfileSetup from './components/ProfileSetup';
 import OnboardingWorkspace from './components/OnboardingWorkspace';
 import { useWorkspaces, useCreateWorkspace } from './hooks/useWorkspaces';
 import { useProjects } from './hooks/useProjects';
+import { useWorkspaceSocket } from './hooks/useWorkspaceSocket';
+import { useCurrentUser } from './hooks/useUser';
 
 export default function App() {
   const { user: clerkUser, isLoaded } = useUser();
@@ -32,6 +35,7 @@ export default function App() {
 
   // Normalize user object for existing components
   const user = clerkUser ? {
+    id: clerkUser.id,
     name: clerkUser.fullName || clerkUser.firstName || 'User',
     avatar: clerkUser.imageUrl,
     email: clerkUser.primaryEmailAddress?.emailAddress
@@ -60,6 +64,18 @@ export default function App() {
   // Projects State
   const { data: apiProjects = [], isLoading: isProjectsLoading } = useProjects(activeWorkspaceId);
   const projects = apiProjects;
+
+  // Fetch internal MongoDB user
+  const { data: currentUser } = useCurrentUser();
+  const mongoUserId = currentUser?._id || currentUser?.id;
+
+  // Real-time Socket Connection
+  const { 
+    notifications, 
+    markAsRead, 
+    onlineCount,
+    detectorAlerts
+  } = useWorkspaceSocket(activeWorkspaceId, mongoUserId);
 
 
   // AI Insights State
@@ -171,9 +187,12 @@ export default function App() {
                 activeWorkspaceId={activeWorkspaceId}
                 onWorkspaceSelect={handleWorkspaceSelect}
                 onOpenNewWorkspaceModal={() => setIsWorkspaceModalOpen(true)}
-                notificationCount={aiRecommendations.length}
+                notificationCount={notifications.filter(n => !n.read).length}
+                notifications={notifications}
+                onMarkNotificationAsRead={markAsRead}
                 onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
                 onNavigateToSettings={() => navigate('/settings')}
+                onlineCount={onlineCount}
               />
               
               <Outlet />
@@ -231,6 +250,12 @@ export default function App() {
               onUpdateProject={(projectId, updates) => {
                 // Rely on API refetch
               }}
+            />
+          } />
+
+          <Route path="/epics-sprints" element={
+            <EpicsAndSprints
+              projects={projects}
             />
           } />
 

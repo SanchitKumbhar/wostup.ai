@@ -1,7 +1,9 @@
 {
-  "name": "wostup-workspace",
+  "name": "wostup-ai",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "Frontend workspace for wostup.ai",
+  "author": "wostup.ai",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,14 +14,15 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.0.0",
     "@react-three/drei": "^10.7.7",
-    "@tanstack/react-query": "^5.28.4",
     "@react-three/fiber": "^9.6.1",
     "@react-three/postprocessing": "^3.0.4",
+    "@tanstack/react-query": "^5.28.4",
     "axios": "^1.7.9",
     "gsap": "^3.15.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^6.22.3",
+    "socket.io-client": "^4.8.3",
     "three": "^0.185.1"
   },
   "devDependencies": {

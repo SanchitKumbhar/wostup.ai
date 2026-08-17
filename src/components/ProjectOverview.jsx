@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useTasks, useCreateTask } from '../hooks/useTasks';
 import { useMilestones, useCreateMilestone, useUpdateMilestone, useDeleteMilestone } from '../hooks/useMilestones';
+import { useSprints } from '../hooks/useSprints';
+import { useEpics } from '../hooks/useEpics';
 import { useCurrentUser } from '../hooks/useUser';
 import { useProjectStats, useProjectHealth } from '../hooks/useProjectHealth';
 
@@ -61,6 +63,8 @@ export default function ProjectOverview({
   const { data: projectTasks = [] } = useTasks(projectId);
   const { mutateAsync: createTask } = useCreateTask();
   const { data: projectMilestones = [] } = useMilestones(projectId);
+  const { data: projectSprints = [] } = useSprints(projectId);
+  const { data: projectEpics = [] } = useEpics(projectId);
   const { mutateAsync: createMilestone } = useCreateMilestone();
   const { mutateAsync: updateMilestone } = useUpdateMilestone();
   const { mutateAsync: deleteMilestone } = useDeleteMilestone();
@@ -250,7 +254,7 @@ export default function ProjectOverview({
 
       {/* Tab Menu Bar */}
       <div className="tab-bar">
-        {['overview', 'tasks', 'milestones', 'comments'].map((tab) => (
+        {['overview', 'tasks', 'sprints', 'epics', 'milestones', 'comments'].map((tab) => (
           <button
             key={tab}
             className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
@@ -555,6 +559,145 @@ export default function ProjectOverview({
               </select>
               <button type="submit" style={styles.inlineAddBtn}>Add</button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Sprints Tab */}
+      {activeTab === 'sprints' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={styles.panelTitleRow}>
+            <div>
+              <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1A1D20' }}>Sprint Planning</h3>
+              <p style={{ fontSize: '13px', color: '#6C7A87', marginTop: '4px' }}>Manage sprint cycles, team velocity, and delivery goals.</p>
+            </div>
+            <button className="btn-gradient" style={{ padding: '10px 16px', fontSize: '13px' }}>
+              + New Sprint
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+            {projectSprints?.length > 0 ? projectSprints.map((sprint, i) => (
+              <div key={sprint.id || i} className="premium-card table-row-hover" style={{ padding: '24px', cursor: 'pointer', transition: 'all 0.3s ease' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: '#F0F2FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#5B5FFB' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="13 2 13 9 22 9"/><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/></svg>
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: '15px', fontWeight: '700', color: '#1A1D20', marginBottom: '2px' }}>{sprint.name || `Sprint ${i + 1}`}</h4>
+                      <span style={{ fontSize: '11px', color: '#9AA6B2', fontWeight: '600' }}>{sprint.startDate ? new Date(sprint.startDate).toLocaleDateString() : 'TBD'} - {sprint.endDate ? new Date(sprint.endDate).toLocaleDateString() : 'TBD'}</span>
+                    </div>
+                  </div>
+                  <span className={`badge ${sprint.status?.toLowerCase() === 'active' ? 'badge-inprogress' : sprint.status?.toLowerCase() === 'completed' ? 'badge-completed' : 'badge-todo'}`}>
+                    {sprint.status || 'Planned'}
+                  </span>
+                </div>
+                
+                <p style={{ fontSize: '13px', color: '#6C7A87', lineHeight: '1.5', marginBottom: '20px', minHeight: '40px' }}>
+                  {sprint.goal || 'Focus on stabilizing the core components and resolving technical debt.'}
+                </p>
+
+                <div style={{ borderTop: '1px solid #ECEEF4', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: '700', color: '#9AA6B2', letterSpacing: '0.05em' }}>COMPLETION</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: '100px', height: '6px', backgroundColor: '#FAFCFF', border: '1px solid #ECEEF4', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ width: `${sprint.progress || (Math.random() * 100).toFixed(0)}%`, height: '100%', backgroundColor: '#10B981', borderRadius: '3px' }} />
+                      </div>
+                      <span style={{ fontSize: '12px', fontWeight: '600', color: '#10B981' }}>{sprint.progress || '0'}%</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: '700', color: '#9AA6B2', letterSpacing: '0.05em' }}>STORY POINTS</span>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#1A1D20' }}>{sprint.storyPoints || '24'} <span style={{ fontSize: '11px', color: '#6C7A87', fontWeight: '500' }}>pts</span></span>
+                  </div>
+                </div>
+              </div>
+            )) : (
+              <div style={{ gridColumn: '1 / -1', padding: '60px 20px', textAlign: 'center', backgroundColor: '#FAFCFF', borderRadius: '16px', border: '2px dashed #ECEEF4' }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#F0F2FF', color: '#5B5FFB', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <h4 style={{ fontSize: '18px', fontWeight: '700', color: '#1A1D20', marginBottom: '8px' }}>No Sprints Planned</h4>
+                <p style={{ fontSize: '14px', color: '#6C7A87', maxWidth: '400px', margin: '0 auto 24px', lineHeight: '1.5' }}>Sprints help your team focus on a set amount of work within a specific time period. Create your first sprint to begin.</p>
+                <button className="btn-gradient" style={{ padding: '10px 24px' }}>+ Create First Sprint</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Epics Tab */}
+      {activeTab === 'epics' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={styles.panelTitleRow}>
+            <div>
+              <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1A1D20' }}>Project Epics</h3>
+              <p style={{ fontSize: '13px', color: '#6C7A87', marginTop: '4px' }}>Large initiatives broken down into actionable tasks and sprints.</p>
+            </div>
+            <button className="btn-gradient" style={{ padding: '10px 16px', fontSize: '13px' }}>
+              + Create Epic
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {projectEpics?.length > 0 ? projectEpics.map((epic, i) => (
+              <div key={epic.id || i} className="premium-card table-row-hover" style={{ padding: '0', overflow: 'hidden', cursor: 'pointer' }}>
+                <div style={{ padding: '24px', display: 'flex', gap: '24px', alignItems: 'center' }}>
+                  
+                  {/* Epic Icon & Status */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', width: '80px' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: '#FFF5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#E11D48', border: '1px solid #FFE4E6' }}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    </div>
+                    <span className={`badge ${epic.status === 'Completed' ? 'badge-completed' : 'badge-inprogress'}`}>{epic.status || 'In Progress'}</span>
+                  </div>
+                  
+                  {/* Epic Details */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: '700', color: '#5B5FFB', backgroundColor: '#F0F2FF', padding: '2px 6px', borderRadius: '4px' }}>{epic.epicCode || `EPC-${i+1}00`}</span>
+                          <h4 style={{ fontSize: '18px', fontWeight: '700', color: '#1A1D20' }}>{epic.title || epic.name || 'Core Platform Migration'}</h4>
+                        </div>
+                        <p style={{ fontSize: '14px', color: '#6C7A87', maxWidth: '600px', lineHeight: '1.5' }}>{epic.description || 'Migrating the monolithic architecture into microservices for better scalability and faster deployment cycles.'}</p>
+                      </div>
+                      
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '700', color: '#9AA6B2', letterSpacing: '0.05em', marginBottom: '4px' }}>OWNER</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <img src={epic.ownerAvatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"} alt="Owner" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                          <span style={{ fontSize: '13px', fontWeight: '600', color: '#1A1D20' }}>{epic.owner || 'Sarah Chen'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Epic Progress */}
+                    <div style={{ marginTop: '20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: '600', marginBottom: '8px' }}>
+                        <span style={{ color: '#1A1D20' }}>Progress</span>
+                        <span style={{ color: '#5B5FFB' }}>{epic.progress || (Math.random() * 100).toFixed(0)}%</span>
+                      </div>
+                      <div style={{ width: '100%', height: '8px', backgroundColor: '#FAFCFF', border: '1px solid #ECEEF4', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: `${epic.progress || 45}%`, height: '100%', backgroundColor: '#5B5FFB', borderRadius: '4px' }} />
+                      </div>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+            )) : (
+              <div style={{ padding: '60px 20px', textAlign: 'center', backgroundColor: '#FAFCFF', borderRadius: '16px', border: '2px dashed #ECEEF4' }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#FFF5F5', color: '#E11D48', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                </div>
+                <h4 style={{ fontSize: '18px', fontWeight: '700', color: '#1A1D20', marginBottom: '8px' }}>No Epics Defined</h4>
+                <p style={{ fontSize: '14px', color: '#6C7A87', maxWidth: '400px', margin: '0 auto 24px', lineHeight: '1.5' }}>Epics allow you to group related tasks across multiple sprints into a single large objective.</p>
+                <button className="btn-gradient" style={{ padding: '10px 24px' }}>+ Create First Epic</button>
+              </div>
+            )}
           </div>
         </div>
       )}
